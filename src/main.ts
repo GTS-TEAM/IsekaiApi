@@ -9,7 +9,7 @@ import * as compression from 'compression';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api');
+  // app.setGlobalPrefix('api');
   app.enableCors();
   app.use(compression());
   app.useGlobalFilters(new NotFoundExceptionFilter());
@@ -22,6 +22,6 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get('PORT');
 
-  await app.listen(port || 3001);
+  await app.listen(port || 8080);
 }
 bootstrap();

@@ -1,0 +1,47 @@
+version: '3.4'
+
+services:
+  api:
+    image: isekai-api
+    container_name: isekai-api
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: production
+    networks:
+      - app-network
+
+  proxy:
+    image: nginx:alpine
+    container_name: isekai-proxy
+    restart: unless-stopped
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - '80:80'
+    depends_on:
+      - api
+    networks:
+      - app-network
+
+  db:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=saota1278
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+volumes:
+  db:
+    driver: local
