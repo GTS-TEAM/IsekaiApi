@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Logger, Param, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { UserDto } from './dto/user.dto';
 
 import { UserService } from './users.service';
 @ApiTags('User')
@@ -11,19 +12,21 @@ export class UsersController {
   private logger = new Logger(UsersController.name);
   constructor(private readonly userService: UserService) {}
 
+  @ApiOkResponse({ description: 'Return user', type: UserDto })
   @Get()
   async getUser(@Query('userId') userId: string) {
     const user = await this.userService.getOneUser(userId);
-
     return user;
   }
 
+  @ApiOkResponse({ description: 'Return all users', type: [UserDto] })
   @Get('/all')
   async getUsers() {
     const users = await this.userService.find({});
     return users;
   }
 
+  @ApiOkResponse({ description: 'Detele all users' })
   @Delete('/delete-all')
   async deleteAllUsers() {
     await this.userService.deleteAllUsers();
