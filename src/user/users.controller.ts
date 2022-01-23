@@ -1,10 +1,10 @@
-import { Body, Controller, Get, Logger, Param, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Logger, Param, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 import { UserService } from './users.service';
 @ApiTags('Users')
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 @Controller('users')
 export class UsersController {
@@ -22,6 +22,12 @@ export class UsersController {
   async getUsers() {
     const users = await this.userService.find({});
     return users;
+  }
+
+  @Delete('/delete-all')
+  async deleteAllUsers() {
+    await this.userService.deleteAllUsers();
+    return { message: 'All users deleted' };
   }
 
   // @Put('/:userId/follow')

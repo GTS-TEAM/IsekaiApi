@@ -178,4 +178,9 @@ export class UserService {
   //   user.following = user.following.filter((friend: UserFollowerEntity) => friend?.id !== friendId);
   //   this.repo.save(user);
   // }
+
+  // deleteAllUsers
+  async deleteAllUsers(): Promise<void> {
+    await this.repo.delete({});
+  }
 }
