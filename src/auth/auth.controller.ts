@@ -64,13 +64,8 @@ export class AuthController {
   @ApiOkResponse({ description: 'Return message registered successfully', type: RegisterResponseDto })
   @ApiBadRequestResponse({ description: 'Bad request', type: HttpExeptionDto })
   async registerUser(@Body() userRegisterDto: UserRegisterDto): Promise<{ message: string }> {
-    try {
-      await this.userService.createUserRegister(userRegisterDto);
-      return { message: REGISTER_SUCCESS };
-    } catch (error) {
-      this.logger.error(error);
-      throw new BadRequestException(error);
-    }
+    await this.userService.createUserRegister(userRegisterDto);
+    return { message: REGISTER_SUCCESS };
   }
 
   @ApiOkResponse({ description: 'Return user information and token', type: LoginResponseDto })
