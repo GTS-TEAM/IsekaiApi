@@ -2,33 +2,11 @@ export const config = () => ({
   port: process.env.PORT,
   database: {
     type: 'postgres',
-    replication: {
-      master: {
-        host: process.env.DB_HOST,
-        port: process.env.DB_PORT,
-        username: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_DATABASE,
-      },
-      slaves: [
-        {
-          host: process.env.DB_READ_HOST1,
-          port: process.env.DB_PORT,
-          username: process.env.DB_USER,
-          password: process.env.DB_PASSWORD,
-          database: process.env.DB_DATABASE,
-        },
-        {
-          host: process.env.DB_READ_HOST2,
-          port: process.env.DB_PORT,
-          username: process.env.DB_USER,
-          password: process.env.DB_PASSWORD,
-          database: process.env.DB_DATABASE,
-        },
-      ],
-    },
-    selector: 'RR',
-    removeNodeErrorCount: 1,
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
     synchronize: true,
     migrationsTableName: 'migrations',
     autoLoadEntities: true,
