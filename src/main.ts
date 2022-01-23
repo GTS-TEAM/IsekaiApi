@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { NotFoundExceptionFilter } from './errors/catch.dto';
+import { NotFoundExceptionFilter } from './error/catch.dto';
 import * as compression from 'compression';
 // somewhere in your initialization file
 

@@ -1,5 +1,25 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, Logger, Post, Query, Res, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiProperty, ApiTags } from '@nestjs/swagger';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Logger,
+  NotFoundException,
+  Post,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiProperty,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { Response } from 'express';
 import { Roles } from 'src/shared/decorators/roles.decorator';
@@ -9,13 +29,15 @@ import { RolesEnum, TokenType } from '../shared/constants/enum';
 import { TokenService } from '../token/token.service';
 import { UserLoginDto } from '../user/dto/user-login.dto';
 import { UserRegisterDto } from '../user/dto/user-register.dto';
-import { UserDto } from '../user/dto/user.dto';
-import { Serialize } from '../user/users.interceptor';
 import { UserService } from '../user/users.service';
 import { AuthService } from './auth.service';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { REGISTER_SUCCESS } from './constant/response';
+import { RegisterResponseDto } from './dto/register-respose.dto';
+import { HttpExeptionDto } from '../error/error.dto';
+import { TokenPayloadDto } from './dto/token-payload.dto';
 class DeactivateRefreshTokenDto {
   @ApiProperty()
   @Expose()
@@ -37,36 +59,41 @@ export class AuthController {
   //   description: 'User created successfully',
   //   type: UserDto,
   // })
+
   @Post('/register')
-  async registerUser(@Body() userRegisterDto: UserRegisterDto) {
+  @ApiOkResponse({ description: 'Return message registered successfully', type: RegisterResponseDto })
+  @ApiBadRequestResponse({ description: 'Bad request', type: HttpExeptionDto })
+  async registerUser(@Body() userRegisterDto: UserRegisterDto): Promise<{ message: string }> {
     try {
       await this.userService.createUserRegister(userRegisterDto);
-      return { message: 'Successfully registered' };
+      return { message: REGISTER_SUCCESS };
     } catch (error) {
       this.logger.error(error);
       throw new BadRequestException(error);
     }
   }
 
-  @ApiOkResponse({ description: 'Success', type: LoginResponseDto })
+  @ApiOkResponse({ description: 'Return user information and token', type: LoginResponseDto })
+  @ApiNotFoundResponse({ description: 'Return exception email not found', type: HttpExeptionDto })
   @HttpCode(200)
   @Post('/login')
-  async login(@Body() userLoginDto: UserLoginDto): Promise<any> {
+  async login(@Body() userLoginDto: UserLoginDto): Promise<LoginResponseDto> {
     const user = await this.authService.validateUser(userLoginDto);
     const tokens = await this.tokenService.generateAuthToken(user);
     return {
       user,
-      access_token: tokens.accessToken,
-      refresh_token: tokens.refreshToken,
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
     };
   }
 
+  @ApiOkResponse({ description: 'Return token', type: TokenPayloadDto })
   @Post('/refresh-token')
   async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
     const tokens = await this.tokenService.refreshToken(refreshTokenDto);
     return {
-      access_token: tokens.accessToken,
-      refresh_token: tokens.refreshToken,
+      access_token: tokens.access_token,
+      refresh_token: refreshTokenDto.refresh_token,
     };
   }
 

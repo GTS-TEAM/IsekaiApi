@@ -20,13 +20,13 @@ export class TokenService {
   ) {}
 
   async generateAuthToken(user: UserEntity): Promise<TokenPayloadDto> {
-    const accessToken = this.generateToken(user, constants.JWT_ACCESS_EXPIRATION);
+    const access_token = this.generateToken(user, constants.JWT_ACCESS_EXPIRATION);
 
-    const refreshToken = this.generateToken(user, constants.JWT_REFRESH_EXPIRATION);
-    await this.saveToken(refreshToken, user, TokenType.RefreshToken);
+    const refresh_token = this.generateToken(user, constants.JWT_REFRESH_EXPIRATION);
+    await this.saveToken(refresh_token, user, TokenType.RefreshToken);
     return {
-      accessToken,
-      refreshToken,
+      access_token,
+      refresh_token,
     };
   }
 
@@ -85,7 +85,7 @@ export class TokenService {
   }
 
   async refreshToken(refreshTokenDto: RefreshTokenDto) {
-    const tokenPayload = await this.verifyToken(refreshTokenDto.refreshToken, TokenType.RefreshToken);
+    const tokenPayload = await this.verifyToken(refreshTokenDto.refresh_token, TokenType.RefreshToken);
     return this.generateAuthToken(tokenPayload);
   }
 

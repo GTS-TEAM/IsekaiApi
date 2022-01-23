@@ -65,10 +65,10 @@ export class UserEntity {
 
   // @OneToMany(() => MessageEntity, (message) => message.sender)
   // messages: MessageEntity[];
-
+  @Exclude({ toPlainOnly: true })
   @CreateDateColumn()
   created_at: Date;
-
+  @Exclude({ toPlainOnly: true })
   @UpdateDateColumn()
   updated_at: Date;
 

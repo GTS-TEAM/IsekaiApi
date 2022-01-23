@@ -23,23 +23,15 @@ export class UserDto {
   @Expose()
   roles: RolesEnum;
 
-  @ApiProperty({ default: false })
-  @Expose()
-  emailVerified: boolean;
+  // @ApiProperty({ default: false })
+  // @Expose()
+  // emailVerified: boolean;
 
-  @ApiProperty()
-  @Expose()
-  followers: Array<string>;
+  // @ApiProperty()
+  // @Expose()
+  // followers: Array<string>;
 
-  @ApiProperty()
-  @Expose()
-  following: Array<string>;
-
-  @ApiProperty()
-  @Expose()
-  created_at: Date;
-
-  @ApiProperty()
-  @Expose()
-  updated_at: Date;
+  // @ApiProperty()
+  // @Expose()
+  // following: Array<string>;
 }

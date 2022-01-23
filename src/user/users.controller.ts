@@ -3,10 +3,10 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 import { UserService } from './users.service';
-@ApiTags('Users')
+@ApiTags('User')
 // @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
-@Controller('users')
+@Controller('user')
 export class UsersController {
   private logger = new Logger(UsersController.name);
   constructor(private readonly userService: UserService) {}
