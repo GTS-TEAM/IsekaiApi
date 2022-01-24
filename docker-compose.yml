@@ -23,14 +23,27 @@ services:
     container_name: isekai-proxy
     restart: unless-stopped
     volumes:
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
       - '80:80'
+      - 443:443
     depends_on:
       - api
     networks:
       - app-network
 
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
+    depends_on:
+      - proxy
+    networks:
+      - app-network
   database:
     image: postgres:9.4
     container_name: database

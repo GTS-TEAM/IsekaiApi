@@ -12,20 +12,24 @@ import * as bcrypt from 'bcryptjs';
 import { RolesEnum } from '../shared/constants/enum';
 import { Tokens } from '../token/token.entity';
 import { classToPlain, Exclude } from 'class-transformer';
-// import { PostEntity } from '../post/entity/post';
-// import { LikeEntity } from '../post/entity/like';
-// import { CommentEntity } from 'src/post/entity/comment';
+import { PostEntity } from '../post/entity/post';
+import { LikeEntity } from '../post/entity/like';
+import { CommentEntity } from 'src/post/entity/comment';
+import { ApiProperty } from '@nestjs/swagger';
 // import { UserFollowerEntity } from 'src/user/user-follow';
 // import { ConversationEntity } from 'src/conversation/entity/conversation';
 // import { MessageEntity } from 'src/conversation/entity/message';
 @Entity('users')
 export class UserEntity {
+  @ApiProperty()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @ApiProperty()
   @Column()
   username: string;
 
+  @ApiProperty()
   @Column({ unique: true })
   email: string;
 
@@ -33,9 +37,11 @@ export class UserEntity {
   @Exclude({ toPlainOnly: true })
   password: string;
 
+  @ApiProperty()
   @Column({ enum: RolesEnum, type: 'enum', default: RolesEnum.USER })
   roles: RolesEnum;
 
+  @ApiProperty()
   @Column({ default: '' })
   profilePicture: string;
 
@@ -45,14 +51,14 @@ export class UserEntity {
   // @OneToMany(() => UserFollowerEntity, (uf) => uf.followers)
   // following: UserFollowerEntity[];
 
-  // @OneToMany(() => PostEntity, (post) => post.user, { onDelete: 'CASCADE' })
-  // posts: PostEntity[];
+  @OneToMany(() => PostEntity, (post) => post.user, { onDelete: 'CASCADE' })
+  posts: PostEntity[];
 
-  // @OneToMany(() => PostEntity, (post) => post.likes, { onDelete: 'CASCADE' })
-  // likes: LikeEntity[];
+  @OneToMany(() => PostEntity, (post) => post.likes, { onDelete: 'CASCADE' })
+  likes: LikeEntity[];
 
-  // @OneToMany(() => CommentEntity, (comment) => comment.user)
-  // comments: CommentEntity[];
+  @OneToMany(() => CommentEntity, (comment) => comment.user)
+  comments: CommentEntity[];
 
   @OneToMany(() => Tokens, (token) => token.user)
   token: Tokens[];

@@ -1,31 +1,40 @@
-// import { CommentEntity } from 'src/post/entity/comment';
-// import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-// import { LikeEntity } from './like';
-// import { UserEntity } from '../../user/user';
+import { CommentEntity } from 'src/post/entity/comment';
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { LikeEntity } from './like';
+import { UserEntity } from '../../user/user';
+import { ApiProperty } from '@nestjs/swagger';
 
-// @Entity('posts')
-// export class PostEntity {
-//   @PrimaryGeneratedColumn('uuid')
-//   id: number;
+@Entity('posts')
+export class PostEntity {
+  @ApiProperty()
+  @PrimaryGeneratedColumn('uuid')
+  id: number;
 
-//   @Column()
-//   description: string;
+  @ApiProperty()
+  @Column()
+  description: string;
 
-//   @Column()
-//   image: string;
+  @ApiProperty()
+  @Column()
+  image: string;
 
-//   @ManyToOne(() => UserEntity, (user) => user.posts, { onDelete: 'CASCADE' })
-//   user: UserEntity;
+  @ApiProperty({ type: () => UserEntity })
+  @ManyToOne(() => UserEntity, (user) => user.posts, { onDelete: 'CASCADE' })
+  user: UserEntity;
 
-//   @OneToMany(() => LikeEntity, (likes) => likes.post)
-//   likes: LikeEntity[];
+  @ApiProperty()
+  @OneToMany(() => LikeEntity, (likes) => likes.post)
+  likes: LikeEntity[];
 
-//   @OneToMany(() => CommentEntity, (comment) => comment.post)
-//   comments: CommentEntity[];
+  @ApiProperty()
+  @OneToMany(() => CommentEntity, (comment) => comment.post)
+  comments: CommentEntity[];
 
-//   @CreateDateColumn()
-//   created_at: Date;
+  @ApiProperty()
+  @CreateDateColumn()
+  created_at: Date;
 
-//   @UpdateDateColumn()
-//   updated_at: Date;
-// }
+  @ApiProperty()
+  @UpdateDateColumn()
+  updated_at: Date;
+}
