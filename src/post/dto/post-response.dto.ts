@@ -4,6 +4,7 @@ import { UserDto } from '../../user/dto/user.dto';
 export class PostResponseDto {
   @ApiProperty({ type: UserDto })
   user: UserDto;
+
   @ApiProperty()
   id: number;
 
@@ -21,6 +22,9 @@ export class PostResponseDto {
 
   @ApiProperty()
   comments: number;
+
+  @ApiProperty()
+  emoji?: number;
 
   @ApiProperty()
   created_at: Date;

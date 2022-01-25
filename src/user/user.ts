@@ -16,7 +16,7 @@ import { PostEntity } from '../post/entity/post';
 import { LikeEntity } from '../post/entity/like';
 import { CommentEntity } from 'src/post/entity/comment';
 import { ApiProperty } from '@nestjs/swagger';
-import { NotitficationEntity } from '../notification/notification';
+import { NotificationEntity } from '../notification/notification';
 // import { UserFollowerEntity } from 'src/user/user-follow';
 // import { ConversationEntity } from 'src/conversation/entity/conversation';
 // import { MessageEntity } from 'src/conversation/entity/message';
@@ -56,8 +56,8 @@ export class UserEntity {
   @ManyToMany(() => UserEntity, (user) => user.friends)
   friends: UserEntity[];
 
-  // @OneToMany(() => NotitficationEntity, (user) => user.to)
-  // notifications: NotitficationEntity[];
+  @OneToMany(() => NotificationEntity, (user) => user.to)
+  notifications: NotificationEntity[];
 
   @OneToMany(() => PostEntity, (post) => post.user, { onDelete: 'CASCADE' })
   posts: PostEntity[];

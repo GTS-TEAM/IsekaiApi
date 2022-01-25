@@ -1,18 +1,16 @@
-// Friend Request Entity
-
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { NotiStatus, NotiType } from '../shared/constants/enum';
 import { UserEntity } from '../user/user';
 
 @Entity('notifications')
-export class NotitficationEntity {
+export class NotificationEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @ManyToOne(() => UserEntity, (user) => user.notifications)
   from: UserEntity;
 
-  @Column()
+  @ManyToOne(() => UserEntity, (user) => user.notifications)
   to: UserEntity;
 
   @Column()
