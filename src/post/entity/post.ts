@@ -8,15 +8,15 @@ import { ApiProperty } from '@nestjs/swagger';
 export class PostEntity {
   @ApiProperty()
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id: string;
 
   @ApiProperty()
   @Column()
   description: string;
 
   @ApiProperty()
-  @Column()
-  image: string;
+  @Column('simple-array')
+  image: string[];
 
   @ApiProperty({ type: () => UserEntity })
   @ManyToOne(() => UserEntity, (user) => user.posts, { onDelete: 'CASCADE' })

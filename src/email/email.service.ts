@@ -238,7 +238,6 @@ export class EmailService {
       };
       await this.mailService.send(msg);
     } catch (error) {
-      console.log(error.response.body.errors[0]);
       throw new BadRequestException('Send mail verify failed');
     }
   };

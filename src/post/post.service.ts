@@ -21,17 +21,17 @@ export class PostService {
     private readonly commentEntity: Repository<CommentEntity>, // private readonly redisCache: RedisCacheService,
   ) {}
 
-  async updatePost(post: PostEntity, postDto: PostDto) {
+  updatePost(post: PostEntity, postDto: PostDto) {
     post.image = postDto.image;
     post.description = postDto.description;
     return this.postEntity.save(post);
   }
 
-  async createPost(post: PostDto, user: UserEntity): Promise<PostEntity> {
+  createPost(post: PostDto, user: UserEntity): Promise<PostEntity> {
     try {
       const postEntity = this.postEntity.create(post);
       postEntity.user = user;
-      return await this.postEntity.save(postEntity);
+      return this.postEntity.save(postEntity);
     } catch (error) {
       this.logger.error(error.message);
       throw new BadRequestException('Can not create post, try again later');
@@ -110,15 +110,16 @@ export class PostService {
     return this.postEntity.save(post);
   }
 
-  async getUserTimeline(user: UserEntity): Promise<PostEntity[]> {
+  async getUserTimeline(user: UserEntity) {
     try {
-      const post = await this.postEntity
+      const postsSnapshot = await this.postEntity
         .createQueryBuilder('posts')
         .leftJoinAndSelect('posts.user', 'user')
-        .select(['posts', 'user.id'])
-        .leftJoinAndSelect('posts.comments', 'comments')
+        .loadRelationCountAndMap('posts.comments', 'posts.comments')
         .loadRelationCountAndMap('posts.likes', 'posts.likes')
         .getMany();
+      // check if user already liked post
+      const post = await this.checkLikedAndReturnPosts(postsSnapshot, user.id);
       return post;
     } catch (error) {
       this.logger.error(error);
@@ -126,6 +127,18 @@ export class PostService {
     }
   }
 
+  async checkLikedAndReturnPosts(posts: PostEntity[], userId: string) {
+    return await Promise.all(
+      posts.map(async (post) => {
+        const check = await this.checkUserLikedPost(post.id, userId);
+        let liked = false;
+        if (check) {
+          liked = true;
+        }
+        return { ...post, liked };
+      }),
+    );
+  }
   //check if user liked post
   async checkUserLikedPost(postId: string, userId: string) {
     try {
@@ -144,13 +157,14 @@ export class PostService {
     try {
       const post = await this.postEntity
         .createQueryBuilder('posts')
-        .leftJoinAndSelect('posts.user', 'user')
         .select(['posts', 'user.id'])
-        .leftJoinAndSelect('posts.comments', 'comments')
-        .leftJoinAndSelect('posts.likes', 'likes')
+        .leftJoinAndSelect('posts.user', 'user')
+        .loadRelationCountAndMap('posts.comments', 'posts.comments')
+        .loadRelationCountAndMap('posts.likes', 'posts.likes')
         .where('posts.user = :userId', { userId: userId })
         .getMany();
-      return post;
+
+      return await this.checkLikedAndReturnPosts(post, userId);
     } catch (error) {
       this.logger.error(error);
       throw new BadRequestException('Can not get post');
