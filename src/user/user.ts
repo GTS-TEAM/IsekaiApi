@@ -16,6 +16,7 @@ import { PostEntity } from '../post/entity/post';
 import { LikeEntity } from '../post/entity/like';
 import { CommentEntity } from 'src/post/entity/comment';
 import { ApiProperty } from '@nestjs/swagger';
+import { NotitficationEntity } from '../notification/notification';
 // import { UserFollowerEntity } from 'src/user/user-follow';
 // import { ConversationEntity } from 'src/conversation/entity/conversation';
 // import { MessageEntity } from 'src/conversation/entity/message';
@@ -51,6 +52,13 @@ export class UserEntity {
   // @OneToMany(() => UserFollowerEntity, (uf) => uf.followers)
   // following: UserFollowerEntity[];
 
+  // friend
+  @ManyToMany(() => UserEntity, (user) => user.friends)
+  friends: UserEntity[];
+
+  // @OneToMany(() => NotitficationEntity, (user) => user.to)
+  // notifications: NotitficationEntity[];
+
   @OneToMany(() => PostEntity, (post) => post.user, { onDelete: 'CASCADE' })
   posts: PostEntity[];
 
@@ -74,6 +82,7 @@ export class UserEntity {
   @Exclude({ toPlainOnly: true })
   @CreateDateColumn()
   created_at: Date;
+
   @Exclude({ toPlainOnly: true })
   @UpdateDateColumn()
   updated_at: Date;

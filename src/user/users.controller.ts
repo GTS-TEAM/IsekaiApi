@@ -26,7 +26,7 @@ export class UsersController {
     return users;
   }
 
-  @ApiOkResponse({ description: 'Detele all users' })
+  @ApiOkResponse({ description: 'Detele all users for dev' })
   @Delete('/delete-all')
   async deleteAllUsers() {
     await this.userService.deleteAllUsers();
@@ -43,8 +43,8 @@ export class UsersController {
   //   return await this.userService.unFollowUser(req.user, userId);
   // }
 
-  // @Post('addFriend')
-  // async addFriend(@Request() req, @Body('friendId') friendId: string) {
-  //   await this.userService.addFriend(req.user, friendId);
-  // }
+  @Post('addFriend')
+  async addFriend(@Request() req, @Param('friendId') friendId: string) {
+    await this.userService.addFriend(req.user, friendId);
+  }
 }

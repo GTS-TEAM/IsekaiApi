@@ -119,20 +119,16 @@ export class UserService {
     return this.repo.find({});
   }
 
-  // friends
-  // async addFriend(user: UserEntity, friendId: string): Promise<UserEntity> {
-  //   const friend = await this.repo.findOne({ where: { id: friendId } });
-  //   if (!friend) {
-  //     throw new NotFoundException('User not found');
-  //   }
-  //   user.followers = user.followers || [];
-  //   const sub = this.userFollowerRepo.create({
-  //     followers: user,
-  //     following: friend,
-  //   });
-  //   user.followers.push(sub);
-  //   return this.repo.save(user);
-  // }
+  /**
+   * Friend request
+   */
+
+  async addFriend(user: UserEntity, friendId: string) {
+    const friend = await this.repo.findOne({ where: { id: friendId } });
+    if (!friend) {
+      throw new NotFoundException('Không tìm thấy người dùng');
+    }
+  }
 
   // follow user
   // async followUser(user: any, friendId: string): Promise<UserEntity> {
