@@ -1,8 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Req, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Req, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CommentEntity } from 'src/post/entity/comment';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CommentRequestDto } from './dto/comment.dto';
 import { PostDto } from './dto/post-request.dto';
+import { PostResponseDto } from './dto/post-response.dto';
 import { PostEntity } from './entity/post';
 import { PostService } from './post.service';
 
@@ -13,7 +15,7 @@ import { PostService } from './post.service';
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
-  @ApiOkResponse({ description: 'Return 201 Created' })
+  @ApiCreatedResponse({ description: 'Return 201 Created' })
   @Post('/')
   async createPost(@Body() postDto: PostDto, @Req() req) {
     await this.postService.createPost(postDto, req.user);
@@ -28,21 +30,23 @@ export class PostController {
     };
   }
 
+  @ApiOkResponse({ description: 'Return list of posts', type: PostResponseDto, isArray: true })
   @Get('/timeline')
-  async getTimeline(@Request() req): Promise<PostEntity[]> {
+  async getTimeline(@Request() req) {
     const posts = await this.postService.getUserTimeline(req.user);
     return posts;
   }
 
+  @ApiOkResponse({ description: "Return user's post", type: PostResponseDto, isArray: true })
   @Get('/profile/:userId')
   async getUserPosts(@Param('userId') userId: string): Promise<PostEntity[]> {
     const posts = await this.postService.getUserPosts(userId);
     return posts;
   }
 
-  @Put('/:postId/like')
-  updatePostLikes(@Param('postId') postId: string, @Request() req): Promise<PostEntity> {
-    return this.postService.likePost(postId, req.user);
+  @Patch('/:postId/like')
+  async updatePostLikes(@Param('postId') postId: string, @Request() req) {
+    await this.postService.likePost(postId, req.user);
   }
 
   @Get('/:postId/comments')
@@ -50,29 +54,26 @@ export class PostController {
     const comments = await this.postService.getPostComments(postId);
     return comments;
   }
-
-  // check if user liked post
-  @Get('/:postId/isLiked')
-  async checkIfUserLikedPost(@Param('postId') postId: string, @Request() req): Promise<boolean> {
-    const isLiked = await this.postService.checkUserLikedPost(postId, req.user.id);
-    return isLiked;
-  }
-
   // comment
   @Post('/:postId/comments')
-  async createComment(@Param('postId') postId: string, @Body() body: any, @Request() req): Promise<void> {
-    await this.postService.createComment(postId, req.user, body.comment);
+  async createComment(
+    @Param('postId') postId: string,
+    @Body() commentRequestDto: CommentRequestDto,
+    @Request() req,
+  ): Promise<void> {
+    await this.postService.createComment(postId, req.user, commentRequestDto.comment);
   }
 
-  @Put('/:postId')
+  @Patch('/:postId')
   async updatePost(@Param('postId') postId: string, @Body() postDto: PostDto, @Request() req): Promise<PostEntity> {
     const post = await this.postService.checkUserOwnsPost(postId, req.user);
     const postPayload = await this.postService.updatePost(post, postDto);
     return postPayload;
   }
 
-  @Delete('/delete-post')
-  async deleteAllPost() {
-    await this.postService.deleteAll();
-  }
+  // @ApiOkResponse({ description: 'Delele all posts for dev' })
+  // @Delete('/delete-post-dev')
+  // async deleteAllPost() {
+  //   await this.postService.deleteAll();
+  // }
 }

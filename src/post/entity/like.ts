@@ -5,7 +5,7 @@ import { UserEntity } from '../../user/user';
 @Entity('likes')
 export class LikeEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id: string;
 
   @ManyToOne(() => UserEntity, (user) => user.likes, { onDelete: 'CASCADE' })
   user: UserEntity;

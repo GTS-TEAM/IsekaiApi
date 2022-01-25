@@ -1,14 +1,30 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { UserDto } from '../../user/dto/user.dto';
+
 export class PostResponseDto {
-  user: {
-    id: number;
-    username: string;
-    email: string;
-  };
-  post: {
-    id: number;
-    image: string;
-    description: string;
-    createdAt: Date;
-    updatedAt: Date;
-  };
+  @ApiProperty({ type: UserDto })
+  user: UserDto;
+  @ApiProperty()
+  id: number;
+
+  @ApiProperty()
+  image: string;
+
+  @ApiProperty()
+  description: string;
+
+  @ApiProperty()
+  liked: boolean;
+
+  @ApiProperty()
+  likes: number;
+
+  @ApiProperty()
+  comments: number;
+
+  @ApiProperty()
+  created_at: Date;
+
+  @ApiProperty()
+  updated_at: Date;
 }
