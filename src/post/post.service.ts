@@ -1,12 +1,11 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOneOptions, In, Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 import { UserEntity } from '../user/user';
 import { PostDto } from './dto/post-request.dto';
 import { PostEntity } from './entity/post';
 import { LikeEntity } from 'src/post/entity/like';
 import { CommentEntity } from 'src/post/entity/comment';
-import { PostFields } from 'src/shared/constants/enum';
 
 @Injectable()
 export class PostService {
@@ -38,7 +37,9 @@ export class PostService {
     }
   }
 
-  async deleteAll() {}
+  async deleteAllPost() {
+    this.postEntity.delete({});
+  }
 
   async createComment(postId: string, user: UserEntity, comment: string) {
     try {
@@ -83,7 +84,7 @@ export class PostService {
       await this.postEntity.remove(post);
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException();
+      throw new BadRequestException(error.message);
     }
   }
 
@@ -112,10 +113,13 @@ export class PostService {
     return this.postEntity.save(post);
   }
 
-  async getUserTimeline(user: UserEntity) {
+  async getUserTimeline(user: UserEntity, page: number) {
     try {
       const postsSnapshot = await this.postEntity
         .createQueryBuilder('posts')
+        .orderBy('posts.created_at', 'DESC')
+        .skip(7 * page)
+        .take(7)
         .leftJoinAndSelect('posts.user', 'user')
         .loadRelationCountAndMap('posts.comments', 'posts.comments')
         .loadRelationCountAndMap('posts.likes', 'posts.likes')
@@ -125,7 +129,7 @@ export class PostService {
       return post;
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException('Can not get post');
+      throw new BadRequestException('Can not get post', error.message);
     }
   }
 
@@ -155,11 +159,14 @@ export class PostService {
     }
   }
   // get user post
-  async getUserPosts(userId: string) {
+  async getUserPosts(userId: string, page: number) {
     try {
       const post = await this.postEntity
         .createQueryBuilder('posts')
         .select(['posts', 'user.id'])
+        .orderBy('posts.created_at', 'DESC')
+        .skip(5 * page)
+        .take(5)
         .leftJoinAndSelect('posts.user', 'user')
         .loadRelationCountAndMap('posts.comments', 'posts.comments')
         .loadRelationCountAndMap('posts.likes', 'posts.likes')
@@ -195,7 +202,7 @@ export class PostService {
       },
     });
     if (!post) {
-      throw new BadRequestException();
+      throw new BadRequestException("You don't own this post");
     }
     return post;
   }
@@ -205,20 +212,15 @@ export class PostService {
    */
   // delete a comment
   async deleteComment(commentId: string, user: UserEntity) {
-    try {
-      const comment = await this.checkUserOwnsComment(commentId, user);
-      await this.commentEntity.remove(comment);
-    } catch (error) {
-      this.logger.error(error);
-      throw new BadRequestException();
-    }
+    const comment = await this.checkUserOwnsComment(commentId, user);
+    await this.commentEntity.remove(comment);
   }
   // check user owns comment
   async checkUserOwnsComment(commentId: string, user: UserEntity) {
     const comment = await this.commentEntity.findOneOrFail({ where: { id: commentId }, relations: ['user'] });
 
     if (comment.user.id !== user.id) {
-      throw new BadRequestException();
+      throw new BadRequestException("You can't delete this comment");
     }
     return comment;
   }
@@ -231,7 +233,7 @@ export class PostService {
       await this.commentEntity.save(commentToUpdate);
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException();
+      throw new BadRequestException(error, 'Can not update comment');
     }
   }
 }

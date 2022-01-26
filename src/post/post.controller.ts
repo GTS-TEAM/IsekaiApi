@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Req, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CommentEntity } from 'src/post/entity/comment';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -31,16 +31,16 @@ export class PostController {
   }
 
   @ApiOkResponse({ description: 'Return list of posts', type: PostResponseDto, isArray: true })
-  @Get('/timeline')
-  async getTimeline(@Request() req) {
-    const posts = await this.postService.getUserTimeline(req.user);
+  @Get('/timeline/:page')
+  async getTimeline(@Request() req, @Query('page') page: number) {
+    const posts = await this.postService.getUserTimeline(req.user, page);
     return posts;
   }
 
   @ApiOkResponse({ description: "Return user's post", type: PostResponseDto, isArray: true })
   @Get('/profile/:userId')
-  async getUserPosts(@Param('userId') userId: string): Promise<PostEntity[]> {
-    const posts = await this.postService.getUserPosts(userId);
+  async getUserPosts(@Param('userId') userId: string, @Query('page') page): Promise<PostEntity[]> {
+    const posts = await this.postService.getUserPosts(userId, page);
     return posts;
   }
 
@@ -82,9 +82,9 @@ export class PostController {
     return postPayload;
   }
 
-  // @ApiOkResponse({ description: 'Delele all posts for dev' })
-  // @Delete('/delete-post-dev')
-  // async deleteAllPost() {
-  //   await this.postService.deleteAll();
-  // }
+  @ApiOkResponse({ description: 'Delele all posts for dev' })
+  @Delete('/delete/allpost/fordev')
+  async deleteAllPost() {
+    await this.postService.deleteAllPost();
+  }
 }

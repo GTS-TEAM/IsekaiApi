@@ -23,11 +23,11 @@ export class PostEntity {
   user: UserEntity;
 
   @ApiProperty()
-  @OneToMany(() => LikeEntity, (likes) => likes.post)
+  @OneToMany(() => LikeEntity, (likes) => likes.post, { onDelete: 'CASCADE' })
   likes: LikeEntity[];
 
   @ApiProperty()
-  @OneToMany(() => CommentEntity, (comment) => comment.post)
+  @OneToMany(() => CommentEntity, (comment) => comment.post, { onDelete: 'CASCADE' })
   comments: CommentEntity[];
 
   @ApiProperty()
