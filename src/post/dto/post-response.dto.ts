@@ -6,10 +6,10 @@ export class PostResponseDto {
   user: UserDto;
 
   @ApiProperty()
-  id: number;
+  id: string;
 
   @ApiProperty()
-  image: string;
+  image: string[];
 
   @ApiProperty()
   description: string;
@@ -23,7 +23,7 @@ export class PostResponseDto {
   @ApiProperty()
   comments: number;
 
-  @ApiProperty()
+  @ApiProperty({ nullable: true })
   emoji?: number;
 
   @ApiProperty()

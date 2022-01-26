@@ -39,7 +39,7 @@ export class PostController {
 
   @ApiOkResponse({ description: "Return user's post", type: PostResponseDto, isArray: true })
   @Get('/profile/:userId')
-  async getUserPosts(@Param('userId') userId: string, @Query('page') page): Promise<PostEntity[]> {
+  async getUserPosts(@Param('userId') userId: string, @Query('page') page: number): Promise<PostEntity[]> {
     const posts = await this.postService.getUserPosts(userId, page);
     return posts;
   }

@@ -6,6 +6,7 @@ import { PostDto } from './dto/post-request.dto';
 import { PostEntity } from './entity/post';
 import { LikeEntity } from 'src/post/entity/like';
 import { CommentEntity } from 'src/post/entity/comment';
+import { PostResponseDto } from './dto/post-response.dto';
 
 @Injectable()
 export class PostService {
@@ -26,11 +27,17 @@ export class PostService {
     return this.postEntity.save(post);
   }
 
-  createPost(post: PostDto, user: UserEntity): Promise<PostEntity> {
+  async createPost(post: PostDto, user: UserEntity): Promise<PostResponseDto> {
     try {
-      const postEntity = this.postEntity.create(post);
-      postEntity.user = user;
-      return this.postEntity.save(postEntity);
+      const postSnapshot = this.postEntity.create(post);
+      postSnapshot.user = user;
+      const postRes = await this.postEntity.save(postSnapshot);
+      return {
+        ...postRes,
+        likes: 0,
+        comments: 0,
+        liked: false,
+      };
     } catch (error) {
       this.logger.error(error.message);
       throw new BadRequestException('Can not create post, try again later');

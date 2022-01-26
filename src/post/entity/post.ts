@@ -22,15 +22,15 @@ export class PostEntity {
   @ManyToOne(() => UserEntity, (user) => user.posts, { onDelete: 'CASCADE' })
   user: UserEntity;
 
-  @ApiProperty()
+  @ApiProperty({ nullable: true })
   @OneToMany(() => LikeEntity, (likes) => likes.post, { onDelete: 'CASCADE' })
   likes: LikeEntity[];
 
-  @ApiProperty()
+  @ApiProperty({ nullable: true })
   @OneToMany(() => CommentEntity, (comment) => comment.post, { onDelete: 'CASCADE' })
   comments: CommentEntity[];
 
-  @ApiProperty()
+  @ApiProperty({ nullable: true })
   @Column({ nullable: true })
   emoji: number;
 
