@@ -1,8 +1,7 @@
-// import { Module } from '@nestjs/common';
-// import { AuthModule } from 'src/auth/auth.module';
-// import { RedisCacheModule } from 'src/shared/redis-cache/redis-cache.module';
+import { Module } from '@nestjs/common';
+import { AuthModule } from 'src/auth/auth.module';
 
-// @Module({
-//   imports: [AuthModule, RedisCacheModule],
-// })
-// export class ChatModule {}
+@Module({
+  imports: [AuthModule],
+})
+export class ChatModule {}

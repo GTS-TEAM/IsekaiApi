@@ -16,9 +16,10 @@ import { PostEntity } from '../post/entity/post';
 import { LikeEntity } from '../post/entity/like';
 import { CommentEntity } from 'src/post/entity/comment';
 import { ApiProperty } from '@nestjs/swagger';
+import { NotificationEntity } from '../notification/notification';
 // import { UserFollowerEntity } from 'src/user/user-follow';
-// import { ConversationEntity } from 'src/conversation/entity/conversation';
-// import { MessageEntity } from 'src/conversation/entity/message';
+import { ConversationEntity } from 'src/conversation/entity/conversation';
+import { MessageEntity } from 'src/conversation/entity/message';
 @Entity('users')
 export class UserEntity {
   @ApiProperty()
@@ -42,14 +43,24 @@ export class UserEntity {
   roles: RolesEnum;
 
   @ApiProperty()
-  @Column({ default: '' })
-  profilePicture: string;
+  @Column({ nullable: true })
+  profilePicture?: string;
 
+  @ApiProperty()
+  @Column({ nullable: true })
+  background?: string;
   // @OneToMany(() => UserFollowerEntity, (uf) => uf.following)
   // followers: UserFollowerEntity[];
 
   // @OneToMany(() => UserFollowerEntity, (uf) => uf.followers)
   // following: UserFollowerEntity[];
+
+  // friend
+  @ManyToMany(() => UserEntity, (user) => user.friends)
+  friends: UserEntity[];
+
+  @OneToMany(() => NotificationEntity, (user) => user.to)
+  notifications: NotificationEntity[];
 
   @OneToMany(() => PostEntity, (post) => post.user, { onDelete: 'CASCADE' })
   posts: PostEntity[];
@@ -66,14 +77,16 @@ export class UserEntity {
   // @Column({ default: false })
   // emailVerified: boolean;
 
-  // @ManyToMany(() => ConversationEntity, (conversation) => conversation.members)
-  // conversations: ConversationEntity[];
+  @ManyToMany(() => ConversationEntity, (conversation) => conversation.members)
+  conversations: ConversationEntity[];
 
-  // @OneToMany(() => MessageEntity, (message) => message.sender)
-  // messages: MessageEntity[];
+  @OneToMany(() => MessageEntity, (message) => message.sender)
+  messages: MessageEntity[];
+
   @Exclude({ toPlainOnly: true })
   @CreateDateColumn()
   created_at: Date;
+
   @Exclude({ toPlainOnly: true })
   @UpdateDateColumn()
   updated_at: Date;

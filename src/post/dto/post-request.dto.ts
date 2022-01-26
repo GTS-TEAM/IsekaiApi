@@ -6,4 +6,7 @@ export class PostDto {
 
   @ApiProperty()
   readonly description: string;
+
+  @ApiProperty()
+  readonly emoji?: number;
 }

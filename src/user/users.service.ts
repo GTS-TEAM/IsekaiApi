@@ -15,24 +15,24 @@ export class UserService {
     @InjectRepository(UserEntity) private repo: Repository<UserEntity>, // @InjectRepository(UserFollowerEntity) // private userFollowerRepo: Repository<UserFollowerEntity>,
   ) {}
 
-  // async checkIfUserHasConversation(user: UserEntity, friendId: string) {
-  //   const thisUser = await this.repo
-  //     .createQueryBuilder('users')
-  //     .leftJoinAndSelect('users.conversations', 'conversations')
-  //     .leftJoinAndSelect('conversations.members', 'members')
-  //     .where('users.id =:id', { id: user.id })
-  //     .getOne();
+  async checkIfUserHasConversation(user: UserEntity, friendId: string) {
+    const thisUser = await this.repo
+      .createQueryBuilder('users')
+      .leftJoinAndSelect('users.conversations', 'conversations')
+      .leftJoinAndSelect('conversations.members', 'members')
+      .where('users.id =:id', { id: user.id })
+      .getOne();
 
-  //   const exist = thisUser?.conversations.some((conversation) => {
-  //     return conversation.members.map((member) => member.id).includes(friendId);
-  //   });
+    const exist = thisUser?.conversations.some((conversation) => {
+      return conversation.members.map((member) => member.id).includes(friendId);
+    });
 
-  //   if (exist) {
-  //     return false;
-  //   }
-  //   const friend = await this.repo.findOne({ where: { id: friendId } });
-  //   return friend;
-  // }
+    if (exist) {
+      return false;
+    }
+    const friend = await this.repo.findOne({ where: { id: friendId } });
+    return friend;
+  }
 
   async find(options?: FindOneOptions<UserEntity>): Promise<UserEntity[]> {
     return this.repo.find(options);
@@ -119,20 +119,16 @@ export class UserService {
     return this.repo.find({});
   }
 
-  // friends
-  // async addFriend(user: UserEntity, friendId: string): Promise<UserEntity> {
-  //   const friend = await this.repo.findOne({ where: { id: friendId } });
-  //   if (!friend) {
-  //     throw new NotFoundException('User not found');
-  //   }
-  //   user.followers = user.followers || [];
-  //   const sub = this.userFollowerRepo.create({
-  //     followers: user,
-  //     following: friend,
-  //   });
-  //   user.followers.push(sub);
-  //   return this.repo.save(user);
-  // }
+  /**
+   * Friend request
+   */
+
+  async addFriend(user: UserEntity, friendId: string) {
+    const friend = await this.repo.findOne({ where: { id: friendId } });
+    if (!friend) {
+      throw new NotFoundException('Không tìm thấy người dùng');
+    }
+  }
 
   // follow user
   // async followUser(user: any, friendId: string): Promise<UserEntity> {

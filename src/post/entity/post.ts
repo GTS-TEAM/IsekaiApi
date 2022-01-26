@@ -31,6 +31,10 @@ export class PostEntity {
   comments: CommentEntity[];
 
   @ApiProperty()
+  @Column({ nullable: true })
+  emoji: number;
+
+  @ApiProperty()
   @CreateDateColumn()
   created_at: Date;
 
