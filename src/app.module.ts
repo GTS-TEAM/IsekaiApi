@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './user/users.module';
 import { AuthModule } from './auth/auth.module';
@@ -31,7 +30,6 @@ import { ChatGateway } from './chat/chat.gateway';
     EmailModule,
     ConversationModule,
   ],
-  controllers: [AppController],
   providers: [AppService, ChatGateway],
 })
 export class AppModule {}
