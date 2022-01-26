@@ -198,8 +198,38 @@ export class PostService {
     return post;
   }
 
-  async seedPosts(post: PostDto, user: UserEntity) {
-    await this.createPost(post, user);
-    return 'Seeded post successfully';
+  /**
+   * COMMENT
+   */
+  // delete a comment
+  async deleteComment(commentId: string, user: UserEntity) {
+    try {
+      const comment = await this.checkUserOwnsComment(commentId, user);
+      await this.commentEntity.remove(comment);
+    } catch (error) {
+      this.logger.error(error);
+      throw new BadRequestException();
+    }
+  }
+  // check user owns comment
+  async checkUserOwnsComment(commentId: string, user: UserEntity) {
+    const comment = await this.commentEntity.findOneOrFail({ where: { id: commentId }, relations: ['user'] });
+
+    if (comment.user.id !== user.id) {
+      throw new BadRequestException();
+    }
+    return comment;
+  }
+
+  // update a comment
+  async updateComment(commentId: string, comment: string, user: UserEntity) {
+    try {
+      const commentToUpdate = await this.checkUserOwnsComment(commentId, user);
+      commentToUpdate.content = comment;
+      await this.commentEntity.save(commentToUpdate);
+    } catch (error) {
+      this.logger.error(error);
+      throw new BadRequestException();
+    }
   }
 }

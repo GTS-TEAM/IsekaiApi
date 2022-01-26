@@ -18,7 +18,7 @@ export class PostController {
   @ApiCreatedResponse({ description: 'Return 201 Created' })
   @Post('/')
   async createPost(@Body() postDto: PostDto, @Req() req) {
-    await this.postService.createPost(postDto, req.user);
+    return await this.postService.createPost(postDto, req.user);
   }
 
   @ApiOkResponse({ description: 'Return message deleted successfully' })
@@ -49,12 +49,16 @@ export class PostController {
     await this.postService.likePost(postId, req.user);
   }
 
+  /**
+   * COMMENT
+   */
+
   @Get('/:postId/comments')
   async getPostComments(@Param('postId') postId: string): Promise<CommentEntity[]> {
     const comments = await this.postService.getPostComments(postId);
     return comments;
   }
-  // comment
+
   @Post('/:postId/comments')
   async createComment(
     @Param('postId') postId: string,
@@ -62,6 +66,17 @@ export class PostController {
     @Request() req,
   ): Promise<void> {
     await this.postService.createComment(postId, req.user, commentRequestDto.comment);
+  }
+
+  // delete a comment
+  @Delete('/comments/:commentId')
+  async deleteComment(@Param('commentId') commentId: string, @Request() req) {
+    await this.postService.deleteComment(commentId, req.user);
+  }
+  // update a comment
+  @Patch('/comments/:commentId')
+  async updateComment(@Param('commentId') commentId: string, @Body() commentRequestDto: CommentRequestDto, @Request() req) {
+    await this.postService.updateComment(commentId, commentRequestDto.comment, req.user);
   }
 
   @Patch('/:postId')
