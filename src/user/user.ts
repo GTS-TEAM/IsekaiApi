@@ -49,6 +49,10 @@ export class UserEntity {
   @ApiProperty()
   @Column({ nullable: true })
   background?: string;
+
+  @ApiProperty()
+  @Column({ default: false })
+  online: boolean;
   // @OneToMany(() => UserFollowerEntity, (uf) => uf.following)
   // followers: UserFollowerEntity[];
 

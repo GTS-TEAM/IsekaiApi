@@ -125,7 +125,7 @@ export class PostService {
       const postsSnapshot = await this.postEntity
         .createQueryBuilder('posts')
         .orderBy('posts.created_at', 'DESC')
-        .skip(7 * page)
+        .skip(7 * (page - 1))
         .take(7)
         .leftJoinAndSelect('posts.user', 'user')
         .loadRelationCountAndMap('posts.comments', 'posts.comments')
