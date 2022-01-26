@@ -15,7 +15,7 @@ import { PostService } from './post.service';
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
-  @ApiCreatedResponse({ description: 'Return 201 Created' })
+  @ApiCreatedResponse({ description: 'Return 201 Created', type: PostResponseDto })
   @Post('/')
   async createPost(@Body() postDto: PostDto, @Req() req) {
     return await this.postService.createPost(postDto, req.user);
@@ -60,12 +60,8 @@ export class PostController {
   }
 
   @Post('/:postId/comments')
-  async createComment(
-    @Param('postId') postId: string,
-    @Body() commentRequestDto: CommentRequestDto,
-    @Request() req,
-  ): Promise<void> {
-    await this.postService.createComment(postId, req.user, commentRequestDto.comment);
+  async createComment(@Param('postId') postId: string, @Body() commentRequestDto: CommentRequestDto, @Request() req) {
+    return await this.postService.createComment(postId, req.user, commentRequestDto.comment);
   }
 
   // delete a comment

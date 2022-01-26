@@ -12,7 +12,7 @@ import { ConversationService } from 'src/conversation/conversation.service';
 import { TokenType } from '../shared/constants/enum';
 import { TokenService } from '../token/token.service';
 
-@WebSocketGateway({ path: '/chat/socket.io' })
+@WebSocketGateway({ path: '/api/chat/socket.io' })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private logger = new Logger(ChatGateway.name);
   constructor(private tokenSerivce: TokenService, private readonly conversationService: ConversationService) {}

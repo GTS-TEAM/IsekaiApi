@@ -50,10 +50,12 @@ export class PostService {
         user,
         post,
       });
-      await this.commentEntity.save(newComment);
+      const commentSnapshot = await this.commentEntity.save(newComment);
 
       post.comments.push(newComment);
-      await this.postEntity.save(post);
+      this.postEntity.save(post);
+      delete commentSnapshot.post;
+      return commentSnapshot;
     } catch (error) {
       this.logger.error(error);
       throw new BadRequestException('Can not create comment');
