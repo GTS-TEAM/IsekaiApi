@@ -88,6 +88,8 @@ export class UserService {
   async getOneUser(userId: string) {
     const user = await this.findUserById(userId);
     // const userPayload = await this.getWholeUserEntity(user);
+    delete user.created_at;
+    delete user.updated_at;
     return user;
   }
 
@@ -178,5 +180,11 @@ export class UserService {
   // deleteAllUsers
   async deleteAllUsers(): Promise<void> {
     await this.repo.delete({});
+  }
+
+  // Change user avatar
+  async changeAvatar(user: UserEntity, avatar: string): Promise<UserEntity> {
+    user.profilePicture = avatar;
+    return this.repo.save(user);
   }
 }

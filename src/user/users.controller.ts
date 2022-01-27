@@ -20,8 +20,9 @@ export class UsersController {
   }
 
   @ApiOkResponse({ description: 'Return all users', type: [UserDto] })
-  @Get('/all')
+  @Get('/list-friends')
   async getUsers() {
+    //TODO:
     const users = await this.userService.find({});
     return users;
   }
@@ -43,8 +44,18 @@ export class UsersController {
   //   return await this.userService.unFollowUser(req.user, userId);
   // }
 
-  @Post('addFriend')
-  async addFriend(@Request() req, @Param('friendId') friendId: string) {
-    await this.userService.addFriend(req.user, friendId);
+  /**
+   * Profile
+   */
+
+  // Change user avatar
+  @Put('/:userId/avatar')
+  async changeAvatar(@Request() req, @Param('userId') userId: string) {
+    return await this.userService.changeAvatar(req.user, userId);
   }
+
+  // @Post('addFriend')
+  // async addFriend(@Request() req, @Param('friendId') friendId: string) {
+  //   await this.userService.addFriend(req.user, friendId);
+  // }
 }
