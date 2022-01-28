@@ -49,8 +49,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const event: string = 'message';
     try {
       const message = await this.conversationService.createMessage(data.conversationId, data.content, data.senderId);
-      delete message.created_at;
-      delete message.updated_at;
 
       delete message.sender.email;
       delete message.sender.roles;
