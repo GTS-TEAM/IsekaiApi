@@ -8,6 +8,8 @@ import {
   WebSocketServer,
   WsException,
 } from '@nestjs/websockets';
+import { Socket } from 'socket.io';
+
 import { ConversationService } from 'src/conversation/conversation.service';
 import { TokenType } from '../shared/constants/enum';
 import { TokenService } from '../token/token.service';
@@ -18,16 +20,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private tokenSerivce: TokenService, private readonly conversationService: ConversationService) {}
   @WebSocketServer()
   server;
-  connectedUsers: string[] = [];
+  // connectedUsers: string[] = [];
   async handleDisconnect(client) {
     try {
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
-      this.logger.debug(user.email + ' disconnected');
-      const userPos = this.connectedUsers.indexOf(user.id);
-      if (userPos > -1) {
-        this.connectedUsers = [...this.connectedUsers.slice(0, userPos), ...this.connectedUsers.slice(userPos + 1)];
-      }
-      this.server.emit('users', this.connectedUsers);
+      this.logger.debug(user.username + ' disconnected');
     } catch (error) {}
   }
 
@@ -35,23 +32,40 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
 
-      this.logger.debug(user.email + ' connected');
+      this.logger.debug(user.username + ' connected');
 
-      this.connectedUsers = [...this.connectedUsers, user.id];
-      this.logger.debug(this.connectedUsers);
-      this.server.emit('users', this.connectedUsers);
+      // this.connectedUsers = [...this.connectedUsers, user.id];
+      // this.logger.debug(this.connectedUsers);
+      // this.server.emit('online', this.connectedUsers);
     } catch (error) {
       this.logger.error(error);
-      this.server.emit('users', { error: error.response, message: error.message });
+      this.server.emit('online', { error: error.response, message: error.message });
     }
   }
 
   @UseFilters(new BaseWsExceptionFilter())
   @SubscribeMessage('message')
-  async onMessage(client, data: any) {
+  async onMessage(client: Socket, data: any) {
     const event: string = 'message';
-    const message = await this.conversationService.createMessage(data.conversationId, data.content, data.senderId);
-    client.broadcast.to(data.conversationId).emit(event, message);
+    try {
+      const message = await this.conversationService.createMessage(data.conversationId, data.content, data.senderId);
+      delete message.created_at;
+      delete message.updated_at;
+
+      delete message.sender.email;
+      delete message.sender.roles;
+      // delete message.sender.emailVerified;
+      delete message.sender.created_at;
+      delete message.sender.updated_at;
+
+      delete message.conversation.created_at;
+      delete message.conversation.updated_at;
+      this.logger.debug(message.content);
+      client.broadcast.to(data.conversationId).emit(event, message);
+    } catch (error) {
+      this.logger.error(error);
+      client.broadcast.to(client.id).emit(event, { error: error.response, message: error.message });
+    }
   }
 
   @SubscribeMessage('join')
