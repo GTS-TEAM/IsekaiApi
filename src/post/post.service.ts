@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOneOptions, In, Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 import { UserEntity } from '../user/user';
 import { PostDto } from './dto/post-request.dto';
 import { PostEntity } from './entity/post';
 import { LikeEntity } from 'src/post/entity/like';
 import { CommentEntity } from 'src/post/entity/comment';
-import { PostFields } from 'src/shared/constants/enum';
+import { PostResponseDto } from './dto/post-response.dto';
 
 @Injectable()
 export class PostService {
@@ -27,18 +27,26 @@ export class PostService {
     return this.postEntity.save(post);
   }
 
-  createPost(post: PostDto, user: UserEntity): Promise<PostEntity> {
+  async createPost(post: PostDto, user: UserEntity): Promise<PostResponseDto> {
     try {
-      const postEntity = this.postEntity.create(post);
-      postEntity.user = user;
-      return this.postEntity.save(postEntity);
+      const postSnapshot = this.postEntity.create(post);
+      postSnapshot.user = user;
+      const postRes = await this.postEntity.save(postSnapshot);
+      return {
+        ...postRes,
+        likes: 0,
+        comments: 0,
+        liked: false,
+      };
     } catch (error) {
       this.logger.error(error.message);
       throw new BadRequestException('Can not create post, try again later');
     }
   }
 
-  async deleteAll() {}
+  async deleteAllPost() {
+    this.postEntity.delete({});
+  }
 
   async createComment(postId: string, user: UserEntity, comment: string) {
     try {
@@ -50,10 +58,12 @@ export class PostService {
         user,
         post,
       });
-      await this.commentEntity.save(newComment);
+      const commentSnapshot = await this.commentEntity.save(newComment);
 
       post.comments.push(newComment);
-      await this.postEntity.save(post);
+      this.postEntity.save(post);
+      delete commentSnapshot.post;
+      return commentSnapshot;
     } catch (error) {
       this.logger.error(error);
       throw new BadRequestException('Can not create comment');
@@ -81,7 +91,7 @@ export class PostService {
       await this.postEntity.remove(post);
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException();
+      throw new BadRequestException(error.message);
     }
   }
 
@@ -110,10 +120,13 @@ export class PostService {
     return this.postEntity.save(post);
   }
 
-  async getUserTimeline(user: UserEntity) {
+  async getUserTimeline(user: UserEntity, page: number) {
     try {
       const postsSnapshot = await this.postEntity
         .createQueryBuilder('posts')
+        .orderBy('posts.created_at', 'DESC')
+        .skip(7 * (page - 1))
+        .take(7)
         .leftJoinAndSelect('posts.user', 'user')
         .loadRelationCountAndMap('posts.comments', 'posts.comments')
         .loadRelationCountAndMap('posts.likes', 'posts.likes')
@@ -123,7 +136,7 @@ export class PostService {
       return post;
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException('Can not get post');
+      throw new BadRequestException('Can not get post', error.message);
     }
   }
 
@@ -153,11 +166,14 @@ export class PostService {
     }
   }
   // get user post
-  async getUserPosts(userId: string) {
+  async getUserPosts(userId: string, page: number) {
     try {
       const post = await this.postEntity
         .createQueryBuilder('posts')
         .select(['posts', 'user.id'])
+        .orderBy('posts.created_at', 'DESC')
+        .skip(5 * page)
+        .take(5)
         .leftJoinAndSelect('posts.user', 'user')
         .loadRelationCountAndMap('posts.comments', 'posts.comments')
         .loadRelationCountAndMap('posts.likes', 'posts.likes')
@@ -193,7 +209,7 @@ export class PostService {
       },
     });
     if (!post) {
-      throw new BadRequestException();
+      throw new BadRequestException("You don't own this post");
     }
     return post;
   }
@@ -203,20 +219,15 @@ export class PostService {
    */
   // delete a comment
   async deleteComment(commentId: string, user: UserEntity) {
-    try {
-      const comment = await this.checkUserOwnsComment(commentId, user);
-      await this.commentEntity.remove(comment);
-    } catch (error) {
-      this.logger.error(error);
-      throw new BadRequestException();
-    }
+    const comment = await this.checkUserOwnsComment(commentId, user);
+    await this.commentEntity.remove(comment);
   }
   // check user owns comment
   async checkUserOwnsComment(commentId: string, user: UserEntity) {
     const comment = await this.commentEntity.findOneOrFail({ where: { id: commentId }, relations: ['user'] });
 
     if (comment.user.id !== user.id) {
-      throw new BadRequestException();
+      throw new BadRequestException("You can't delete this comment");
     }
     return comment;
   }
@@ -229,7 +240,7 @@ export class PostService {
       await this.commentEntity.save(commentToUpdate);
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException();
+      throw new BadRequestException(error, 'Can not update comment');
     }
   }
 }

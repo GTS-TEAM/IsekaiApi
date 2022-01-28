@@ -74,8 +74,8 @@ export class TokenService {
         }
         if (type === TokenType.VerifyEmailToken) {
           tokenDoc.active = false;
+          await this.tokenRepo.save(tokenDoc);
         }
-        await this.tokenRepo.save(tokenDoc);
         return tokenDoc.user;
       }
       return await this.userRepo.findOne({ where: { id: payload.sub } });
