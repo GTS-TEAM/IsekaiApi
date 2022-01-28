@@ -71,10 +71,12 @@ export class PostService {
   }
 
   // get post comments
-  async getPostComments(postId: string) {
+  async getPostComments(postId: string, offset: number) {
     try {
       const comments = await this.commentEntity
         .createQueryBuilder('comments')
+        .skip(5 * (offset - 1))
+        .take(5)
         .where('comments.post = :postId', { postId: postId })
         .leftJoinAndSelect('comments.user', 'user')
         .getMany();

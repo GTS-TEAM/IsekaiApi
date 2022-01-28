@@ -54,8 +54,8 @@ export class PostController {
    */
 
   @Get('/:postId/comments')
-  async getPostComments(@Param('postId') postId: string): Promise<CommentEntity[]> {
-    const comments = await this.postService.getPostComments(postId);
+  async getPostComments(@Param('postId') postId: string, @Query('offset') offset: number): Promise<CommentEntity[]> {
+    const comments = await this.postService.getPostComments(postId, offset);
     return comments;
   }
 
