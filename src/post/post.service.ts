@@ -24,6 +24,7 @@ export class PostService {
   updatePost(post: PostEntity, postDto: PostDto) {
     post.image = postDto.image;
     post.description = postDto.description;
+    post.emoji = postDto.emoji;
     return this.postEntity.save(post);
   }
 
@@ -66,7 +67,7 @@ export class PostService {
       return commentSnapshot;
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException('Can not create comment');
+      throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error);
     }
   }
 
@@ -83,7 +84,7 @@ export class PostService {
       return comments;
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException('Can not get post comments');
+      throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error);
     }
   }
 
@@ -93,7 +94,7 @@ export class PostService {
       await this.postEntity.remove(post);
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException(error.message);
+      throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error.message);
     }
   }
 
@@ -138,7 +139,7 @@ export class PostService {
       return post;
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException('Can not get post', error.message);
+      throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error.message);
     }
   }
 
@@ -174,7 +175,7 @@ export class PostService {
         .createQueryBuilder('posts')
         .select(['posts', 'user.id'])
         .orderBy('posts.created_at', 'DESC')
-        .skip(5 * page)
+        .skip(5 * (page - 1))
         .take(5)
         .leftJoinAndSelect('posts.user', 'user')
         .loadRelationCountAndMap('posts.comments', 'posts.comments')
@@ -185,7 +186,7 @@ export class PostService {
       return await this.checkLikedAndReturnPosts(post, userId);
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException('Can not get post');
+      throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error.message);
     }
   }
 
@@ -199,7 +200,7 @@ export class PostService {
     } catch (error) {
       this.logger.error(error);
 
-      throw new NotFoundException('Post not found');
+      throw new NotFoundException('Có lỗi xảy ra vui lòng thử lại', error.message);
     }
   }
 
@@ -224,6 +225,7 @@ export class PostService {
     const comment = await this.checkUserOwnsComment(commentId, user);
     await this.commentEntity.remove(comment);
   }
+
   // check user owns comment
   async checkUserOwnsComment(commentId: string, user: UserEntity) {
     const comment = await this.commentEntity.findOneOrFail({ where: { id: commentId }, relations: ['user'] });
@@ -242,7 +244,7 @@ export class PostService {
       await this.commentEntity.save(commentToUpdate);
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException(error, 'Can not update comment');
+      throw new BadRequestException('Can not update comment', error.message);
     }
   }
 }

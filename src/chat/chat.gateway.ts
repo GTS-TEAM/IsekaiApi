@@ -8,22 +8,23 @@ import {
   WebSocketServer,
   WsException,
 } from '@nestjs/websockets';
-import { Socket } from 'socket.io';
+import { Socket, Server } from 'socket.io';
 
 import { ConversationService } from 'src/conversation/conversation.service';
 import { TokenType } from '../shared/constants/enum';
 import { TokenService } from '../token/token.service';
 
-@WebSocketGateway({ path: '/api/chat/socket.io' })
+@WebSocketGateway({ path: '/api/socket.io' })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private logger = new Logger(ChatGateway.name);
   constructor(private tokenSerivce: TokenService, private readonly conversationService: ConversationService) {}
   @WebSocketServer()
-  server;
+  server: Server;
   // connectedUsers: string[] = [];
-  async handleDisconnect(client) {
+  async handleDisconnect(client: Socket) {
     try {
-      const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
+      client.handshake.query.token;
+      const user = await this.tokenSerivce.verifyToken(client.handshake.query.token as string, TokenType.AccessToken);
       this.logger.debug(user.username + ' disconnected');
     } catch (error) {}
   }
@@ -31,6 +32,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(client) {
     try {
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
+
+      //TODO: Set user is online
 
       this.logger.debug(user.username + ' connected');
 

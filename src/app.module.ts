@@ -54,6 +54,6 @@ import path from 'path/win32';
     EmailModule,
     ConversationModule,
   ],
-  providers: [AppService, ChatGateway],
+  providers: [AppService],
 })
 export class AppModule {}
