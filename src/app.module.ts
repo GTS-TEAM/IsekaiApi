@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppService } from './app.service';
-import { UsersModule } from './user/users.module';
+import { UserModule } from './user/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { config } from './config/config';
@@ -9,10 +9,10 @@ import { DatabaseConfig } from './config/database.config';
 import { PostModule } from './post/post.module';
 import { UploadModule } from './upload/upload.module';
 import { NotificationModule } from './notification/notification.module';
-import { ChatModule } from './chat/chat.module';
+import { EventModule } from './event/event.module';
 import { EmailModule } from './email/email.module';
 import { ConversationModule } from './conversation/conversation.module';
-import { ChatGateway } from './chat/chat.gateway';
+import { EventGateway } from './event/event.gateway';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import path from 'path/win32';
@@ -44,13 +44,14 @@ import path from 'path/win32';
         }),
       ],
     }),
-    UsersModule,
+    UserModule,
     AuthModule,
     PostModule,
     UploadModule,
     NotificationModule,
     // RedisCacheModule,
-    ChatModule,
+    NotificationModule,
+    EventModule,
     EmailModule,
     ConversationModule,
   ],

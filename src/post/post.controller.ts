@@ -49,10 +49,15 @@ export class PostController {
     await this.postService.likePost(postId, req.user);
   }
 
+  @Get('/:postId/likes')
+  async getPostLikes(@Param('postId') postId: string) {
+    const users = await this.postService.getPostLikes(postId);
+    return users;
+  }
+
   /**
    * COMMENT
    */
-
   @Get('/:postId/comments')
   async getPostComments(@Param('postId') postId: string, @Query('offset') offset: number): Promise<CommentEntity[]> {
     const comments = await this.postService.getPostComments(postId, offset);

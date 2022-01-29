@@ -15,12 +15,12 @@ export class UserService {
     @InjectRepository(UserEntity) private repo: Repository<UserEntity>, // @InjectRepository(UserFollowerEntity) // private userFollowerRepo: Repository<UserFollowerEntity>,
   ) {}
 
-  async checkIfUserHasConversation(user: UserEntity, friendId: string) {
+  async checkIfUserHasConversation(userId: string, friendId: string) {
     const thisUser = await this.repo
       .createQueryBuilder('users')
       .leftJoinAndSelect('users.conversations', 'conversations')
       .leftJoinAndSelect('conversations.members', 'members')
-      .where('users.id =:id', { id: user.id })
+      .where('users.id =:id', { id: userId })
       .getOne();
 
     const exist = thisUser?.conversations.some((conversation) => {
@@ -183,7 +183,8 @@ export class UserService {
   }
 
   // Change user avatar
-  async changeAvatar(user: UserEntity, avatar: string): Promise<UserEntity> {
+  async changeAvatar(userId: string, avatar: string): Promise<UserEntity> {
+    const user = await this.repo.findOne({ where: { id: userId } });
     user.profilePicture = avatar;
     return this.repo.save(user);
   }

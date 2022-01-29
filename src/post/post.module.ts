@@ -1,14 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { CommentEntity } from 'src/post/entity/comment';
-import { LikeEntity } from './entity/like';
+import { UserModule } from '../user/users.module';
 import { PostEntity } from './entity/post';
 import { PostController } from './post.controller';
 import { PostService } from './post.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PostEntity, LikeEntity, CommentEntity])],
+  imports: [TypeOrmModule.forFeature([PostEntity, CommentEntity]), UserModule],
   controllers: [PostController],
   providers: [PostService],
 })
