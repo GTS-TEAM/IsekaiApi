@@ -131,7 +131,6 @@ export class PostService {
 
     try {
       const user = await this.userRepo.findOne({ where: { id: userId } });
-      this.logger.debug(JSON.stringify(user));
       let like = post.likes.find((user) => user.id === userId);
       if (like) {
         const index = post.likes.indexOf(like);

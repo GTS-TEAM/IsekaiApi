@@ -13,7 +13,6 @@ import { RolesEnum } from '../shared/constants/enum';
 import { Tokens } from '../token/token.entity';
 import { classToPlain, Exclude } from 'class-transformer';
 import { PostEntity } from '../post/entity/post';
-import { LikeEntity } from '../post/entity/like';
 import { CommentEntity } from 'src/post/entity/comment';
 import { ApiProperty } from '@nestjs/swagger';
 import { NotificationEntity } from '../notification/notification';
@@ -69,8 +68,8 @@ export class UserEntity {
   @OneToMany(() => PostEntity, (post) => post.user, { onDelete: 'CASCADE' })
   posts: PostEntity[];
 
-  @OneToMany(() => PostEntity, (post) => post.likes, { onDelete: 'CASCADE' })
-  likes: LikeEntity[];
+  @ManyToMany(() => PostEntity, (post) => post.likes, { onDelete: 'CASCADE' })
+  likes: PostEntity[];
 
   @OneToMany(() => CommentEntity, (comment) => comment.user)
   comments: CommentEntity[];
