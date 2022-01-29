@@ -15,8 +15,8 @@ import { TokenType } from '../shared/constants/enum';
 import { TokenService } from '../token/token.service';
 
 @WebSocketGateway({ path: '/api/socket.io' })
-export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  private logger = new Logger(ChatGateway.name);
+export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  private logger = new Logger(EventGateway.name);
   constructor(private tokenSerivce: TokenService, private readonly conversationService: ConversationService) {}
   @WebSocketServer()
   server: Server;

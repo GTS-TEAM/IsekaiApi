@@ -17,9 +17,9 @@ export class ConversationService {
     private readonly userRepo: Repository<UserEntity>,
   ) {}
 
-  async getConversations(user: UserEntity): Promise<ConversationEntity[]> {
+  async getConversations(userId: string): Promise<ConversationEntity[]> {
     const thisUser = await this.userRepo.findOne({
-      where: { id: user.id },
+      where: { id: userId },
       relations: ['conversations'],
     });
 

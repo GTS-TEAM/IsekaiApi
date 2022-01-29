@@ -3,7 +3,7 @@ import { Expose } from 'class-transformer';
 import { RolesEnum } from '../../shared/constants/enum';
 
 export class UserDto {
-  @ApiProperty({ default: 1 })
+  @ApiProperty()
   @Expose()
   id: string;
 
@@ -22,6 +22,10 @@ export class UserDto {
   @ApiProperty({ default: RolesEnum.USER })
   @Expose()
   roles: RolesEnum;
+
+  @ApiProperty({ default: false })
+  @Expose()
+  online: boolean;
 
   // @ApiProperty({ default: false })
   // @Expose()

@@ -17,10 +17,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    const user = await this.userService.getOneUser(payload.sub);
+    // const user = await this.userService.getOneUser(payload.sub);
     // if (!user.emailVerified) {
     //   throw new BadRequestException('Email not verified');
     // }
-    return user;
+    return payload.sub;
   }
 }

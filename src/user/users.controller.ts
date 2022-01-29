@@ -50,8 +50,8 @@ export class UsersController {
 
   // Change user avatar
   @Put('/:userId/avatar')
-  async changeAvatar(@Request() req, @Param('userId') userId: string) {
-    return await this.userService.changeAvatar(req.user, userId);
+  async changeAvatar(@Request() req, @Body() body) {
+    return await this.userService.changeAvatar(req.user, body.avatar);
   }
 
   // @Post('addFriend')

@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { UserDto } from '../../user/dto/user.dto';
+import { UserEntity } from '../../user/user';
 
 export class PostResponseDto {
-  @ApiProperty({ type: UserDto })
-  user: UserDto;
+  @ApiProperty()
+  user: UserEntity;
 
   @ApiProperty()
   id: string;

@@ -13,6 +13,8 @@ export class AuthService {
     const user = await this.userService.findByEmail(userLoginDto.email);
     const isMatchPassword = this.userService.isMatchPassword(userLoginDto.password, user.password);
 
+    delete user.online;
+
     if (!isMatchPassword) {
       throw new UnauthorizedException('Password is incorrect');
     }
