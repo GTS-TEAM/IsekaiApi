@@ -64,3 +64,8 @@ export enum ConversationType {
   PRIVATE = 'private',
   GROUP = 'group',
 }
+
+export enum PhotoRouterType {
+  PROFILE = 'profile',
+  PHOTO = 'photo',
+}

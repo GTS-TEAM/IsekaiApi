@@ -6,6 +6,7 @@ import { PostDto } from './dto/post-request.dto';
 import { PostEntity } from './entity/post';
 import { CommentEntity } from 'src/post/entity/comment';
 import { PostResponseDto } from './dto/post-response.dto';
+import { PhotoRouterType } from '../shared/constants/enum';
 
 @Injectable()
 export class PostService {
@@ -19,6 +20,37 @@ export class PostService {
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>, // private readonly redisCache: RedisCacheService,
   ) {}
+  /**
+   * Query builder for get post
+   */
+
+  createQueryBuilderGetPost(offset: number) {
+    return this.postRepo
+      .createQueryBuilder('posts')
+      .orderBy('posts.created_at', 'DESC')
+      .skip(7 * (offset - 1))
+      .take(7)
+      .select([
+        'posts.id',
+        'posts.image',
+        'posts.description',
+        'posts.emoji',
+        'posts.created_at',
+        'posts.updated_at',
+        'user.id',
+        'user.profilePicture',
+        'user.username',
+        'user.background',
+        'user.bio',
+      ])
+      .leftJoin('posts.user', 'user')
+      .loadRelationCountAndMap('posts.comments', 'posts.comments')
+      .loadRelationCountAndMap('posts.likes', 'posts.likes');
+  }
+
+  /**
+   * END
+   */
 
   updatePost(post: PostEntity, postDto: PostDto) {
     post.image = postDto.image;
@@ -149,27 +181,7 @@ export class PostService {
 
   async getUserTimeline(userId: string, page: number) {
     try {
-      const postsSnapshot = await this.postRepo
-        .createQueryBuilder('posts')
-        .orderBy('posts.created_at', 'DESC')
-        .skip(7 * (page - 1))
-        .take(7)
-        .select([
-          'posts.id',
-          'posts.image',
-          'posts.description',
-          'posts.emoji',
-          'posts.created_at',
-          'posts.updated_at',
-          'user.id',
-          'user.profilePicture',
-          'user.username',
-          'user.background',
-        ])
-        .leftJoin('posts.user', 'user')
-        .loadRelationCountAndMap('posts.comments', 'posts.comments')
-        .loadRelationCountAndMap('posts.likes', 'posts.likes')
-        .getMany();
+      const postsSnapshot = await this.createQueryBuilderGetPost(page).getMany();
       // check if user already liked post
       const post = await this.checkLikedAndReturnPosts(postsSnapshot, userId);
       return post;
@@ -220,17 +232,7 @@ export class PostService {
   // get user post
   async getUserPosts(userId: string, page: number) {
     try {
-      const post = await this.postRepo
-        .createQueryBuilder('posts')
-        .select(['posts', 'user.id'])
-        .orderBy('posts.created_at', 'DESC')
-        .skip(5 * (page - 1))
-        .take(5)
-        .leftJoinAndSelect('posts.user', 'user')
-        .loadRelationCountAndMap('posts.comments', 'posts.comments')
-        .loadRelationCountAndMap('posts.likes', 'posts.likes')
-        .where('posts.user = :userId', { userId: userId })
-        .getMany();
+      const post = await this.createQueryBuilderGetPost(page).where('posts.user = :userId', { userId: userId }).getMany();
 
       return await this.checkLikedAndReturnPosts(post, userId);
     } catch (error) {
@@ -269,6 +271,7 @@ export class PostService {
   /**
    * COMMENT
    */
+
   // delete a comment
   async deleteComment(commentId: string, userId: string) {
     const comment = await this.checkUserOwnsComment(commentId, userId);
@@ -295,5 +298,22 @@ export class PostService {
       this.logger.error(error);
       throw new BadRequestException('Can not update comment', error.message);
     }
+  }
+
+  /**
+   * Profile
+   */
+
+  // Get user photos profile
+  async getUserPhotosProfile(userId: string, type: PhotoRouterType) {
+    const query = this.postRepo
+      .createQueryBuilder('posts')
+      .select(['posts.id', 'posts.image'])
+      .where('posts.user = :userId', { userId });
+    if (type === PhotoRouterType.PROFILE) {
+      query.limit(9);
+    }
+    const photos = await query.getMany();
+    return photos;
   }
 }

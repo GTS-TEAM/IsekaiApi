@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 
 import { image } from 'faker';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,6 +6,7 @@ import { FindOneOptions, Repository } from 'typeorm';
 import { UserRegisterDto } from './dto/user-register.dto';
 import { UserEntity } from './user';
 import * as bcrypt from 'bcryptjs';
+import { PostEntity } from '../post/entity/post';
 // import { PostEntity } from '../post/entity/post';
 // import { UserFollowerEntity } from 'src/user/user-follow';
 @Injectable()
@@ -69,11 +70,13 @@ export class UserService {
   }
 
   async findByEmail(email: string): Promise<UserEntity> {
-    const user = await this.repo.findOne({ where: { email } });
+    const user = await this.repo.findOne({
+      where: { email },
+      select: ['id', 'username', 'profilePicture', 'password'],
+    });
     if (!user) {
       throw new NotFoundException('Email not found');
     }
-    // const userPayload = this.getWholeUserEntity(user);
     return user;
   }
 
@@ -182,10 +185,42 @@ export class UserService {
     await this.repo.delete({});
   }
 
+  /**
+   * Profile
+   */
+
   // Change user avatar
   async changeAvatar(userId: string, avatar: string): Promise<UserEntity> {
     const user = await this.repo.findOne({ where: { id: userId } });
     user.profilePicture = avatar;
+    return this.repo.save(user);
+  }
+
+  //Change user name
+  async changeName(userId: string, name: string): Promise<UserEntity> {
+    const user = await this.repo.findOne({ where: { id: userId } });
+    user.username = name;
+    return this.repo.save(user);
+  }
+
+  // Change bio
+  async changeBio(userId: string, bio: string): Promise<UserEntity> {
+    const user = await this.repo.findOne({ where: { id: userId } });
+    user.bio = bio;
+    return this.repo.save(user);
+  }
+
+  // Change password
+  async changePassword(userId: string, password: string): Promise<UserEntity> {
+    const user = await this.repo.findOne({ where: { id: userId } });
+    user.password = password;
+    return this.repo.save(user);
+  }
+
+  // Change background
+  async changeBackground(userId: string, background: string): Promise<UserEntity> {
+    const user = await this.repo.findOne({ where: { id: userId } });
+    user.background = background;
     return this.repo.save(user);
   }
 }

@@ -1,7 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, Request, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CommentEntity } from 'src/post/entity/comment';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PhotoRouterType } from '../shared/constants/enum';
 import { CommentRequestDto } from './dto/comment.dto';
 import { PostDto } from './dto/post-request.dto';
 import { PostResponseDto } from './dto/post-response.dto';
@@ -34,13 +35,6 @@ export class PostController {
   @Get('/timeline/:page')
   async getTimeline(@Request() req, @Query('page') page: number) {
     const posts = await this.postService.getUserTimeline(req.user, page);
-    return posts;
-  }
-
-  @ApiOkResponse({ description: "Return user's post", type: PostResponseDto, isArray: true })
-  @Get('/profile/:userId')
-  async getUserPosts(@Param('userId') userId: string, @Query('page') page: number): Promise<PostEntity[]> {
-    const posts = await this.postService.getUserPosts(userId, page);
     return posts;
   }
 
@@ -86,6 +80,28 @@ export class PostController {
     const postPayload = await this.postService.updatePost(post, postDto);
     return postPayload;
   }
+
+  /**
+   * Profile
+   */
+
+  @ApiOkResponse({ description: "Return user's post", type: PostResponseDto, isArray: true })
+  @Get('/:userId')
+  async getUserPosts(@Param('userId') userId: string, @Query('page') page: number): Promise<PostEntity[]> {
+    const posts = await this.postService.getUserPosts(userId, page);
+    return posts;
+  }
+
+  // Get user photos profile
+  @ApiQuery({ name: 'type', enum: PhotoRouterType })
+  @Get('/:userId/photos')
+  async getUserPhotosProfile(@Param('userId') userId: string, @Query('type') type: PhotoRouterType) {
+    return await this.postService.getUserPhotosProfile(userId, type);
+  }
+
+  /**
+   * END
+   */
 
   @ApiOkResponse({ description: 'Delele all posts for dev' })
   @Delete('/delete/allpost/fordev')

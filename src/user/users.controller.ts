@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Logger, Param, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UserDto } from './dto/user.dto';
@@ -44,6 +44,12 @@ export class UsersController {
   //   return await this.userService.unFollowUser(req.user, userId);
   // }
 
+  // Change password
+  @Patch('/:userId/password')
+  async changePassword(@Request() req, @Body() body: { password: string }) {
+    return await this.userService.changePassword(req.user, body.password);
+  }
+
   /**
    * Profile
    */
@@ -54,6 +60,23 @@ export class UsersController {
     return await this.userService.changeAvatar(req.user, body.avatar);
   }
 
+  //Change user name
+  @Patch('/:userId/name')
+  async changeName(@Request() req, @Body() body) {
+    return await this.userService.changeName(req.user, body.name);
+  }
+
+  // Change bio
+  @Patch('/:userId/bio')
+  async changeBio(@Request() req, @Body() body: { bio: string }) {
+    return await this.userService.changeBio(req.user, body.bio);
+  }
+
+  // Change background
+  @Patch('/:userId/background')
+  async changeBackground(@Request() req, @Body() body: { background: string }) {
+    return await this.userService.changeBackground(req.user, body.background);
+  }
   // @Post('addFriend')
   // async addFriend(@Request() req, @Param('friendId') friendId: string) {
   //   await this.userService.addFriend(req.user, friendId);
