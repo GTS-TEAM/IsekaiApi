@@ -154,7 +154,19 @@ export class PostService {
         .orderBy('posts.created_at', 'DESC')
         .skip(7 * (page - 1))
         .take(7)
-        .leftJoinAndSelect('posts.user', 'user')
+        .select([
+          'posts.id',
+          'posts.image',
+          'posts.description',
+          'posts.emoji',
+          'posts.created_at',
+          'posts.updated_at',
+          'user.id',
+          'user.profilePicture',
+          'user.username',
+          'user.background',
+        ])
+        .leftJoin('posts.user', 'user')
         .loadRelationCountAndMap('posts.comments', 'posts.comments')
         .loadRelationCountAndMap('posts.likes', 'posts.likes')
         .getMany();
@@ -181,15 +193,24 @@ export class PostService {
       );
     } catch (error) {
       this.logger.error('Check', error.message);
+      throw new BadRequestException('Can not check user liked post');
     }
   }
   //check if user liked post
   async checkUserLikedPost(postId: string, userId: string) {
     try {
-      const like = await this.postRepo.findOne({
-        where: { post: { id: postId }, likes: { id: userId } },
-        relations: ['post', 'user'],
-      });
+      // const like = await this.postRepo.findOne({
+      //   where: { id: postId, likes: { id: userId } },
+      //   relations: ['likes'],
+      // });
+
+      const like = await this.postRepo
+        .createQueryBuilder('posts')
+        .where('posts.id = :postId', { postId: postId })
+        .andWhere('likes.id = :userId', { userId: userId })
+        .leftJoin('posts.likes', 'likes')
+        // .select(['posts.id', 'likes.id', 'likes.username', 'likes.profilePicture', 'likes.background'])
+        .getOne();
       return like ? true : false;
     } catch (error) {
       this.logger.error(error);

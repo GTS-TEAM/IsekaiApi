@@ -52,6 +52,11 @@ export class UserEntity {
   @ApiProperty()
   @Column({ default: false })
   online: boolean;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  bio: string;
+
   // @OneToMany(() => UserFollowerEntity, (uf) => uf.following)
   // followers: UserFollowerEntity[];
 
@@ -86,7 +91,7 @@ export class UserEntity {
   @OneToMany(() => MessageEntity, (message) => message.sender)
   messages: MessageEntity[];
 
-  @Exclude({ toPlainOnly: true })
+  @ApiProperty()
   @CreateDateColumn()
   created_at: Date;
 
