@@ -21,10 +21,11 @@ import { NotificationEntity } from '../notification/notification';
 // import { UserFollowerEntity } from 'src/user/user-follow';
 import { ConversationEntity } from 'src/conversation/entity/conversation';
 import { MessageEntity } from 'src/conversation/entity/message';
+
 @Entity('users')
 export class UserEntity {
   @ApiProperty()
-  @PrimaryColumn('varchar', { default: () => `'${1000000000000 + parseInt(customAlphabet('1234567890', 9)())}'` })
+  @PrimaryColumn({ type: 'varchar', length: 255 })
   id: string;
 
   @ApiProperty()
@@ -109,5 +110,12 @@ export class UserEntity {
   hashPassword() {
     const salt = bcrypt.genSaltSync();
     this.password = bcrypt.hashSync(this.password, salt);
+  }
+
+  @BeforeInsert()
+  generateId() {
+    const alphabet = '0123456789';
+    const id = customAlphabet(alphabet, 8);
+    this.id = (11000000000 + parseInt(id())).toString();
   }
 }
