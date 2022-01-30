@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ConversationType } from '../../shared/constants/enum';
 
 @Entity('conversations')
 export class ConversationEntity {
@@ -24,6 +25,9 @@ export class ConversationEntity {
 
   @OneToMany((type) => MessageEntity, (message) => message.conversation)
   messages: MessageEntity[];
+
+  @Column({ enum: ConversationType, default: ConversationType.PRIVATE })
+  type: ConversationType;
 
   @CreateDateColumn()
   created_at: Date;

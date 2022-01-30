@@ -7,7 +7,9 @@ import {
   UpdateDateColumn,
   OneToMany,
   ManyToMany,
+  PrimaryColumn,
 } from 'typeorm';
+import { customAlphabet } from 'nanoid';
 import * as bcrypt from 'bcryptjs';
 import { RolesEnum } from '../shared/constants/enum';
 import { Tokens } from '../token/token.entity';
@@ -22,7 +24,7 @@ import { MessageEntity } from 'src/conversation/entity/message';
 @Entity('users')
 export class UserEntity {
   @ApiProperty()
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('varchar', { default: () => `'${1000000000000 + parseInt(customAlphabet('1234567890', 9)())}'` })
   id: string;
 
   @ApiProperty()
@@ -67,7 +69,7 @@ export class UserEntity {
   @ManyToMany(() => UserEntity, (user) => user.friends)
   friends: UserEntity[];
 
-  @OneToMany(() => NotificationEntity, (user) => user.to)
+  @OneToMany(() => NotificationEntity, (user) => user.receiver)
   notifications: NotificationEntity[];
 
   @OneToMany(() => PostEntity, (post) => post.user, { onDelete: 'CASCADE' })

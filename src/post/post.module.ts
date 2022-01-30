@@ -10,5 +10,6 @@ import { PostService } from './post.service';
   imports: [TypeOrmModule.forFeature([PostEntity, CommentEntity]), UserModule],
   controllers: [PostController],
   providers: [PostService],
+  exports: [PostService, TypeOrmModule.forFeature([PostEntity, CommentEntity])],
 })
 export class PostModule {}

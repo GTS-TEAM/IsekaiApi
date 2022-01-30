@@ -77,6 +77,11 @@ export class UsersController {
   async changeBackground(@Request() req, @Body() body: { background: string }) {
     return await this.userService.changeBackground(req.user, body.background);
   }
+
+  /**
+   * END
+   */
+
   // @Post('addFriend')
   // async addFriend(@Request() req, @Param('friendId') friendId: string) {
   //   await this.userService.addFriend(req.user, friendId);
