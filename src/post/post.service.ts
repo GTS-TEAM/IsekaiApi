@@ -7,6 +7,7 @@ import { PostEntity } from './entity/post';
 import { CommentEntity } from 'src/post/entity/comment';
 import { PostResponseDto } from './dto/post-response.dto';
 import { PhotoRouterType } from '../shared/constants/enum';
+import { LikeService } from './like.service';
 
 @Injectable()
 export class PostService {
@@ -18,8 +19,10 @@ export class PostService {
     @InjectRepository(CommentEntity)
     private readonly commentRepo: Repository<CommentEntity>,
     @InjectRepository(UserEntity)
-    private readonly userRepo: Repository<UserEntity>, // private readonly redisCache: RedisCacheService,
-  ) {}
+    private readonly userRepo: Repository<UserEntity>,
+    private readonly likeService: LikeService,
+  ) // private readonly redisCache: RedisCacheService,
+  {}
   /**
    * Query builder for get post
    */
@@ -135,55 +138,11 @@ export class PostService {
     }
   }
 
-  // get post likes
-  async getPostLikes(postId: string) {
-    try {
-      const likes = await this.postRepo
-        .createQueryBuilder('posts')
-        .where('posts.id = :postId', { postId: postId })
-        .select(['posts.id', 'likes.id', 'likes.username', 'likes.profilePicture', 'likes.background'])
-        .leftJoin('posts.likes', 'likes')
-        .getMany();
-      return likes;
-    } catch (error) {
-      this.logger.error(error);
-      throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error.message);
-    }
-  }
-
-  async likePost(postId: string, userId: string) {
-    const post = await this.postRepo.findOne({
-      where: { id: postId },
-      relations: ['likes', 'comments', 'user'],
-    });
-
-    if (!post) {
-      throw new NotFoundException('Không tìm thấy bài viết');
-    }
-
-    try {
-      const user = await this.userRepo.findOne({ where: { id: userId } });
-      let like = post.likes.find((user) => user.id === userId);
-      if (like) {
-        const index = post.likes.indexOf(like);
-        post.likes.splice(index, 1);
-        await this.postRepo.save(post);
-      } else {
-        post.likes.push(user);
-        await this.postRepo.save(post);
-      }
-    } catch (error) {
-      this.logger.error(error);
-    }
-
-    return this.postRepo.save(post);
-  }
-
   async getUserTimeline(userId: string, page: number) {
     try {
       const postsSnapshot = await this.createQueryBuilderGetPost(page).getMany();
       // check if user already liked post
-      const post = await this.checkLikedAndReturnPosts(postsSnapshot, userId);
+      const post = await this.likeService.checkLikedAndReturnPosts(postsSnapshot, userId);
       return post;
     } catch (error) {
       this.logger.error(error);
@@ -191,50 +150,12 @@ export class PostService {
     }
   }
 
-  async checkLikedAndReturnPosts(posts: PostEntity[], userId: string) {
-    try {
-      return await Promise.all(
-        posts.map(async (post) => {
-          const check = await this.checkUserLikedPost(post.id, userId);
-          let liked = false;
-          if (check) {
-            liked = true;
-          }
-          return { ...post, liked };
-        }),
-      );
-    } catch (error) {
-      this.logger.error('Check', error.message);
-      throw new BadRequestException('Can not check user liked post');
-    }
-  }
-  //check if user liked post
-  async checkUserLikedPost(postId: string, userId: string) {
-    try {
-      // const like = await this.postRepo.findOne({
-      //   where: { id: postId, likes: { id: userId } },
-      //   relations: ['likes'],
-      // });
-
-      const like = await this.postRepo
-        .createQueryBuilder('posts')
-        .where('posts.id = :postId', { postId: postId })
-        .andWhere('likes.id = :userId', { userId: userId })
-        .leftJoin('posts.likes', 'likes')
-        // .select(['posts.id', 'likes.id', 'likes.username', 'likes.profilePicture', 'likes.background'])
-        .getOne();
-      return like ? true : false;
-    } catch (error) {
-      this.logger.error(error);
-      throw new BadRequestException('Can not check user liked post');
-    }
-  }
   // get user post
   async getUserPosts(userId: string, page: number) {
     try {
       const post = await this.createQueryBuilderGetPost(page).where('posts.user = :userId', { userId: userId }).getMany();
 
-      return await this.checkLikedAndReturnPosts(post, userId);
+      return await this.likeService.checkLikedAndReturnPosts(post, userId);
     } catch (error) {
       this.logger.error(error);
       throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error.message);

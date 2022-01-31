@@ -36,7 +36,7 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { REGISTER_SUCCESS } from './constant/response';
 import { RegisterResponseDto } from './dto/register-respose.dto';
-import { HttpExeptionDto } from '../error/error.dto';
+import { HttpExeptionDto } from '../shared/error/error.dto';
 import { TokenPayloadDto } from './dto/token-payload.dto';
 class DeactivateRefreshTokenDto {
   @ApiProperty()
@@ -46,7 +46,6 @@ class DeactivateRefreshTokenDto {
 @ApiTags('Authentication')
 @Controller('/auth')
 export class AuthController {
-  private logger = new Logger(AuthController.name);
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,

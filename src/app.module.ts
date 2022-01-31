@@ -14,6 +14,7 @@ import { EmailModule } from './email/email.module';
 import { ConversationModule } from './conversation/conversation.module';
 import { EventGateway } from './event/event.gateway';
 import { WinstonModule } from 'nest-winston';
+import { SearchModule } from './search/search.module';
 import * as winston from 'winston';
 import path from 'path/win32';
 @Module({
@@ -54,6 +55,7 @@ import path from 'path/win32';
     EventModule,
     EmailModule,
     ConversationModule,
+    SearchModule,
   ],
   providers: [AppService],
 })

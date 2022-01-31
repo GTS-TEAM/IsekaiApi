@@ -7,6 +7,7 @@ import { CommentRequestDto } from './dto/comment.dto';
 import { PostDto } from './dto/post-request.dto';
 import { PostResponseDto } from './dto/post-response.dto';
 import { PostEntity } from './entity/post';
+import { LikeService } from './like.service';
 import { PostService } from './post.service';
 
 @ApiTags('Post')
@@ -14,7 +15,7 @@ import { PostService } from './post.service';
 @ApiBearerAuth()
 @Controller('posts')
 export class PostController {
-  constructor(private readonly postService: PostService) {}
+  constructor(private readonly postService: PostService, private readonly likeService: LikeService) {}
 
   @ApiCreatedResponse({ description: 'Return 201 Created', type: PostResponseDto })
   @Post('/')
@@ -40,12 +41,12 @@ export class PostController {
 
   @Patch('/:postId/like')
   async updatePostLikes(@Param('postId') postId: string, @Request() req) {
-    await this.postService.likePost(postId, req.user);
+    await this.likeService.likePost(postId, req.user);
   }
 
   @Get('/:postId/likes')
   async getPostLikes(@Param('postId') postId: string) {
-    const users = await this.postService.getPostLikes(postId);
+    const users = await this.likeService.getPostLikes(postId);
     return users;
   }
 

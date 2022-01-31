@@ -1,0 +1,15 @@
+import { ApiProperty } from '@nestjs/swagger';
+
+export class UserResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  username: string;
+
+  @ApiProperty()
+  profilePicture: string;
+
+  //   @ApiProperty()
+  //   bio: string;
+}
