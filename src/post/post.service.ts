@@ -20,9 +20,8 @@ export class PostService {
     private readonly commentRepo: Repository<CommentEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
-    private readonly likeService: LikeService,
-  ) // private readonly redisCache: RedisCacheService,
-  {}
+    private readonly likeService: LikeService, // private readonly redisCache: RedisCacheService,
+  ) {}
   /**
    * Query builder for get post
    */
@@ -41,7 +40,7 @@ export class PostService {
         'posts.created_at',
         'posts.updated_at',
         'user.id',
-        'user.profilePicture',
+        'user.avatar',
         'user.username',
         'user.background',
         'user.bio',
@@ -76,7 +75,7 @@ export class PostService {
       };
     } catch (error) {
       this.logger.error(error.message);
-      throw new BadRequestException('Can not create post, try again later');
+      throw new BadRequestException('Can not create post, try again later', error.message);
     }
   }
 
@@ -107,7 +106,7 @@ export class PostService {
       return commentSnapshot;
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error);
+      throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error.message);
     }
   }
 
@@ -124,7 +123,7 @@ export class PostService {
       return comments;
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error);
+      throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error.message);
     }
   }
 

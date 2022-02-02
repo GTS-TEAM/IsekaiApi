@@ -8,7 +8,7 @@ export class UserResponseDto {
   username: string;
 
   @ApiProperty()
-  profilePicture: string;
+  avatar: string;
 
   //   @ApiProperty()
   //   bio: string;

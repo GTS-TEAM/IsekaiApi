@@ -61,14 +61,7 @@ export class ConversationService {
       .createQueryBuilder('messages')
       .leftJoinAndSelect('messages.conversation', 'conversations')
       .leftJoinAndSelect('messages.sender', 'users')
-      .select([
-        'users.id',
-        'users.username',
-        'users.profilePicture',
-        'messages.id',
-        'messages.content',
-        'messages.created_at',
-      ])
+      .select(['users.id', 'users.username', 'users.avatar', 'messages.id', 'messages.content', 'messages.created_at'])
       .andWhere('conversations.id = :conversationId', { conversationId })
       .getMany();
     return messages;

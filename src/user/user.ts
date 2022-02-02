@@ -46,7 +46,7 @@ export class UserEntity {
 
   @ApiProperty()
   @Column({ nullable: true })
-  profilePicture: string;
+  avatar: string;
 
   @ApiProperty()
   @Column({ nullable: true })

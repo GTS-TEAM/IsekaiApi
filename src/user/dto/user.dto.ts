@@ -17,7 +17,7 @@ export class UserDto {
 
   @ApiProperty({ default: 'https://' })
   @Expose()
-  profilePicture?: string;
+  avatar?: string;
 
   @ApiProperty({ default: RolesEnum.USER })
   @Expose()

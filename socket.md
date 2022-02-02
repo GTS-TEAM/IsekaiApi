@@ -28,7 +28,7 @@
     "sender": {
         "id": "f9285895-e8dc-446a-b5ba-c4209baf2fea",
         "username": "123",
-        "profilePicture": "http://placeimg.com/640/480"
+        "avatar": "http://placeimg.com/640/480"
     },
     "created_at": "2022-01-26T05:05:19.883Z",
     "updated_at": "2022-01-26T05:05:19.883Z"

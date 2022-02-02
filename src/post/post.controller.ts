@@ -33,7 +33,7 @@ export class PostController {
   }
 
   @ApiOkResponse({ description: 'Return list of posts', type: PostResponseDto, isArray: true })
-  @Get('/timeline/:page')
+  @Get('/timeline')
   async getTimeline(@Request() req, @Query('page') page: number) {
     const posts = await this.postService.getUserTimeline(req.user, page);
     return posts;

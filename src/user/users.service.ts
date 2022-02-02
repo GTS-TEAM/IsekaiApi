@@ -61,7 +61,7 @@ export class UserService {
       throw new UnauthorizedException('Email already in use');
     }
     const userDoc = this.repo.create(userRegisterDto);
-    userDoc.profilePicture = image.imageUrl();
+    userDoc.avatar = image.imageUrl();
     return this.repo.save(userDoc);
   }
 
@@ -72,7 +72,7 @@ export class UserService {
   async findByEmail(email: string): Promise<UserEntity> {
     const user = await this.repo.findOne({
       where: { email },
-      select: ['id', 'username', 'profilePicture', 'password'],
+      select: ['id', 'username', 'avatar', 'password'],
     });
     if (!user) {
       throw new NotFoundException('Email not found');
@@ -192,7 +192,7 @@ export class UserService {
   // Change user avatar
   async changeAvatar(userId: string, avatar: string): Promise<UserEntity> {
     const user = await this.repo.findOne({ where: { id: userId } });
-    user.profilePicture = avatar;
+    user.avatar = avatar;
     return this.repo.save(user);
   }
 

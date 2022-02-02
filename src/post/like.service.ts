@@ -20,7 +20,7 @@ export class LikeService {
       const likes = await this.postRepo
         .createQueryBuilder('posts')
         .where('posts.id = :postId', { postId: postId })
-        .select(['posts.id', 'likes.id', 'likes.username', 'likes.profilePicture', 'likes.background'])
+        .select(['posts.id', 'likes.id', 'likes.username', 'likes.avatar', 'likes.background'])
         .leftJoin('posts.likes', 'likes')
         .getMany();
       return likes;
@@ -88,7 +88,7 @@ export class LikeService {
         .where('posts.id = :postId', { postId: postId })
         .andWhere('likes.id = :userId', { userId: userId })
         .leftJoin('posts.likes', 'likes')
-        // .select(['posts.id', 'likes.id', 'likes.username', 'likes.profilePicture', 'likes.background'])
+        // .select(['posts.id', 'likes.id', 'likes.username', 'likes.avatar', 'likes.background'])
         .getOne();
       return like ? true : false;
     } catch (error) {
