@@ -8,7 +8,7 @@ import constants from '../../shared/constants/constants';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   private logger = new Logger(JwtStrategy.name);
-  constructor(private readonly configService: ConfigService, private readonly userService: UserService) {
+  constructor(private readonly configService: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: 'secret',
@@ -17,10 +17,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // const user = await this.userService.getOneUser(payload.sub);
-    // if (!user.emailVerified) {
-    //   throw new BadRequestException('Email not verified');
-    // }
     return payload.sub;
   }
 }

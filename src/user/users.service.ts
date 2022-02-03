@@ -7,6 +7,7 @@ import { UserRegisterDto } from './dto/user-register.dto';
 import { UserEntity } from './user';
 import * as bcrypt from 'bcryptjs';
 import { PostEntity } from '../post/entity/post';
+import { ChangeInfoDto } from './users.controller';
 // import { PostEntity } from '../post/entity/post';
 // import { UserFollowerEntity } from 'src/user/user-follow';
 @Injectable()
@@ -15,6 +16,19 @@ export class UserService {
   constructor(
     @InjectRepository(UserEntity) private repo: Repository<UserEntity>, // @InjectRepository(UserFollowerEntity) // private userFollowerRepo: Repository<UserFollowerEntity>,
   ) {}
+
+  /**
+   * COMMON
+   */
+
+  async getUserById(userId: string) {
+    let user = await this.repo.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException('Không tìm thấy người dùng');
+    }
+    return user;
+  }
 
   async checkIfUserHasConversation(userId: string, friendId: string) {
     const thisUser = await this.repo
@@ -31,7 +45,7 @@ export class UserService {
     if (exist) {
       return false;
     }
-    const friend = await this.repo.findOne({ where: { id: friendId } });
+    const friend = await this.getUserById(friendId);
     return friend;
   }
 
@@ -189,24 +203,14 @@ export class UserService {
    * Profile
    */
 
-  // Change user avatar
-  async changeAvatar(userId: string, avatar: string): Promise<UserEntity> {
-    const user = await this.repo.findOne({ where: { id: userId } });
-    user.avatar = avatar;
-    return this.repo.save(user);
-  }
+  async updateProfile(userId: string, profile: ChangeInfoDto): Promise<UserEntity> {
+    let user = await this.getUserById(userId);
 
-  //Change user name
-  async changeName(userId: string, name: string): Promise<UserEntity> {
-    const user = await this.repo.findOne({ where: { id: userId } });
-    user.username = name;
-    return this.repo.save(user);
-  }
-
-  // Change bio
-  async changeBio(userId: string, bio: string): Promise<UserEntity> {
-    const user = await this.repo.findOne({ where: { id: userId } });
-    user.bio = bio;
+    for (var key in profile) {
+      if (profile[key]) {
+        user[key] = profile[key];
+      }
+    }
     return this.repo.save(user);
   }
 
@@ -214,13 +218,6 @@ export class UserService {
   async changePassword(userId: string, password: string): Promise<UserEntity> {
     const user = await this.repo.findOne({ where: { id: userId } });
     user.password = password;
-    return this.repo.save(user);
-  }
-
-  // Change background
-  async changeBackground(userId: string, background: string): Promise<UserEntity> {
-    const user = await this.repo.findOne({ where: { id: userId } });
-    user.background = background;
     return this.repo.save(user);
   }
 }

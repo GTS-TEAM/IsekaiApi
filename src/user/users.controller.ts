@@ -1,11 +1,28 @@
 import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiProperty, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UserDto } from './dto/user.dto';
 
 import { UserService } from './users.service';
+
+export class ChangeInfoDto {
+  @ApiProperty({ nullable: true })
+  username?: string;
+
+  @ApiProperty({ nullable: true })
+  email?: string;
+
+  @ApiProperty({ nullable: true })
+  bio?: string;
+
+  @ApiProperty({ nullable: true })
+  avatar?: string;
+
+  @ApiProperty({ nullable: true })
+  background?: string;
+}
 @ApiTags('User')
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 @Controller('user')
 export class UsersController {
@@ -34,18 +51,18 @@ export class UsersController {
     return { message: 'All users deleted' };
   }
 
-  // @Put('/:userId/follow')
+  // @Put('/follow')
   // async followUser(@Request() req, @Param('userId') userId: string) {
   //   return await this.userService.followUser(req.user, userId);
   // }
 
-  // @Put('/:userId/unfollow')
+  // @Put('/unfollow')
   // async unfollowUser(@Request() req, @Param('userId') userId: string) {
   //   return await this.userService.unFollowUser(req.user, userId);
   // }
 
   // Change password
-  @Patch('/:userId/password')
+  @Patch('/password')
   async changePassword(@Request() req, @Body() body: { password: string }) {
     return await this.userService.changePassword(req.user, body.password);
   }
@@ -55,27 +72,15 @@ export class UsersController {
    */
 
   // Change user avatar
-  @Put('/:userId/avatar')
-  async changeAvatar(@Request() req, @Body() body) {
-    return await this.userService.changeAvatar(req.user, body.avatar);
-  }
+  // @Put('/info')
+  // async changeAvatar(@Request() req, @Body() body: { avatar: string }) {
+  //   return await this.userService.changeAvatar(req.user, body.avatar);
+  // }
 
-  //Change user name
-  @Patch('/:userId/name')
-  async changeName(@Request() req, @Body() body) {
-    return await this.userService.changeName(req.user, body.name);
-  }
-
-  // Change bio
-  @Patch('/:userId/bio')
-  async changeBio(@Request() req, @Body() body: { bio: string }) {
-    return await this.userService.changeBio(req.user, body.bio);
-  }
-
-  // Change background
-  @Patch('/:userId/background')
-  async changeBackground(@Request() req, @Body() body: { background: string }) {
-    return await this.userService.changeBackground(req.user, body.background);
+  // Update user information
+  @Patch('/info')
+  async changeInfo(@Request() req, @Body() infoDto: ChangeInfoDto) {
+    return await this.userService.updateProfile(req.user, infoDto);
   }
 
   /**
