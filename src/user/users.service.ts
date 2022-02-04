@@ -89,7 +89,7 @@ export class UserService {
       select: ['id', 'username', 'avatar', 'password', 'bio', 'background'],
     });
     if (!user) {
-      throw new NotFoundException('Email not found');
+      throw new NotFoundException('Không tìm thấy email');
     }
     return user;
   }

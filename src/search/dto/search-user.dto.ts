@@ -10,6 +10,9 @@ export class UserResponseDto {
   @ApiProperty()
   avatar: string;
 
-  //   @ApiProperty()
-  //   bio: string;
+  @ApiProperty()
+  background?: string;
+
+  @ApiProperty()
+  bio?: string;
 }
