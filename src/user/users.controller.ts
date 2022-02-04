@@ -71,12 +71,6 @@ export class UsersController {
    * Profile
    */
 
-  // Change user avatar
-  // @Put('/info')
-  // async changeAvatar(@Request() req, @Body() body: { avatar: string }) {
-  //   return await this.userService.changeAvatar(req.user, body.avatar);
-  // }
-
   // Update user information
   @Patch('/info')
   async changeInfo(@Request() req, @Body() infoDto: ChangeInfoDto) {

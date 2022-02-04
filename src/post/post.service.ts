@@ -46,8 +46,10 @@ export class PostService {
         'user.bio',
       ])
       .leftJoin('posts.user', 'user')
-      .loadRelationCountAndMap('posts.comments', 'posts.comments')
-      .loadRelationCountAndMap('posts.likes', 'posts.likes');
+      .loadRelationCountAndMap('posts.commentCount', 'posts.comments')
+      .loadRelationCountAndMap('posts.likeCount', 'posts.likes')
+      .leftJoinAndSelect('posts.likes', 'likes')
+      .limit(5);
   }
 
   /**
@@ -69,8 +71,8 @@ export class PostService {
       const postRes = await this.postRepo.save(postSnapshot);
       return {
         ...postRes,
-        likes: 0,
-        comments: 0,
+        likeCount: 0,
+        commentCount: 0,
         liked: false,
       };
     } catch (error) {
@@ -152,7 +154,7 @@ export class PostService {
   // get user post
   async getUserPosts(userId: string, page: number) {
     try {
-      const post = await this.createQueryBuilderGetPost(page).where('posts.user = :userId', { userId: userId }).getMany();
+      const post = await this.createQueryBuilderGetPost(page).where('posts.user = :userId', { userId: userId }).getRawMany();
 
       return await this.likeService.checkLikedAndReturnPosts(post, userId);
     } catch (error) {

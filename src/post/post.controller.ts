@@ -93,8 +93,9 @@ export class PostController {
     return posts;
   }
 
-  // Get user photos profile
+  // Get user photos
   @ApiQuery({ name: 'type', enum: PhotoRouterType })
+  @ApiOkResponse({ description: 'Get user photos', isArray: true })
   @Get('/:userId/photos')
   async getUserPhotosProfile(@Param('userId') userId: string, @Query('type') type: PhotoRouterType) {
     return await this.postService.getUserPhotosProfile(userId, type);
