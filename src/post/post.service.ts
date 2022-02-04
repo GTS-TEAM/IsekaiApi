@@ -48,8 +48,7 @@ export class PostService {
       .leftJoin('posts.user', 'user')
       .loadRelationCountAndMap('posts.commentCount', 'posts.comments')
       .loadRelationCountAndMap('posts.likeCount', 'posts.likes')
-      .leftJoinAndSelect('posts.likes', 'likes')
-      .limit(5);
+      .leftJoinAndSelect('posts.likes', 'likes');
   }
 
   /**

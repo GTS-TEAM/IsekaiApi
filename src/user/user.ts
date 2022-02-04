@@ -8,6 +8,7 @@ import {
   OneToMany,
   ManyToMany,
   PrimaryColumn,
+  JoinTable,
 } from 'typeorm';
 import { customAlphabet } from 'nanoid';
 import * as bcrypt from 'bcryptjs';
@@ -68,6 +69,7 @@ export class UserEntity {
 
   // friend
   @ManyToMany(() => UserEntity, (user) => user.friends)
+  @JoinTable()
   friends: UserEntity[];
 
   @OneToMany(() => NotificationEntity, (user) => user.receiver)
@@ -97,10 +99,6 @@ export class UserEntity {
   @ApiProperty()
   @CreateDateColumn()
   created_at: Date;
-
-  @Exclude({ toPlainOnly: true })
-  @UpdateDateColumn()
-  updated_at: Date;
 
   toJSON() {
     return classToPlain(this);

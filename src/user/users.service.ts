@@ -30,42 +30,33 @@ export class UserService {
     return user;
   }
 
-  async checkIfUserHasConversation(userId: string, friendId: string) {
-    const thisUser = await this.repo
-      .createQueryBuilder('users')
-      .leftJoinAndSelect('users.conversations', 'conversations')
-      .leftJoinAndSelect('conversations.members', 'members')
-      .where('users.id =:id', { id: userId })
-      .getOne();
-
-    const exist = thisUser?.conversations.some((conversation) => {
-      return conversation.members.map((member) => member.id).includes(friendId);
-    });
-
-    if (exist) {
-      return false;
-    }
-    const friend = await this.getUserById(friendId);
-    return friend;
-  }
-
-  async find(options?: FindOneOptions<UserEntity>): Promise<UserEntity[]> {
+  find(options?: FindOneOptions<UserEntity>): Promise<UserEntity[]> {
     return this.repo.find(options);
   }
 
-  async findOne(options?: FindOneOptions<UserEntity>): Promise<UserEntity> {
+  findOne(options?: FindOneOptions<UserEntity>): Promise<UserEntity> {
     return this.repo.findOne(options);
   }
 
-  async save(user: UserEntity): Promise<UserEntity> {
+  save(user: UserEntity): Promise<UserEntity> {
     return this.repo.save(user);
   }
 
-  // async userCreatePost(user: UserEntity, post: PostEntity): Promise<UserEntity> {
-  //   user.posts = user.posts || [];
-  //   user.posts.push(post);
-  //   return this.repo.save(user);
-  // }
+  async getUserRelaFriendsById(userId: string) {
+    const user = await this.repo.findOne({ where: { id: userId }, relations: ['friends'] });
+    if (!user) {
+      throw new UnauthorizedException('Không tìm thấy người dùng');
+    }
+    return user;
+  }
+
+  async deleteAllUsers(): Promise<void> {
+    await this.repo.delete({});
+  }
+
+  /**
+   * Authentication
+   */
 
   async createUserRegister(userRegisterDto: UserRegisterDto): Promise<UserEntity> {
     const user = await this.repo.findOne({
@@ -98,16 +89,27 @@ export class UserService {
     return bcrypt.compareSync(password, hashPassword);
   }
 
-  async findUserById(userId: string) {
-    return await this.repo.findOne({ where: { id: userId } });
-  }
+  /**
+   * Conversation
+   */
 
-  async getOneUser(userId: string) {
-    const user = await this.findUserById(userId);
-    // const userPayload = await this.getWholeUserEntity(user);
-    delete user.created_at;
-    delete user.updated_at;
-    return user;
+  async checkIfUserHasConversation(userId: string, friendId: string) {
+    const thisUser = await this.repo
+      .createQueryBuilder('users')
+      .leftJoinAndSelect('users.conversations', 'conversations')
+      .leftJoinAndSelect('conversations.members', 'members')
+      .where('users.id =:id', { id: userId })
+      .getOne();
+
+    const exist = thisUser?.conversations.some((conversation) => {
+      return conversation.members.map((member) => member.id).includes(friendId);
+    });
+
+    if (exist) {
+      return false;
+    }
+    const friend = await this.getUserById(friendId);
+    return friend;
   }
 
   // async getWholeUserEntity(user: UserEntity): Promise<any> {
@@ -134,19 +136,19 @@ export class UserService {
   //   }
   // }
 
-  getAllUsers(): Promise<UserEntity[]> {
-    return this.repo.find({});
-  }
-
   /**
-   * Friend request
+   * Friend
    */
 
-  async addFriend(user: UserEntity, friendId: string) {
+  async addFriend(userId: string, friendId: string) {
     const friend = await this.repo.findOne({ where: { id: friendId } });
     if (!friend) {
       throw new NotFoundException('Không tìm thấy người dùng');
     }
+    const user = await this.getUserRelaFriendsById(userId);
+
+    user.friends.push(friend);
+    await this.repo.save(user);
   }
 
   // follow user
@@ -195,9 +197,6 @@ export class UserService {
   // }
 
   // deleteAllUsers
-  async deleteAllUsers(): Promise<void> {
-    await this.repo.delete({});
-  }
 
   /**
    * Profile

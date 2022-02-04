@@ -32,7 +32,7 @@ export class UsersController {
   @ApiOkResponse({ description: 'Return user', type: UserDto })
   @Get()
   async getUser(@Query('userId') userId: string) {
-    const user = await this.userService.getOneUser(userId);
+    const user = await this.userService.getUserRelaFriendsById(userId);
     return user;
   }
 
@@ -78,11 +78,17 @@ export class UsersController {
   }
 
   /**
-   * END
+   * Friends
    */
 
-  // @Post('addFriend')
-  // async addFriend(@Request() req, @Param('friendId') friendId: string) {
-  //   await this.userService.addFriend(req.user, friendId);
+  @Post('/add-friend/:friendId')
+  async addFriend(@Request() req, @Param('friendId') friendId: string) {
+    await this.userService.addFriend(req.user, friendId);
+  }
+
+  // suggestFriends
+  // @Get('/suggestFriends')
+  // async suggestFriends(@Request() req) {
+  //   return await this.userService.suggestFriends(req.user);
   // }
 }

@@ -12,11 +12,9 @@ import { NotificationModule } from './notification/notification.module';
 import { EventModule } from './event/event.module';
 import { EmailModule } from './email/email.module';
 import { ConversationModule } from './conversation/conversation.module';
-import { EventGateway } from './event/event.gateway';
 import { WinstonModule } from 'nest-winston';
 import { SearchModule } from './search/search.module';
 import * as winston from 'winston';
-import path from 'path/win32';
 @Module({
   imports: [
     ConfigModule.forRoot({

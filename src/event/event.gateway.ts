@@ -57,7 +57,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       delete message.sender.roles;
       // delete message.sender.emailVerified;
       delete message.sender.created_at;
-      delete message.sender.updated_at;
 
       delete message.conversation.created_at;
       delete message.conversation.updated_at;
