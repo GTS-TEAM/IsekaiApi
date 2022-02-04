@@ -86,7 +86,7 @@ export class UserService {
   async findByEmail(email: string): Promise<UserEntity> {
     const user = await this.repo.findOne({
       where: { email },
-      select: ['id', 'username', 'avatar', 'password'],
+      select: ['id', 'username', 'avatar', 'password', 'bio', 'background'],
     });
     if (!user) {
       throw new NotFoundException('Email not found');
