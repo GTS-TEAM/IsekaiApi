@@ -154,7 +154,7 @@ export class PostService {
   // get user post
   async getUserPosts(userId: string, page: number) {
     try {
-      const post = await this.createQueryBuilderGetPost(page).where('posts.user = :userId', { userId: userId }).getRawMany();
+      const post = await this.createQueryBuilderGetPost(page).where('posts.user = :userId', { userId: userId }).getMany();
 
       return await this.likeService.checkLikedAndReturnPosts(post, userId);
     } catch (error) {
