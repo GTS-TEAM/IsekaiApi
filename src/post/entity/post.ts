@@ -32,7 +32,7 @@ export class PostEntity {
   user: UserEntity;
 
   @ApiProperty({ nullable: true })
-  @ManyToMany(() => UserEntity, (likes) => likes.likes, { onDelete: 'CASCADE' })
+  @ManyToMany(() => UserEntity, (likes) => likes.liked, { onDelete: 'CASCADE' })
   @JoinTable()
   likes: UserEntity[];
 

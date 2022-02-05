@@ -141,12 +141,10 @@ export class UserService {
    */
 
   async addFriend(userId: string, friendId: string) {
-    const friend = await this.repo.findOne({ where: { id: friendId } });
-    if (!friend) {
-      throw new NotFoundException('Không tìm thấy người dùng');
-    }
+    const friend = await this.getUserRelaFriendsById(friendId);
     const user = await this.getUserRelaFriendsById(userId);
 
+    friend.friends.push(user);
     user.friends.push(friend);
     await this.repo.save(user);
   }
@@ -206,7 +204,7 @@ export class UserService {
     let user = await this.getUserById(userId);
 
     for (var key in profile) {
-      if (profile[key]) {
+      if (profile[key] !== null && profile[key] !== undefined) {
         user[key] = profile[key];
       }
     }

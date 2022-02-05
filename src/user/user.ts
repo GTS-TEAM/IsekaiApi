@@ -9,6 +9,7 @@ import {
   ManyToMany,
   PrimaryColumn,
   JoinTable,
+  OneToOne,
 } from 'typeorm';
 import { customAlphabet } from 'nanoid';
 import * as bcrypt from 'bcryptjs';
@@ -79,7 +80,7 @@ export class UserEntity {
   posts: PostEntity[];
 
   @ManyToMany(() => PostEntity, (post) => post.likes, { onDelete: 'CASCADE' })
-  likes: PostEntity[];
+  liked: PostEntity[];
 
   @OneToMany(() => CommentEntity, (comment) => comment.user)
   comments: CommentEntity[];
