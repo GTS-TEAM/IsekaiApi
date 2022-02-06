@@ -17,28 +17,34 @@ class NotificationDto {
 @ApiTags('Notification')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
-@Controller('notif')
+@Controller()
 export class NotificationController {
   constructor(private readonly notifService: NotificationService) {}
 
   // get user notifications
-  @Get('/')
+  @Get('/notif')
   async getUserNotifications(@Request() req) {
     return await this.notifService.getUserNotifications(req.user);
   }
 
+  @ApiTags('Notifications')
+  @Get('/rela/:friendId')
+  async getFriendRelaStatus(@Request() req, @Param('friendId') friendId: string) {
+    return await this.notifService.getFriendRelaStatus(req.user, friendId);
+  }
+
   // send notification to user
-  @Post('/')
+  @Post('/notif')
   async sendNotification(@Request() req, @Body() notifDto: NotificationRequestDto) {
     // type: add friend
     // status: pendding
-    return await this.notifService.sendNotification(req.user, notifDto);
+    return await this.notifService.sendFriendRequest(req.user, notifDto);
   }
 
-  @Patch('/:id')
+  @Patch('/notif/:id')
   async updateNotification(@Request() req, @Param('id') id: string) {
     // type: add friend
     // status: pendding
-    return await this.notifService.updateNotification(req.user, id);
+    // return await this.notifService.updateNotification(req.user, id);
   }
 }

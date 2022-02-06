@@ -147,6 +147,7 @@ export class UserService {
     friend.friends.push(user);
     user.friends.push(friend);
     await this.repo.save(user);
+    this.repo.save(friend);
   }
 
   // follow user
@@ -217,4 +218,24 @@ export class UserService {
     user.password = password;
     return this.repo.save(user);
   }
+
+  // Check user is friend or not
+  async checkFriend(userId: string, friendId: string): Promise<boolean> {
+    const user = await this.getUserRelaFriendsById(userId);
+    const friend = await this.getUserById(friendId);
+    if (user.friends.includes(friend)) {
+      return true;
+    }
+    return false;
+  }
+
+  // Check user is following or not
+  // async checkFollowing(userId: string, friendId: string): Promise<boolean> {
+  //   const user = await this.getUserById(userId);
+  //   const friend = await this.getUserById(friendId);
+  //   if (user.following.includes(friend)) {
+  //     return true;
+  //   }
+  //   return false;
+  // }
 }
