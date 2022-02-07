@@ -1,6 +1,22 @@
-import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiProperty, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Logger,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  Req,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiProperty, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { FriendRequestResponse } from '../shared/constants/enum';
+import { ResponseRequestDto } from './dto/response-request.dto';
 import { UserDto } from './dto/user.dto';
 
 import { UserService } from './users.service';
@@ -81,16 +97,35 @@ export class UsersController {
    * Friends
    */
 
-  @Post('/add-friend/:friendId')
-  async addFriend(@Request() req, @Param('friendId') friendId: string) {
-    return await this.userService.sendFriendRequest(req.user, friendId);
+  @Post('/friend-request/send/:receiverId')
+  async sendFriendRequest(@Request() req, @Param('receiverId') receiverId: string) {
+    return await this.userService.sendFriendRequest(req.user, receiverId);
   }
 
-  @Get('/add-friend/')
+  @ApiQuery({ name: 'statusResponse', enum: FriendRequestResponse })
+  @Put('/friend-request/response/:requestId')
+  async responseFriendRequest(
+    @Request() req,
+    @Query('statusResponse') statusResponse: FriendRequestResponse,
+    @Param('requestId') requestId: string,
+  ) {
+    return await this.userService.responseFriendRequest(req.user, requestId, statusResponse);
+  }
+
+  @Get('/friend-request')
   async getFriendRequests(@Request() req) {
     return await this.userService.getFriendRequests(req.user);
   }
 
+  @Get('/friends/:id')
+  async getFriends(@Param('id') id: string) {
+    return await this.userService.getFriends(id);
+  }
+
+  @Delete('/friends/:id')
+  async deleteFriend(@Request() req, @Param('id') id: string) {
+    return await this.userService.deleteFriend(req.user, id);
+  }
   // suggestFriends
   // @Get('/suggestFriends')
   // async suggestFriends(@Request() req) {

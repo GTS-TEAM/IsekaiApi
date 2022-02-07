@@ -40,9 +40,10 @@ export class PostController {
   }
 
   @Get('/:postId')
-  async getPost(@Param('postId') postId: string) {
-    return await this.postService.getPost(postId);
+  async getPost(@Request() req, @Param('postId') postId: string) {
+    return await this.postService.getPost(req.user, postId);
   }
+
   @Patch('/:postId/like')
   async updatePostLikes(@Param('postId') postId: string, @Request() req) {
     await this.likeService.likePost(postId, req.user);
@@ -89,9 +90,8 @@ export class PostController {
   /**
    * Profile
    */
-
   @ApiOkResponse({ description: "Return user's post", type: PostResponseDto, isArray: true })
-  @Get('/:userId')
+  @Get('/user/:userId')
   async getUserPosts(@Param('userId') userId: string, @Query('page') page: number): Promise<PostEntity[]> {
     const posts = await this.postService.getUserPosts(userId, page);
     return posts;

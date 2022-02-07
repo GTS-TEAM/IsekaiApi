@@ -61,34 +61,6 @@ export class PostService {
     return this.postRepo.save(post);
   }
 
-  getPost(id: string) {
-    try {
-      return this.postRepo
-        .createQueryBuilder('posts')
-        .where('posts.id = :id', { id })
-        .select([
-          'posts.id',
-          'posts.image',
-          'posts.description',
-          'posts.emoji',
-          'posts.created_at',
-          'posts.updated_at',
-          'user.id',
-          'user.avatar',
-          'user.username',
-          'user.background',
-          'user.bio',
-        ])
-        .leftJoin('posts.user', 'user')
-        .loadRelationCountAndMap('posts.commentCount', 'posts.comments')
-        .loadRelationCountAndMap('posts.likeCount', 'posts.likes')
-        .leftJoinAndSelect('posts.likes', 'likes')
-        .getOneOrFail();
-    } catch (error) {
-      throw new NotFoundException('Có lỗi xảy ra vui lòng thử lại', error.message);
-    }
-  }
-
   async createPost(post: PostDto, userId: string): Promise<PostResponseDto> {
     try {
       const postSnapshot = this.postRepo.create(post);
@@ -169,8 +141,8 @@ export class PostService {
     try {
       const postsSnapshot = await this.createQueryBuilderGetPosts(page).getMany();
       // check if user already liked post
-      const post = await this.likeService.checkLikedAndReturnPosts(postsSnapshot, userId);
-      return post;
+      const posts = await this.likeService.checkLikedAndReturnPosts(postsSnapshot, userId);
+      return posts;
     } catch (error) {
       this.logger.error(error);
       throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error.message);
@@ -186,6 +158,35 @@ export class PostService {
     } catch (error) {
       this.logger.error(error);
       throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error.message);
+    }
+  }
+
+  async getPost(userId: string, id: string) {
+    try {
+      const postSnapshot = await this.postRepo
+        .createQueryBuilder('posts')
+        .where('posts.id = :id', { id })
+        .select([
+          'posts.id',
+          'posts.image',
+          'posts.description',
+          'posts.emoji',
+          'posts.created_at',
+          'posts.updated_at',
+          'user.id',
+          'user.avatar',
+          'user.username',
+          'user.background',
+          'user.bio',
+        ])
+        .leftJoin('posts.user', 'user')
+        .loadRelationCountAndMap('posts.commentCount', 'posts.comments')
+        .loadRelationCountAndMap('posts.likeCount', 'posts.likes')
+        .leftJoinAndSelect('posts.likes', 'likes')
+        .getOneOrFail();
+      return await this.likeService.checkLikedAndReturnPost(postSnapshot, userId);
+    } catch (error) {
+      throw new NotFoundException('Có lỗi xảy ra vui lòng thử lại', error.message);
     }
   }
 

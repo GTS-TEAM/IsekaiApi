@@ -4,7 +4,7 @@ import { UserEntity } from '../user';
 
 @Entity('request')
 export class FriendRequestEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: number;
 
   @ManyToOne(() => UserEntity, (userEntity) => userEntity.sentFriendRequests)

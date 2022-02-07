@@ -58,18 +58,23 @@ export class LikeService {
     return this.postRepo.save(post);
   }
 
+  async checkLikedAndReturnPost(post: PostEntity, userId: string) {
+    try {
+      const check = await this.checkUserLikedPost(post.id, userId);
+      let liked = false;
+      if (check) {
+        liked = true;
+      }
+      return { ...post, liked };
+    } catch (error) {
+      this.logger.error('Check', error.message);
+      throw new BadRequestException('Can not check user liked post');
+    }
+  }
+
   async checkLikedAndReturnPosts(posts: PostEntity[], userId: string) {
     try {
-      return await Promise.all(
-        posts.map(async (post) => {
-          const check = await this.checkUserLikedPost(post.id, userId);
-          let liked = false;
-          if (check) {
-            liked = true;
-          }
-          return { ...post, liked };
-        }),
-      );
+      return await Promise.all(posts.map(async (post) => await this.checkLikedAndReturnPost(post, userId)));
     } catch (error) {
       this.logger.error('Check', error.message);
       throw new BadRequestException('Can not check user liked post');

@@ -9,7 +9,7 @@ import * as bcrypt from 'bcryptjs';
 import { PostEntity } from '../post/entity/post';
 import { ChangeInfoDto } from './users.controller';
 import { FriendRequestEntity } from './entity/friend-request';
-import { FriendRequestStatus } from '../shared/constants/enum';
+import { FriendRequestResponse, FriendRequestStatus } from '../shared/constants/enum';
 // import { PostEntity } from '../post/entity/post';
 // import { UserFollowerEntity } from 'src/user/user-follow';
 @Injectable()
@@ -25,7 +25,7 @@ export class UserService {
    */
 
   async getUserById(userId: string) {
-    let user = await this.userRepo.findOne({ where: { id: userId } });
+    const user = await this.userRepo.findOne({ where: { id: userId } });
 
     if (!user) {
       throw new NotFoundException('Không tìm thấy người dùng');
@@ -143,7 +143,7 @@ export class UserService {
    * Friend
    */
 
-  getFriendStatus(creatorId: string, receiverId: string) {
+  getFriendRequest(creatorId: string, receiverId: string) {
     return this.friendRequestRepo.findOne({
       where: [
         { creator: creatorId, receiver: receiverId },
@@ -152,8 +152,22 @@ export class UserService {
     });
   }
 
-  getFriends(userId: string) {
-    return this.friendRequestRepo.find({ where: { creator: userId, status: FriendRequestStatus.ACCEPTED } });
+  async getFriends(userId: string) {
+    const friendRequestPayload = await this.friendRequestRepo.find({
+      where: [
+        { creator: userId, status: FriendRequestStatus.ACCEPTED },
+        { receiver: userId, status: FriendRequestStatus.ACCEPTED },
+      ],
+      relations: ['creator', 'receiver'],
+    });
+
+    const friends = friendRequestPayload.map((friend) => {
+      if (friend.creator.id === userId) {
+        return friend.receiver;
+      }
+      return friend.creator;
+    });
+    return friends;
   }
 
   getFriendRequests(userId: string): Promise<FriendRequestEntity[]> {
@@ -165,7 +179,7 @@ export class UserService {
       throw new BadRequestException('Không thể kết bạn với bản thân !');
     }
 
-    const frq = await this.getFriendStatus(userId, friendId);
+    const frq = await this.getFriendRequest(userId, friendId);
     if (frq) {
       throw new BadRequestException('Bạn đã gửi yêu cầu kết bạn');
     }
@@ -175,6 +189,36 @@ export class UserService {
     return this.friendRequestRepo.save({ creator: user, receiver: friend, status: FriendRequestStatus.PENDING });
   }
 
+  async responseFriendRequest(userId: string, friendRequestId: string, status: FriendRequestResponse) {
+    const frq = await this.friendRequestRepo.findOne({
+      where: { id: friendRequestId, receiver: userId },
+      relations: ['creator', 'receiver'],
+    });
+    if (!frq) {
+      throw new BadRequestException('Không tìm thấy yêu cầu kết bạn');
+    }
+    if (frq.status === FriendRequestStatus.ACCEPTED) {
+      throw new BadRequestException('Yêu cầu kết bạn đã được chấp nhận');
+    }
+
+    if (status === FriendRequestResponse.REJECTED) {
+      frq.status = FriendRequestStatus.ACCEPTED;
+
+      await this.friendRequestRepo.delete(frq);
+      return;
+    }
+
+    frq.status = FriendRequestStatus.ACCEPTED;
+    return this.friendRequestRepo.save(frq);
+  }
+
+  async deleteFriend(userId: string, friendId: string) {
+    const friendRequest = await this.getFriendRequest(userId, friendId);
+    if (!friendRequest) {
+      throw new BadRequestException('Không tìm thấy yêu cầu kết bạn');
+    }
+    return this.friendRequestRepo.delete(friendRequest);
+  }
   // follow user
   // async followUser(user: any, friendId: string): Promise<UserEntity> {
   //   try {
