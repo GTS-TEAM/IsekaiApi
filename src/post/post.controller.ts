@@ -39,6 +39,10 @@ export class PostController {
     return posts;
   }
 
+  @Get('/:postId')
+  async getPost(@Param('postId') postId: string) {
+    return await this.postService.getPost(postId);
+  }
   @Patch('/:postId/like')
   async updatePostLikes(@Param('postId') postId: string, @Request() req) {
     await this.likeService.likePost(postId, req.user);

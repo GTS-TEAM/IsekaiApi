@@ -26,7 +26,7 @@ export class PostService {
    * Query builder for get post
    */
 
-  createQueryBuilderGetPost(offset: number) {
+  createQueryBuilderGetPosts(offset: number) {
     return this.postRepo
       .createQueryBuilder('posts')
       .orderBy('posts.created_at', 'DESC')
@@ -52,14 +52,41 @@ export class PostService {
   }
 
   /**
-   * END
+   * POST
    */
-
   updatePost(post: PostEntity, postDto: PostDto) {
     post.image = postDto.image;
     post.description = postDto.description;
     post.emoji = postDto.emoji;
     return this.postRepo.save(post);
+  }
+
+  getPost(id: string) {
+    try {
+      return this.postRepo
+        .createQueryBuilder('posts')
+        .where('posts.id = :id', { id })
+        .select([
+          'posts.id',
+          'posts.image',
+          'posts.description',
+          'posts.emoji',
+          'posts.created_at',
+          'posts.updated_at',
+          'user.id',
+          'user.avatar',
+          'user.username',
+          'user.background',
+          'user.bio',
+        ])
+        .leftJoin('posts.user', 'user')
+        .loadRelationCountAndMap('posts.commentCount', 'posts.comments')
+        .loadRelationCountAndMap('posts.likeCount', 'posts.likes')
+        .leftJoinAndSelect('posts.likes', 'likes')
+        .getOneOrFail();
+    } catch (error) {
+      throw new NotFoundException('Có lỗi xảy ra vui lòng thử lại', error.message);
+    }
   }
 
   async createPost(post: PostDto, userId: string): Promise<PostResponseDto> {
@@ -140,7 +167,7 @@ export class PostService {
 
   async getUserTimeline(userId: string, page: number) {
     try {
-      const postsSnapshot = await this.createQueryBuilderGetPost(page).getMany();
+      const postsSnapshot = await this.createQueryBuilderGetPosts(page).getMany();
       // check if user already liked post
       const post = await this.likeService.checkLikedAndReturnPosts(postsSnapshot, userId);
       return post;
@@ -153,7 +180,7 @@ export class PostService {
   // get user post
   async getUserPosts(userId: string, page: number) {
     try {
-      const post = await this.createQueryBuilderGetPost(page).where('posts.user = :userId', { userId: userId }).getMany();
+      const post = await this.createQueryBuilderGetPosts(page).where('posts.user = :userId', { userId: userId }).getMany();
 
       return await this.likeService.checkLikedAndReturnPosts(post, userId);
     } catch (error) {

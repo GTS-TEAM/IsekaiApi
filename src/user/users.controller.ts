@@ -83,7 +83,12 @@ export class UsersController {
 
   @Post('/add-friend/:friendId')
   async addFriend(@Request() req, @Param('friendId') friendId: string) {
-    await this.userService.addFriend(req.user, friendId);
+    return await this.userService.sendFriendRequest(req.user, friendId);
+  }
+
+  @Get('/add-friend/')
+  async getFriendRequests(@Request() req) {
+    return await this.userService.getFriendRequests(req.user);
   }
 
   // suggestFriends
