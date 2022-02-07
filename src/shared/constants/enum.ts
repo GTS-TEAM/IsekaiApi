@@ -50,7 +50,6 @@ export enum CommentType {
 }
 
 export enum NotiType {
-  USER_REQUEST = 'userRequest',
   FRIEND_REQUEST = 'friendRequest',
   FRIEND_ACCEPTED = 'friendAccepted',
   POST_COMMENT = 'postComment',

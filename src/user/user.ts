@@ -23,6 +23,7 @@ import { NotificationEntity } from '../notification/notification';
 // import { UserFollowerEntity } from 'src/user/user-follow';
 import { ConversationEntity } from 'src/conversation/entity/conversation';
 import { MessageEntity } from 'src/conversation/entity/message';
+import { FriendRequestEntity } from './entity/friend-request';
 
 @Entity('users')
 export class UserEntity {
@@ -96,6 +97,12 @@ export class UserEntity {
 
   @OneToMany(() => MessageEntity, (message) => message.sender)
   messages: MessageEntity[];
+
+  @OneToMany(() => FriendRequestEntity, (friendRequest) => friendRequest.creator)
+  receivedFriendRequests: FriendRequestEntity[];
+
+  @OneToMany(() => FriendRequestEntity, (friendRequest) => friendRequest.receiver)
+  sentFriendRequests: FriendRequestEntity[];
 
   @ApiProperty()
   @CreateDateColumn()

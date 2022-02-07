@@ -8,13 +8,16 @@ import { UserEntity } from './user';
 import * as bcrypt from 'bcryptjs';
 import { PostEntity } from '../post/entity/post';
 import { ChangeInfoDto } from './users.controller';
+import { FriendRequestEntity } from './entity/friend-request';
+import { FriendRequestResponse, FriendRequestStatus } from '../shared/constants/enum';
 // import { PostEntity } from '../post/entity/post';
 // import { UserFollowerEntity } from 'src/user/user-follow';
 @Injectable()
 export class UserService {
   private logger = new Logger(UserService.name);
   constructor(
-    @InjectRepository(UserEntity) private repo: Repository<UserEntity>, // @InjectRepository(UserFollowerEntity) // private userFollowerRepo: Repository<UserFollowerEntity>,
+    @InjectRepository(UserEntity) private userRepo: Repository<UserEntity>,
+    @InjectRepository(FriendRequestEntity) private friendRequestRepo: Repository<FriendRequestEntity>, // @InjectRepository(UserFollowerEntity) // private userFollowerRepo: Repository<UserFollowerEntity>,
   ) {}
 
   /**
@@ -22,7 +25,7 @@ export class UserService {
    */
 
   async getUserById(userId: string) {
-    let user = await this.repo.findOne({ where: { id: userId } });
+    const user = await this.userRepo.findOne({ where: { id: userId } });
 
     if (!user) {
       throw new NotFoundException('Không tìm thấy người dùng');
@@ -31,19 +34,19 @@ export class UserService {
   }
 
   find(options?: FindOneOptions<UserEntity>): Promise<UserEntity[]> {
-    return this.repo.find(options);
+    return this.userRepo.find(options);
   }
 
   findOne(options?: FindOneOptions<UserEntity>): Promise<UserEntity> {
-    return this.repo.findOne(options);
+    return this.userRepo.findOne(options);
   }
 
   save(user: UserEntity): Promise<UserEntity> {
-    return this.repo.save(user);
+    return this.userRepo.save(user);
   }
 
   async getUserRelaFriendsById(userId: string) {
-    const user = await this.repo.findOne({ where: { id: userId }, relations: ['friends'] });
+    const user = await this.userRepo.findOne({ where: { id: userId }, relations: ['friends'] });
     if (!user) {
       throw new UnauthorizedException('Không tìm thấy người dùng');
     }
@@ -51,7 +54,7 @@ export class UserService {
   }
 
   async deleteAllUsers(): Promise<void> {
-    await this.repo.delete({});
+    await this.userRepo.delete({});
   }
 
   /**
@@ -59,23 +62,23 @@ export class UserService {
    */
 
   async createUserRegister(userRegisterDto: UserRegisterDto): Promise<UserEntity> {
-    const user = await this.repo.findOne({
+    const user = await this.userRepo.findOne({
       where: { email: userRegisterDto.email },
     });
     if (user) {
       throw new UnauthorizedException('Email already in use');
     }
-    const userDoc = this.repo.create(userRegisterDto);
+    const userDoc = this.userRepo.create(userRegisterDto);
     userDoc.avatar = image.imageUrl();
-    return this.repo.save(userDoc);
+    return this.userRepo.save(userDoc);
   }
 
   async createUser(user: UserEntity): Promise<UserEntity> {
-    return this.repo.save(user);
+    return this.userRepo.save(user);
   }
 
   async findByEmail(email: string): Promise<UserEntity> {
-    const user = await this.repo.findOne({
+    const user = await this.userRepo.findOne({
       where: { email },
       select: ['id', 'username', 'avatar', 'password', 'bio', 'background'],
     });
@@ -94,7 +97,7 @@ export class UserService {
    */
 
   async checkIfUserHasConversation(userId: string, friendId: string) {
-    const thisUser = await this.repo
+    const thisUser = await this.userRepo
       .createQueryBuilder('users')
       .leftJoinAndSelect('users.conversations', 'conversations')
       .leftJoinAndSelect('conversations.members', 'members')
@@ -140,16 +143,82 @@ export class UserService {
    * Friend
    */
 
-  async addFriend(userId: string, friendId: string) {
-    const friend = await this.getUserRelaFriendsById(friendId);
-    const user = await this.getUserRelaFriendsById(userId);
-
-    friend.friends.push(user);
-    user.friends.push(friend);
-    await this.repo.save(user);
-    this.repo.save(friend);
+  getFriendRequest(creatorId: string, receiverId: string) {
+    return this.friendRequestRepo.findOne({
+      where: [
+        { creator: creatorId, receiver: receiverId },
+        { creator: receiverId, receiver: creatorId },
+      ],
+    });
   }
 
+  async getFriends(userId: string) {
+    const friendRequestPayload = await this.friendRequestRepo.find({
+      where: [
+        { creator: userId, status: FriendRequestStatus.ACCEPTED },
+        { receiver: userId, status: FriendRequestStatus.ACCEPTED },
+      ],
+      relations: ['creator', 'receiver'],
+    });
+
+    const friends = friendRequestPayload.map((friend) => {
+      if (friend.creator.id === userId) {
+        return friend.receiver;
+      }
+      return friend.creator;
+    });
+    return friends;
+  }
+
+  getFriendRequests(userId: string): Promise<FriendRequestEntity[]> {
+    return this.friendRequestRepo.find({ where: [{ receiver: userId }] });
+  }
+
+  async sendFriendRequest(userId: string, friendId: string) {
+    if (userId == friendId) {
+      throw new BadRequestException('Không thể kết bạn với bản thân !');
+    }
+
+    const frq = await this.getFriendRequest(userId, friendId);
+    if (frq) {
+      throw new BadRequestException('Bạn đã gửi yêu cầu kết bạn');
+    }
+
+    const user = await this.getUserById(userId);
+    const friend = await this.getUserById(friendId);
+    return this.friendRequestRepo.save({ creator: user, receiver: friend, status: FriendRequestStatus.PENDING });
+  }
+
+  async responseFriendRequest(userId: string, friendRequestId: string, status: FriendRequestResponse) {
+    const frq = await this.friendRequestRepo.findOne({
+      where: { id: friendRequestId, receiver: userId },
+      relations: ['creator', 'receiver'],
+    });
+    if (!frq) {
+      throw new BadRequestException('Không tìm thấy yêu cầu kết bạn');
+    }
+    if (frq.status === FriendRequestStatus.ACCEPTED) {
+      throw new BadRequestException('Yêu cầu kết bạn đã được chấp nhận');
+    }
+
+    if (status === FriendRequestResponse.REJECTED) {
+      frq.status = FriendRequestStatus.ACCEPTED;
+
+      await this.friendRequestRepo.delete(frq);
+      return;
+    }
+
+    frq.status = FriendRequestStatus.ACCEPTED;
+    return this.friendRequestRepo.save(frq);
+  }
+
+  async deleteFriend(userId: string, friendId: string) {
+    const friendRequest = await this.getFriendRequest(userId, friendId);
+    if (!friendRequest) {
+      throw new BadRequestException('Không tìm thấy yêu cầu kết bạn');
+    }
+    return this.friendRequestRepo.delete(friendRequest);
+  }
   // follow user
   // async followUser(user: any, friendId: string): Promise<UserEntity> {
   //   try {
@@ -209,14 +278,14 @@ export class UserService {
         user[key] = profile[key];
       }
     }
-    return this.repo.save(user);
+    return this.userRepo.save(user);
   }
 
   // Change password
   async changePassword(userId: string, password: string): Promise<UserEntity> {
-    const user = await this.repo.findOne({ where: { id: userId } });
+    const user = await this.userRepo.findOne({ where: { id: userId } });
     user.password = password;
-    return this.repo.save(user);
+    return this.userRepo.save(user);
   }
 
   // Check user is friend or not
