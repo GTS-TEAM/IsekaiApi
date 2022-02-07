@@ -55,6 +55,34 @@ export class PostService {
    * END
    */
 
+  getPost(id: string) {
+    try {
+      return this.postRepo
+        .createQueryBuilder('posts')
+        .where('posts.id = :id', { id })
+        .select([
+          'posts.id',
+          'posts.image',
+          'posts.description',
+          'posts.emoji',
+          'posts.created_at',
+          'posts.updated_at',
+          'user.id',
+          'user.avatar',
+          'user.username',
+          'user.background',
+          'user.bio',
+        ])
+        .leftJoin('posts.user', 'user')
+        .loadRelationCountAndMap('posts.commentCount', 'posts.comments')
+        .loadRelationCountAndMap('posts.likeCount', 'posts.likes')
+        .leftJoinAndSelect('posts.likes', 'likes')
+        .getOneOrFail();
+    } catch (error) {
+      throw new NotFoundException('Có lỗi xảy ra vui lòng thử lại', error.message);
+    }
+  }
+
   updatePost(post: PostEntity, postDto: PostDto) {
     post.image = postDto.image;
     post.description = postDto.description;
