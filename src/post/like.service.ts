@@ -78,9 +78,9 @@ export class LikeService {
       return await Promise.all(
         posts.map(async (post) => {
           const postSnapshot = await this.checkLikedAndReturnPost(post, userId);
-          postSnapshot.user.avatar = resizeAvatar(50, 50, postSnapshot.user.avatar);
+          postSnapshot.user.avatar = resizeAvatar(40, 40, postSnapshot.user.avatar);
           postSnapshot.likes.forEach((userLiked) => {
-            userLiked.avatar = resizeAvatar(50, 50, userLiked.avatar);
+            userLiked.avatar = resizeAvatar(40, 40, userLiked.avatar);
           });
           return postSnapshot;
         }),

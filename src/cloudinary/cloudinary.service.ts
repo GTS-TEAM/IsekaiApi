@@ -16,4 +16,15 @@ export class CloudinaryService {
       Readable.from(file.buffer).pipe(upload);
     });
   }
+
+  async uploadFile(file: Express.Multer.File): Promise<UploadApiResponse | UploadApiErrorResponse> {
+    return new Promise((resolve, reject) => {
+      v2.uploader
+        .upload_stream({ resource_type: 'raw' }, (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        })
+        .end(file.buffer);
+    });
+  }
 }
