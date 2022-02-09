@@ -1,20 +1,7 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  Logger,
-  NotFoundException,
-  Post,
-  Query,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Query, Res, UseGuards } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
-  ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiProperty,
@@ -22,22 +9,22 @@ import {
 } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { Response } from 'express';
+import { EmailService } from 'src/email/email.service';
 import { Roles } from 'src/shared/decorators/roles.decorator';
 import { RolesGuard } from 'src/shared/guards/roles.guard';
-import { EmailService } from 'src/email/email.service';
 import { RolesEnum, TokenType } from '../shared/constants/enum';
+import { HttpExeptionDto } from '../shared/error/error.dto';
 import { TokenService } from '../token/token.service';
 import { UserLoginDto } from '../user/dto/user-login.dto';
 import { UserRegisterDto } from '../user/dto/user-register.dto';
 import { UserService } from '../user/users.service';
 import { AuthService } from './auth.service';
+import { REGISTER_SUCCESS } from './constant/response';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { REGISTER_SUCCESS } from './constant/response';
 import { RegisterResponseDto } from './dto/register-respose.dto';
-import { HttpExeptionDto } from '../shared/error/error.dto';
 import { TokenPayloadDto } from './dto/token-payload.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 class DeactivateRefreshTokenDto {
   @ApiProperty()
   @Expose()

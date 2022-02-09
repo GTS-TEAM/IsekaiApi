@@ -14,6 +14,6 @@ export class UploadController {
   @UseInterceptors(FilesInterceptor('files'))
   async uploadMultiFiles(@UploadedFiles() files: Array<Express.Multer.File>) {
     const uploadApiRes = await this.uploadService.uploadImageToCloudinary(files);
-    return { urls: uploadApiRes.map((res) => res.url) };
+    return { urls: uploadApiRes.map((res) => res.secure_url) };
   }
 }

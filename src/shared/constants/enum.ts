@@ -68,3 +68,9 @@ export enum PhotoRouterType {
   PROFILE = 'profile',
   PHOTO = 'photo',
 }
+
+export enum PostType {
+  AVATAR = 'avatar',
+  SHARE = 'share',
+  POST = 'post',
+}

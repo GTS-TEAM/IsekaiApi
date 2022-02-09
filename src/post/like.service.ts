@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { resizeAvatar } from '../shared/utils/resize-image';
 import { UserEntity } from '../user/user';
 import { PostEntity } from './entity/post';
 
@@ -74,7 +75,16 @@ export class LikeService {
 
   async checkLikedAndReturnPosts(posts: PostEntity[], userId: string) {
     try {
-      return await Promise.all(posts.map(async (post) => await this.checkLikedAndReturnPost(post, userId)));
+      return await Promise.all(
+        posts.map(async (post) => {
+          const postSnapshot = await this.checkLikedAndReturnPost(post, userId);
+          postSnapshot.user.avatar = resizeAvatar(50, 50, postSnapshot.user.avatar);
+          postSnapshot.likes.forEach((userLiked) => {
+            userLiked.avatar = resizeAvatar(50, 50, userLiked.avatar);
+          });
+          return postSnapshot;
+        }),
+      );
     } catch (error) {
       this.logger.error('Check', error.message);
       throw new BadRequestException('Can not check user liked post');

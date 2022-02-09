@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CommentEntity } from 'src/post/entity/comment';
 import { FindOneOptions, Repository } from 'typeorm';
+import { PhotoRouterType } from '../shared/constants/enum';
 import { UserEntity } from '../user/user';
 import { PostDto } from './dto/post-request.dto';
-import { PostEntity } from './entity/post';
-import { CommentEntity } from 'src/post/entity/comment';
 import { PostResponseDto } from './dto/post-response.dto';
-import { PhotoRouterType } from '../shared/constants/enum';
+import { PostEntity } from './entity/post';
 import { LikeService } from './like.service';
 
 @Injectable()
@@ -140,7 +140,6 @@ export class PostService {
   async getUserTimeline(userId: string, page: number) {
     try {
       const postsSnapshot = await this.createQueryBuilderGetPosts(page).getMany();
-      // check if user already liked post
       const posts = await this.likeService.checkLikedAndReturnPosts(postsSnapshot, userId);
       return posts;
     } catch (error) {

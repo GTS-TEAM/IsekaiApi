@@ -1,9 +1,8 @@
-import { Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { UserService } from '../user/users.service';
-import { TokenService } from '../token/token.service';
-import { UserLoginDto } from '../user/dto/user-login.dto';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { resizeAvatar } from 'src/shared/utils/resize-image';
 import { UserEntity } from 'src/user/user';
-
+import { UserLoginDto } from '../user/dto/user-login.dto';
+import { UserService } from '../user/users.service';
 @Injectable()
 export class AuthService {
   private logger = new Logger(AuthService.name);
@@ -14,6 +13,7 @@ export class AuthService {
     const isMatchPassword = this.userService.isMatchPassword(userLoginDto.password, user.password);
 
     delete user.online;
+    user.avatar = resizeAvatar(40, 40, user.avatar);
 
     if (!isMatchPassword) {
       throw new UnauthorizedException('Password is incorrect');
