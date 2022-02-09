@@ -15,6 +15,7 @@ services:
       - .env
     environment:
       DB_HOST: database
+      NODE_ENV: production
     networks:
       - app-network
 

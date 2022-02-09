@@ -27,12 +27,6 @@ export class NotificationController {
     return await this.notifService.getUserNotifications(req.user);
   }
 
-  @ApiTags('Notifications')
-  @Get('/rela/:friendId')
-  async getFriendRelaStatus(@Request() req, @Param('friendId') friendId: string) {
-    return await this.notifService.getFriendRelaStatus(req.user, friendId);
-  }
-
   // send notification to user
   @Post('/notif')
   async sendNotification(@Request() req, @Body() notifDto: NotificationRequestDto) {

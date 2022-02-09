@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { NotiStatus, NotiType } from '../../shared/constants/enum';
+import { NotiType } from '../../shared/constants/enum';
 
 export class NotificationRequestDto {
   //   @ApiProperty()
   //   status: NotiStatus;
 
-  @ApiProperty()
+  @ApiProperty({ enum: NotiType })
   type: NotiType;
 
   @ApiProperty()

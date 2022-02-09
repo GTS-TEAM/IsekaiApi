@@ -2,13 +2,43 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as compression from 'compression';
+import { WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
 import { AppModule } from './app.module';
 import { NotFoundExceptionFilter } from './shared/error/catch.dto';
-import * as compression from 'compression';
+
 // somewhere in your initialization file
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const logger = WinstonModule.createLogger({
+    transports: [
+      new winston.transports.Console({}),
+      new winston.transports.File({
+        filename: 'logs/Combined-' + new Date(Date.now()).toDateString() + '.log',
+        level: 'info',
+        handleExceptions: true,
+      }),
+      new winston.transports.File({
+        filename: 'logs/Errors-' + new Date(Date.now()).toDateString() + '.log',
+        level: 'error',
+      }),
+    ],
+    exceptionHandlers: [new winston.transports.File({ filename: 'logs/exceptions.log' })],
+    format: winston.format.combine(
+      winston.format.timestamp({
+        format: 'DD/MM/YYYY, HH:mm:ss',
+      }),
+      winston.format.printf(
+        (log) => `[Nest] - ${[log.timestamp]} ${log.level.toUpperCase()} [${log.context}] : ${log.message}`,
+      ),
+    ),
+  });
+  let appOptions = {};
+  if (process.env.NODE_ENV === 'production') {
+    appOptions = { ...appOptions, cors: true, logger };
+  }
+  const app = await NestFactory.create(AppModule, appOptions);
   app.setGlobalPrefix('api');
   app.enableCors();
   app.use(compression());
