@@ -22,4 +22,13 @@ export class UploadService {
       throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error.message);
     }
   }
+
+  async youtubeUrlToMp3(url: string): Promise<UploadApiResponse | UploadApiErrorResponse> {
+    try {
+      return await this.cloudinary.youtubeUrlToMp3(url);
+    } catch (error) {
+      this.logger.error(error);
+      throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error.message);
+    }
+  }
 }

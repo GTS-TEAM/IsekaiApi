@@ -1,4 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import ffmpeg from 'fluent-ffmpeg';
+import pathToFfmpeg from 'ffmpeg-static';
+import * as ytdl from 'ytdl-core';
+import fs from 'fs';
+
 import { UploadApiErrorResponse, UploadApiResponse, v2 } from 'cloudinary';
 import { Readable } from 'stream';
 @Injectable()
@@ -25,6 +30,16 @@ export class CloudinaryService {
           resolve(result);
         })
         .end(file.buffer);
+    });
+  }
+
+  async youtubeUrlToMp3(url: string): Promise<UploadApiResponse | UploadApiErrorResponse> {
+    return new Promise((resolve, reject) => {
+      const upload = v2.uploader.upload_stream({ resource_type: 'video', image_metadata: true }, (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      });
+      ytdl(url, { filter: 'audioonly' }).pipe(upload);
     });
   }
 }

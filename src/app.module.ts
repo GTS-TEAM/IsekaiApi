@@ -14,6 +14,9 @@ import { EmailModule } from './email/email.module';
 import { ConversationModule } from './conversation/conversation.module';
 import { WinstonModule } from 'nest-winston';
 import { SearchModule } from './search/search.module';
+import { MusicController } from './music/music.controller';
+import { MusicService } from './music/music.service';
+import { MusicModule } from './music/music.module';
 import * as winston from 'winston';
 @Module({
   imports: [
@@ -22,27 +25,6 @@ import * as winston from 'winston';
       load: [config],
     }),
     TypeOrmModule.forRootAsync({ useClass: DatabaseConfig }),
-    // WinstonModule.forRoot({
-    //   format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
-    //   transports: [
-    //     new winston.transports.Console({}),
-    //     new winston.transports.File({
-    //       dirname: './log/debug/', //path to where save loggin result
-    //       filename: 'debug.log', //name of file where will be saved logging result
-    //       level: 'debug',
-    //     }),
-    //     new winston.transports.File({
-    //       dirname: './log/info/',
-    //       filename: 'info.log',
-    //       level: 'info',
-    //     }),
-    //     new winston.transports.File({
-    //       dirname: './log/error/',
-    //       filename: 'error.log',
-    //       level: 'error',
-    //     }),
-    //   ],
-    // }),
     UserModule,
     AuthModule,
     PostModule,
@@ -54,7 +36,9 @@ import * as winston from 'winston';
     EmailModule,
     ConversationModule,
     SearchModule,
+    MusicModule,
   ],
   providers: [AppService],
+  controllers: [],
 })
 export class AppModule {}

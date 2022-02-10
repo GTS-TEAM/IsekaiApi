@@ -55,6 +55,7 @@
     "swagger-ui-express": "^4.1.6",
     "typeorm": "^0.2.40",
     "winston": "^3.4.0",
+    "ytdl-core": "^4.10.1",
     "zlib": "^1.0.5"
   },
   "devDependencies": {
@@ -66,6 +67,8 @@
     "@types/cache-manager-redis-store": "^2.0.1",
     "@types/compression": "^1.7.2",
     "@types/express": "^4.17.13",
+    "@types/ffmpeg-static": "^3.0.1",
+    "@types/fluent-ffmpeg": "^2.1.20",
     "@types/jest": "^27.0.1",
     "@types/multer": "^1.4.7",
     "@types/node": "^16.0.0",

@@ -10,6 +10,7 @@ import {
   PrimaryColumn,
   JoinTable,
   OneToOne,
+  ManyToOne,
 } from 'typeorm';
 import { customAlphabet } from 'nanoid';
 import * as bcrypt from 'bcryptjs';
@@ -24,6 +25,7 @@ import { NotificationEntity } from '../notification/notification';
 import { ConversationEntity } from 'src/conversation/entity/conversation';
 import { MessageEntity } from 'src/conversation/entity/message';
 import { FriendRequestEntity } from './entity/friend-request';
+import { MusicEntity } from '../music/music';
 
 @Entity('users')
 export class UserEntity {
@@ -103,6 +105,12 @@ export class UserEntity {
 
   @OneToMany(() => FriendRequestEntity, (friendRequest) => friendRequest.receiver)
   sentFriendRequests: FriendRequestEntity[];
+
+  @OneToMany(() => MusicEntity, (musicEntity) => musicEntity.uploader)
+  musics: MusicEntity[];
+
+  @ManyToOne(() => MusicEntity, (music) => music.favoriteUsers)
+  favoriteMusics: MusicEntity;
 
   @ApiProperty()
   @CreateDateColumn()
