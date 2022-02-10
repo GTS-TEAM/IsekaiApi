@@ -15,7 +15,7 @@ export class MusicService {
   ) {}
 
   async getAllMusic(userId: string): Promise<any> {
-    const musics = await this.musicRepo.find({ order: { create_at: 'DESC' } });
+    const musics = await this.musicRepo.find({ order: { create_at: 'DESC' }, relations: ['uploader'] });
     return musics;
   }
 
