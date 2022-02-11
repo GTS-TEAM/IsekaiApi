@@ -17,6 +17,7 @@ import { SearchModule } from './search/search.module';
 import { MusicController } from './music/music.controller';
 import { MusicService } from './music/music.service';
 import { MusicModule } from './music/music.module';
+import { AppController } from './app.controller';
 import * as winston from 'winston';
 @Module({
   imports: [
@@ -39,6 +40,6 @@ import * as winston from 'winston';
     MusicModule,
   ],
   providers: [AppService],
-  controllers: [],
+  controllers: [AppController],
 })
 export class AppModule {}

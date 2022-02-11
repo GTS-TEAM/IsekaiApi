@@ -26,6 +26,7 @@ import { ConversationEntity } from 'src/conversation/entity/conversation';
 import { MessageEntity } from 'src/conversation/entity/message';
 import { FriendRequestEntity } from './entity/friend-request';
 import { MusicEntity } from '../music/music';
+import { hashPassword as hash } from '../shared/utils/hash-password';
 
 @Entity('users')
 export class UserEntity {
@@ -122,8 +123,7 @@ export class UserEntity {
 
   @BeforeInsert()
   hashPassword() {
-    const salt = bcrypt.genSaltSync();
-    this.password = bcrypt.hashSync(this.password, salt);
+    this.password = hash(this.password);
   }
 
   @BeforeInsert()

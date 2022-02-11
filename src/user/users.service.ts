@@ -11,6 +11,7 @@ import { FriendRequestEntity } from './entity/friend-request';
 import { FriendRequestResponse, FriendRequestStatus } from '../shared/constants/enum';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import * as bcrypt from 'bcryptjs';
+import { hashPassword } from '../shared/utils/hash-password';
 
 // import { PostEntity } from '../post/entity/post';
 // import { UserFollowerEntity } from 'src/user/user-follow';
@@ -288,14 +289,14 @@ export class UserService {
     try {
       const user = await this.userRepo.findOne({ where: { id: userId } });
       if (this.isMatchPassword(oldPassword, user.password)) {
-        const salt = bcrypt.genSaltSync();
-
-        user.password = bcrypt.hashSync(newPassword, salt);
+        user.password = hashPassword(newPassword);
+      } else {
+        throw new BadRequestException('Mật khẩu cũ không đúng');
       }
       await this.userRepo.save(user);
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error.message);
+      throw new BadRequestException(error.message);
     }
   }
 
