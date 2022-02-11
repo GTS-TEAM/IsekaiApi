@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -70,7 +70,7 @@ export class TokenService {
           },
         });
         if (!tokenDoc) {
-          throw new Error('Token does not exist');
+          throw new Error('Token không tồn tại');
         }
         if (type === TokenType.VerifyEmailToken) {
           tokenDoc.active = false;
@@ -80,7 +80,7 @@ export class TokenService {
       }
       return await this.userRepo.findOne({ where: { id: payload.sub } });
     } catch (error) {
-      throw new BadRequestException(error.message);
+      throw new UnauthorizedException(error.message);
     }
   }
 
