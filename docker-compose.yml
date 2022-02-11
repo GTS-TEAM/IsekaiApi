@@ -58,6 +58,8 @@ services:
       - '5432:5432'
     networks:
       - app-network
+    volumes:
+      - db:/var/lib/postgresql/data
 
 networks:
   app-network:
