@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
@@ -21,7 +21,7 @@ export class MusicService {
 
   async uploadMusic(userId: string, file: Express.Multer.File): Promise<any> {
     const user = await this.userRepo.findOne(userId);
-    if (!user) throw new Error('User not found');
+    if (!user) throw new BadRequestException('Không tìm thấy người dùng');
     const music = new MusicEntity();
     music.uploader = user;
     music.name = file.originalname;

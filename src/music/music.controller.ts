@@ -3,7 +3,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { MusicService } from './music.service';
-class YoutubeUrlToMp3Dto {
+export class YoutubeUrlToMp3Dto {
   @ApiProperty()
   url: string;
 }

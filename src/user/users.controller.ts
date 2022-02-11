@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Put, Query, 
 import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiProperty, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { FriendRequestResponse } from '../shared/constants/enum';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { UserDto } from './dto/user.dto';
 
 import { UserService } from './users.service';
@@ -64,8 +65,9 @@ export class UsersController {
 
   // Change password
   @Patch('/password')
-  async changePassword(@Request() req, @Body() body: { password: string }) {
-    return await this.userService.changePassword(req.user, body.password);
+  async changePassword(@Request() req, @Body() dto: ChangePasswordDto) {
+    await this.userService.changePassword(req.user, dto);
+    return { message: 'Đổi mật khẩu thành công' };
   }
 
   /**

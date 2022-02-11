@@ -5,11 +5,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, Repository } from 'typeorm';
 import { UserRegisterDto } from './dto/user-register.dto';
 import { UserEntity } from './user';
-import * as bcrypt from 'bcryptjs';
 import { PostEntity } from '../post/entity/post';
 import { ChangeInfoDto } from './users.controller';
 import { FriendRequestEntity } from './entity/friend-request';
 import { FriendRequestResponse, FriendRequestStatus } from '../shared/constants/enum';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import * as bcrypt from 'bcryptjs';
+
 // import { PostEntity } from '../post/entity/post';
 // import { UserFollowerEntity } from 'src/user/user-follow';
 @Injectable()
@@ -282,10 +284,19 @@ export class UserService {
   }
 
   // Change password
-  async changePassword(userId: string, password: string): Promise<UserEntity> {
-    const user = await this.userRepo.findOne({ where: { id: userId } });
-    user.password = password;
-    return this.userRepo.save(user);
+  async changePassword(userId: string, { oldPassword, newPassword }: ChangePasswordDto) {
+    try {
+      const user = await this.userRepo.findOne({ where: { id: userId } });
+      if (this.isMatchPassword(oldPassword, user.password)) {
+        const salt = bcrypt.genSaltSync();
+
+        user.password = bcrypt.hashSync(newPassword, salt);
+      }
+      await this.userRepo.save(user);
+    } catch (error) {
+      this.logger.error(error);
+      throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error.message);
+    }
   }
 
   // Check user is friend or not
