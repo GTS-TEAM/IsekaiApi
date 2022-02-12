@@ -12,13 +12,8 @@ import { NotificationModule } from './notification/notification.module';
 import { EventModule } from './event/event.module';
 import { EmailModule } from './email/email.module';
 import { ConversationModule } from './conversation/conversation.module';
-import { WinstonModule } from 'nest-winston';
 import { SearchModule } from './search/search.module';
-import { MusicController } from './music/music.controller';
-import { MusicService } from './music/music.service';
 import { MusicModule } from './music/music.module';
-import { AppController } from './app.controller';
-import * as winston from 'winston';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -40,6 +35,6 @@ import * as winston from 'winston';
     MusicModule,
   ],
   providers: [AppService],
-  controllers: [AppController],
+  controllers: [],
 })
 export class AppModule {}
