@@ -38,15 +38,13 @@ describe('MusicService', () => {
           provide: getRepositoryToken(UserEntity),
           useValue: {
             find: jest.fn().mockResolvedValue(UserArray),
-            findOneOrFail: jest.fn().mockResolvedValue(OneUser),
+            findOne: jest.fn().mockImplementation((args) => {
+              const user = UserArray.find((user) => user.email === args.where.email) as UserEntity;
+              return Promise.resolve(user);
+            }),
+            findOneOrFail: jest.fn().mockImplementation(() => Promise.resolve(OneUser)),
             create: jest.fn().mockReturnValue(OneUser),
             save: jest.fn().mockReturnValue(OneUser),
-            // // as these do not actually use their return values in our sample
-            // // we just make sure that their resolve is true to not crash
-            // update: jest.fn().mockResolvedValue(true),
-            // // as these do not actually use their return values in our sample
-            // // we just make sure that their resolve is true to not crash
-            // delete: jest.fn().mockResolvedValue(true),
           },
         },
         {
