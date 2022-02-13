@@ -42,8 +42,6 @@ export class MusicController {
 
   @Post('/youtube')
   async youtubeUrlToMp3(@Request() req, @Body() dto: YoutubeUrlToMp3Dto) {
-    console.log(dto.url);
-
     const music = await this.musicService.uploadByYoutube(req.user, dto.url);
     return { message: 'Đã tải lên thành công', music };
   }

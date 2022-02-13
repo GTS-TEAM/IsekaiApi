@@ -39,18 +39,18 @@ describe('MusicService', () => {
           useValue: {
             find: jest.fn().mockResolvedValue(UserArray),
             findOne: jest.fn().mockImplementation((args) => {
-              const user = UserArray.find((user) => user.email === args.where.email) as UserEntity;
-              return Promise.resolve(user);
+              return Promise.resolve(OneUser);
             }),
             findOneOrFail: jest.fn().mockImplementation(() => Promise.resolve(OneUser)),
-            create: jest.fn().mockReturnValue(OneUser),
-            save: jest.fn().mockReturnValue(OneUser),
+            create: jest.fn().mockImplementation(() => Promise.resolve(OneUser)),
+            save: jest.fn().mockImplementation(() => Promise.resolve(OneUser)),
           },
         },
         {
           provide: CloudinaryService,
           useValue: {
             uploadByYoutube: jest.fn().mockReturnValue({}),
+            youtubeUrlToMp3: jest.fn().mockImplementation((a) => Promise.resolve({ secure_url: '' })),
           },
         },
       ],
@@ -63,5 +63,7 @@ describe('MusicService', () => {
     expect(service).toBeDefined();
   });
 
-  it('shold be save music', () => {});
+  it('should be save music', async () => {
+    expect(await service.uploadByYoutube('q', 'https://www.youtube.com/watch?v=yJ3XKNQv7Qk')).not.toBeNull();
+  });
 });

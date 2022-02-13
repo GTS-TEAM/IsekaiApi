@@ -66,6 +66,18 @@ export class UserEntity {
   @Column({ nullable: true })
   bio: string;
 
+  @ApiProperty()
+  @Column({ nullable: true })
+  phone: string;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  date: Date;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  address: string;
+
   // @OneToMany(() => UserFollowerEntity, (uf) => uf.following)
   // followers: UserFollowerEntity[];
 

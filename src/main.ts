@@ -15,12 +15,20 @@ async function bootstrap() {
     transports: [
       new winston.transports.Console({}),
       new winston.transports.File({
-        filename: 'logs/Combined-' + new Date(Date.now()).toDateString() + '.log',
+        filename: 'logs/combined/Combined-' + new Date(Date.now()).toDateString() + '.log',
         level: 'info',
         handleExceptions: true,
+        format: winston.format.combine(
+          winston.format.errors({ stack: true }),
+          winston.format.timestamp(),
+          winston.format.colorize(),
+          winston.format.printf(({ level, message, context, timestamp, stack, trace }) => {
+            return `${timestamp} [${context}] ${level}: ${message} ${stack ? stack : ''} ${trace ? trace : ''}`;
+          }),
+        ),
       }),
       new winston.transports.File({
-        filename: 'logs/Errors-' + new Date(Date.now()).toDateString() + '.log',
+        filename: 'logs/error/Errors-' + new Date(Date.now()).toDateString() + '.log',
         level: 'error',
       }),
     ],
@@ -30,17 +38,17 @@ async function bootstrap() {
         format: 'DD/MM/YYYY, HH:mm:ss',
       }),
       winston.format.printf(
-        (log) => `[Nest] - ${[log.timestamp]} ${log.level.toUpperCase()} [${log.context}] : ${log.message}`,
+        (log) =>
+          `[Nest] - ${[log.timestamp]} ${log.level.toUpperCase()} [${log.context ? log.context : log.stack}] : ${
+            log.message
+          }`,
       ),
     ),
   });
   let appOptions = {};
-  if (process.env.NODE_ENV === 'production') {
-    appOptions = { ...appOptions, cors: true, logger };
-  }
+  appOptions = { ...appOptions, cors: true, logger };
   const app = await NestFactory.create(AppModule, appOptions);
   app.setGlobalPrefix('api');
-  app.enableCors();
   app.use(compression());
   app.useGlobalFilters(new NotFoundExceptionFilter());
   app.useGlobalPipes(new ValidationPipe());

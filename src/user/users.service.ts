@@ -291,7 +291,7 @@ export class UserService {
       if (this.isMatchPassword(oldPassword, user.password)) {
         user.password = hashPassword(newPassword);
       } else {
-        throw new BadRequestException('Mật khẩu cũ không đúng');
+        throw new Error('Mật khẩu cũ không đúng');
       }
       await this.userRepo.save(user);
     } catch (error) {

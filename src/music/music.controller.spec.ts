@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { MusicEntity } from './music';
 import { MusicController, YoutubeUrlToMp3Dto } from './music.controller';
 import { MusicService } from './music.service';
+
+const OneMusic = new MusicEntity();
 
 describe('MusicController', () => {
   let controller: MusicController;
@@ -9,7 +12,7 @@ describe('MusicController', () => {
     const ApiServiceProvider = {
       provide: MusicService,
       useFactory: () => ({
-        youtubeUrlToMp3: jest.fn(() => {}),
+        uploadByYoutube: jest.fn().mockImplementation(() => Promise.resolve(OneMusic)),
       }),
     };
     const module: TestingModule = await Test.createTestingModule({
@@ -24,8 +27,8 @@ describe('MusicController', () => {
     expect(controller).toBeDefined();
   });
 
-  it('should be uploaded youtube video', () => {
+  it('should be uploaded youtube video', async () => {
     const dto = new YoutubeUrlToMp3Dto();
-    expect(controller.youtubeUrlToMp3('', dto)).not.toEqual(null);
+    expect(await controller.youtubeUrlToMp3('', dto)).not.toEqual(null);
   });
 });
