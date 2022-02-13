@@ -37,7 +37,7 @@ export class MusicController {
   @Post('/')
   async uploadMp3(@Request() req, @UploadedFile() file: Express.Multer.File) {
     const uploadApiRes = await this.musicService.uploadMusic(req.user, file);
-    return { url: uploadApiRes.secure_url };
+    return uploadApiRes;
   }
 
   @Post('/youtube')

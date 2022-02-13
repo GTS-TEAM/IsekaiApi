@@ -19,7 +19,7 @@ export class MusicService {
     return musics;
   }
 
-  async uploadMusic(userId: string, file: Express.Multer.File): Promise<any> {
+  async uploadMusic(userId: string, file: Express.Multer.File) {
     const user = await this.userRepo.findOne(userId);
     if (!user) throw new BadRequestException('Không tìm thấy người dùng');
     const music = new MusicEntity();
