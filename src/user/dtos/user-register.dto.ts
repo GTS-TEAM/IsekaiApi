@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
-import { RolesEnum } from '../../shared/constants/enum';
+import { RolesEnum } from '../../common/constants/enum';
 
 export class UserRegisterDto {
   @ApiProperty({ default: 'Minh Nguyen' })

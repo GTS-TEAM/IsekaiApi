@@ -1,4 +1,4 @@
-import { CommentEntity } from 'src/post/entity/comment';
+import { CommentEntity } from 'src/post/entities/comment';
 import {
   Column,
   CreateDateColumn,

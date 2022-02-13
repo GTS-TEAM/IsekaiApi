@@ -3,8 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from 'src/user/users.module';
 import { ConversationController } from './conversation.controller';
 import { ConversationService } from './conversation.service';
-import { ConversationEntity } from './entity/conversation';
-import { MessageEntity } from './entity/message';
+import { ConversationEntity } from './entities/conversation';
+import { MessageEntity } from './entities/message';
 
 @Module({
   imports: [UserModule, TypeOrmModule.forFeature([ConversationEntity, MessageEntity])],

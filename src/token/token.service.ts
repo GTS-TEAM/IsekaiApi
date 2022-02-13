@@ -2,11 +2,11 @@ import { BadRequestException, Injectable, Logger, NotFoundException, Unauthorize
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { RefreshTokenDto } from 'src/auth/dto/refresh-token.dto';
+import { RefreshTokenDto } from 'src/auth/dtos/refresh-token.dto';
 import { Repository } from 'typeorm';
-import { TokenPayloadDto } from '../auth/dto/token-payload.dto';
-import constants from '../shared/constants/constants';
-import { TokenType } from '../shared/constants/enum';
+import { TokenPayloadDto } from '../auth/dtos/token-payload.dto';
+import constants from '../common/constants/constants';
+import { TokenType } from '../common/constants/enum';
 import { UserEntity } from '../user/user';
 import { Tokens } from './token.entity';
 @Injectable()

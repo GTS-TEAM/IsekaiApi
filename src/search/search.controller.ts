@@ -1,7 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserEntity } from '../user/user';
-import { UserResponseDto } from './dto/search-user.dto';
+import { UserResponseDto } from './dtos/search-user.dto';
 import { SearchService } from './search.service';
 
 @ApiTags('Search')

@@ -1,4 +1,4 @@
-import { MessageEntity } from 'src/conversation/entity/message';
+import { MessageEntity } from 'src/conversation/entities/message';
 import { UserEntity } from 'src/user/user';
 import {
   Column,
@@ -10,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ConversationType } from '../../shared/constants/enum';
+import { ConversationType } from '../../common/constants/enum';
 
 @Entity('conversations')
 export class ConversationEntity {

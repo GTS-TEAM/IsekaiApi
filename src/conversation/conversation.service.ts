@@ -2,8 +2,8 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Like, Repository } from 'typeorm';
 import { UserEntity } from '../user/user';
-import { ConversationEntity } from './entity/conversation';
-import { MessageEntity } from './entity/message';
+import { ConversationEntity } from './entities/conversation';
+import { MessageEntity } from './entities/message';
 
 @Injectable()
 export class ConversationService {

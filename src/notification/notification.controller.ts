@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { NotiStatus, NotiType } from '../shared/constants/enum';
+import { NotiStatus, NotiType } from '../common/constants/enum';
 import { NotificationRequestDto } from './dto/notif-request.dto';
 import { NotificationEntity } from './notification';
 import { NotificationService } from './notification.service';

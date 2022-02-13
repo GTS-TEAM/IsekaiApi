@@ -1,32 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
-import { RolesEnum } from '../../shared/constants/enum';
+import { RolesEnum } from '../../common/constants/enum';
+import { UserInfo } from './user-info';
 
-export class UserDto {
+export class UserDto extends UserInfo {
   @ApiProperty()
-  @Expose()
   id: string;
 
-  @ApiProperty({ default: 'myacount@email.com' })
-  @Expose()
-  email: string;
-
-  @ApiProperty({ default: 'Minh Nguyen' })
-  @Expose()
-  username: string;
-
-  @ApiProperty({ default: 'https://' })
-  @Expose()
-  avatar?: string;
-
-  @ApiProperty({ default: RolesEnum.USER })
-  @Expose()
-  roles: RolesEnum;
-
-  @ApiProperty({ default: false })
-  @Expose()
-  online: boolean;
-
+  @ApiProperty()
+  created_at: Date;
   // @ApiProperty({ default: false })
   // @Expose()
   // emailVerified: boolean;

@@ -14,31 +14,29 @@ import {
 } from 'typeorm';
 import { customAlphabet } from 'nanoid';
 import * as bcrypt from 'bcryptjs';
-import { RolesEnum } from '../shared/constants/enum';
+import { RolesEnum } from '../common/constants/enum';
 import { Tokens } from '../token/token.entity';
 import { classToPlain, Exclude } from 'class-transformer';
-import { PostEntity } from '../post/entity/post';
-import { CommentEntity } from 'src/post/entity/comment';
+import { PostEntity } from '../post/entities/post';
+import { CommentEntity } from 'src/post/entities/comment';
 import { ApiProperty } from '@nestjs/swagger';
 import { NotificationEntity } from '../notification/notification';
 // import { UserFollowerEntity } from 'src/user/user-follow';
-import { ConversationEntity } from 'src/conversation/entity/conversation';
-import { MessageEntity } from 'src/conversation/entity/message';
-import { FriendRequestEntity } from './entites/friend-request';
+import { ConversationEntity } from 'src/conversation/entities/conversation';
+import { MessageEntity } from 'src/conversation/entities/message';
+import { FriendRequestEntity } from './entities/friend-request';
 import { MusicEntity } from '../music/music';
-import { hashPassword as hash } from '../shared/utils/hash-password';
+import { hashPassword as hash } from '../common/utils/hash-password';
+import { UserDto } from './dtos/user.dto';
 
 @Entity('users')
-export class UserEntity {
-  @ApiProperty()
+export class UserEntity extends UserDto {
   @PrimaryColumn({ type: 'varchar', length: 255 })
   id: string;
 
-  @ApiProperty()
   @Column()
   username: string;
 
-  @ApiProperty()
   @Column({ unique: true })
   email: string;
 
@@ -46,37 +44,29 @@ export class UserEntity {
   @Exclude({ toPlainOnly: true })
   password: string;
 
-  @ApiProperty()
   @Column({ enum: RolesEnum, type: 'enum', default: RolesEnum.USER })
   roles: RolesEnum;
 
-  @ApiProperty()
   @Column({ nullable: true })
-  avatar: string;
+  avatar?: string;
 
-  @ApiProperty()
   @Column({ nullable: true })
   background?: string;
 
-  @ApiProperty()
   @Column({ default: false })
-  online: boolean;
+  online?: boolean;
 
-  @ApiProperty()
   @Column({ nullable: true })
-  bio: string;
+  bio?: string;
 
-  @ApiProperty()
   @Column({ nullable: true })
-  phone: string;
+  phone?: string;
 
-  @ApiProperty()
   @Column({ nullable: true })
-  date: Date;
+  date?: Date;
 
-  @ApiProperty()
   @Column({ nullable: true })
-  address: string;
+  address?: string;
 
   // @OneToMany(() => UserFollowerEntity, (uf) => uf.following)
   // followers: UserFollowerEntity[];
@@ -125,7 +115,6 @@ export class UserEntity {
   @ManyToOne(() => MusicEntity, (music) => music.favoriteUsers)
   favoriteMusics: MusicEntity;
 
-  @ApiProperty()
   @CreateDateColumn()
   created_at: Date;
 

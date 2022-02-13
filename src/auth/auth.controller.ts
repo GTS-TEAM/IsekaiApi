@@ -10,20 +10,20 @@ import {
 import { Expose } from 'class-transformer';
 import { Response } from 'express';
 import { EmailService } from 'src/email/email.service';
-import { Roles } from 'src/shared/decorators/roles.decorator';
-import { RolesGuard } from 'src/shared/guards/roles.guard';
-import { RolesEnum, TokenType } from '../shared/constants/enum';
-import { HttpExeptionDto } from '../shared/error/error.dto';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { RolesEnum, TokenType } from '../common/constants/enum';
+import { HttpExeptionDto } from '../common/error/error.dto';
 import { TokenService } from '../token/token.service';
 import { UserLoginDto } from '../user/dtos/user-login.dto';
 import { UserRegisterDto } from '../user/dtos/user-register.dto';
 import { UserService } from '../user/users.service';
 import { AuthService } from './auth.service';
-import { REGISTER_SUCCESS } from './constant/response';
-import { LoginResponseDto } from './dto/login-response.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { RegisterResponseDto } from './dto/register-respose.dto';
-import { TokenPayloadDto } from './dto/token-payload.dto';
+import { REGISTER_SUCCESS } from './constants/response';
+import { LoginResponseDto } from './dtos/login-response.dto';
+import { RefreshTokenDto } from './dtos/refresh-token.dto';
+import { RegisterResponseDto } from './dtos/register-respose.dto';
+import { TokenPayloadDto } from './dtos/token-payload.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 class DeactivateRefreshTokenDto {
   @ApiProperty()

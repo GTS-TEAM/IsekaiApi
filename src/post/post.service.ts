@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CommentEntity } from 'src/post/entity/comment';
+import { CommentEntity } from 'src/post/entities/comment';
 import { FindOneOptions, Repository } from 'typeorm';
-import { PhotoRouterType } from '../shared/constants/enum';
+import { PhotoRouterType } from '../common/constants/enum';
 import { UserEntity } from '../user/user';
-import { PostDto } from './dto/post-request.dto';
-import { PostResponseDto } from './dto/post-response.dto';
-import { PostEntity } from './entity/post';
+import { PostDto } from './dtos/post-request.dto';
+import { PostResponseDto } from './dtos/post-response.dto';
+import { PostEntity } from './entities/post';
 import { LikeService } from './like.service';
 
 @Injectable()

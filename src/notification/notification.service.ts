@@ -1,8 +1,8 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PostEntity } from '../post/entity/post';
-import { NotiStatus, NotiType } from '../shared/constants/enum';
+import { PostEntity } from '../post/entities/post';
+import { NotiStatus, NotiType } from '../common/constants/enum';
 import { UserEntity } from '../user/user';
 import { NotificationRequestDto } from './dto/notif-request.dto';
 import { NotificationEntity } from './notification';

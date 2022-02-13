@@ -1,12 +1,12 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { CommentEntity } from 'src/post/entity/comment';
+import { CommentEntity } from 'src/post/entities/comment';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { PhotoRouterType } from '../shared/constants/enum';
-import { CommentRequestDto } from './dto/comment.dto';
-import { PostDto } from './dto/post-request.dto';
-import { PostResponseDto } from './dto/post-response.dto';
-import { PostEntity } from './entity/post';
+import { PhotoRouterType } from '../common/constants/enum';
+import { CommentRequestDto } from './dtos/comment.dto';
+import { PostDto } from './dtos/post-request.dto';
+import { PostResponseDto } from './dtos/post-response.dto';
+import { PostEntity } from './entities/post';
 import { LikeService } from './like.service';
 import { PostService } from './post.service';
 

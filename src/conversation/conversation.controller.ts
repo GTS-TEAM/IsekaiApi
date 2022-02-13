@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UserService } from 'src/user/users.service';
 import { ConversationService } from './conversation.service';
-import { CreateConversationDto } from './dto/create-conversation.dto';
+import { CreateConversationDto } from './dtos/create-conversation.dto';
 
 @ApiTags('Conversation')
 @UseGuards(JwtAuthGuard)

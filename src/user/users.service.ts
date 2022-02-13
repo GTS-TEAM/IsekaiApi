@@ -5,13 +5,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, Repository } from 'typeorm';
 import { UserRegisterDto } from './dtos/user-register.dto';
 import { UserEntity } from './user';
-import { PostEntity } from '../post/entity/post';
-import { ChangeInfoDto } from './users.controller';
-import { FriendRequestEntity } from './entites/friend-request';
-import { FriendRequestResponse, FriendRequestStatus } from '../shared/constants/enum';
+import { FriendRequestEntity } from './entities/friend-request';
+import { FriendRequestResponse, FriendRequestStatus } from '../common/constants/enum';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import * as bcrypt from 'bcryptjs';
-import { hashPassword } from '../shared/utils/hash-password';
+import { hashPassword } from '../common/utils/hash-password';
+import { UserInfo } from './dtos/user-info';
 
 // import { PostEntity } from '../post/entity/post';
 // import { UserFollowerEntity } from 'src/user/user-follow';
@@ -273,7 +272,7 @@ export class UserService {
    * Profile
    */
 
-  async updateProfile(userId: string, profile: ChangeInfoDto): Promise<UserEntity> {
+  async updateProfile(userId: string, profile: UserInfo): Promise<UserEntity> {
     let user = await this.getUserById(userId);
 
     for (var key in profile) {

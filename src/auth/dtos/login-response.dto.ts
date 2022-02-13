@@ -1,11 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { UserResponseDto } from '../../search/dto/search-user.dto';
+import { UserResponseDto } from '../../search/dtos/search-user.dto';
+import { UserDto } from '../../user/dtos/user.dto';
 
 export class LoginResponseDto {
   @ApiProperty()
   @Expose()
-  user: UserResponseDto;
+  user: UserDto;
 
   @ApiProperty()
   @Expose()

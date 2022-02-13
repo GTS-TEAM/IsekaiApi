@@ -10,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { NotiStatus, NotiType } from '../shared/constants/enum';
+import { NotiStatus, NotiType } from '../common/constants/enum';
 import { UserEntity } from '../user/user';
 
 @Entity('notifications')

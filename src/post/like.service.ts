@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { resizeAvatar } from '../shared/utils/resize-image';
+import { resizeAvatar } from '../common/utils/resize-image';
 import { UserEntity } from '../user/user';
-import { PostEntity } from './entity/post';
+import { PostEntity } from './entities/post';
 
 @Injectable()
 export class LikeService {

@@ -1,4 +1,4 @@
-import { ConversationEntity } from 'src/conversation/entity/conversation';
+import { ConversationEntity } from 'src/conversation/entities/conversation';
 import { UserEntity } from 'src/user/user';
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 

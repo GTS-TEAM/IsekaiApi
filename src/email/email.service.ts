@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MailService } from '@sendgrid/mail';
-import constants from '../shared/constants/constants';
+import constants from '../common/constants/constants';
 
 export class SendMailVerifyDto {
   to: string;

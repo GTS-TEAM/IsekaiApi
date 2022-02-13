@@ -1,5 +1,5 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
-import { resizeAvatar } from 'src/shared/utils/resize-image';
+import { resizeAvatar } from 'src/common/utils/resize-image';
 import { UserEntity } from 'src/user/user';
 import { UserLoginDto } from '../user/dtos/user-login.dto';
 import { UserService } from '../user/users.service';

@@ -11,7 +11,7 @@ import {
 import { Socket, Server } from 'socket.io';
 
 import { ConversationService } from 'src/conversation/conversation.service';
-import { TokenType } from '../shared/constants/enum';
+import { TokenType } from '../common/constants/enum';
 import { TokenService } from '../token/token.service';
 
 @WebSocketGateway({ path: '/api/socket.io' })

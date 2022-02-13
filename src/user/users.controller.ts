@@ -1,28 +1,14 @@
 import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiProperty, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { FriendRequestResponse } from '../shared/constants/enum';
+import { FriendRequestResponse } from '../common/constants/enum';
 import { ChangePasswordDto } from './dtos/change-password.dto';
+import { UserInfo } from './dtos/user-info';
 import { UserDto } from './dtos/user.dto';
 
 import { UserService } from './users.service';
 
-export class ChangeInfoDto {
-  @ApiProperty({ nullable: true })
-  username?: string;
-
-  @ApiProperty({ nullable: true })
-  email?: string;
-
-  @ApiProperty({ nullable: true })
-  bio?: string;
-
-  @ApiProperty({ nullable: true })
-  avatar?: string;
-
-  @ApiProperty({ nullable: true })
-  background?: string;
-}
 @ApiTags('User')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -76,7 +62,7 @@ export class UsersController {
 
   // Update user information
   @Patch('/info')
-  async changeInfo(@Request() req, @Body() infoDto: ChangeInfoDto) {
+  async changeInfo(@Request() req, @Body() infoDto: UserInfo) {
     return await this.userService.updateProfile(req.user, infoDto);
   }
 

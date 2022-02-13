@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { TokenType } from '../shared/constants/enum';
+import { TokenType } from '../common/constants/enum';
 import { UserEntity } from '../user/user';
 @Entity()
 export class Tokens {
