@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppService } from './app.service';
 import { UserModule } from './user/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
@@ -34,7 +33,5 @@ import { MusicModule } from './music/music.module';
     SearchModule,
     MusicModule,
   ],
-  providers: [AppService],
-  controllers: [],
 })
 export class AppModule {}

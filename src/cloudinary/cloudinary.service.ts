@@ -25,7 +25,7 @@ export class CloudinaryService {
   async uploadFile(file: Express.Multer.File): Promise<UploadApiResponse | UploadApiErrorResponse> {
     return new Promise((resolve, reject) => {
       v2.uploader
-        .upload_stream({ resource_type: 'raw' }, (error, result) => {
+        .upload_stream({ resource_type: 'raw', image_metadata: true }, (error, result) => {
           if (error) return reject(error);
           resolve(result);
         })

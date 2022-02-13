@@ -13,15 +13,16 @@ import { NotFoundExceptionFilter } from './shared/error/catch.dto';
 async function bootstrap() {
   const logger = WinstonModule.createLogger({
     transports: [
-      new winston.transports.Console({}),
+      new winston.transports.Console(),
+
       new winston.transports.File({
         filename: 'logs/combined/Combined-' + new Date(Date.now()).toDateString() + '.log',
         level: 'info',
         handleExceptions: true,
         format: winston.format.combine(
+          winston.format.uncolorize(),
           winston.format.errors({ stack: true }),
           winston.format.timestamp(),
-          winston.format.colorize(),
           winston.format.printf(({ level, message, context, timestamp, stack, trace }) => {
             return `${timestamp} [${context}] ${level}: ${message} ${stack ? stack : ''} ${trace ? trace : ''}`;
           }),
@@ -49,6 +50,7 @@ async function bootstrap() {
   appOptions = { ...appOptions, cors: true, logger };
   const app = await NestFactory.create(AppModule, appOptions);
   app.setGlobalPrefix('api');
+  app.enableCors();
   app.use(compression());
   app.useGlobalFilters(new NotFoundExceptionFilter());
   app.useGlobalPipes(new ValidationPipe());
