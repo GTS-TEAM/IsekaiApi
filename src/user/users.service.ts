@@ -3,13 +3,13 @@ import { BadRequestException, Inject, Injectable, Logger, NotFoundException, Una
 import { image } from 'faker';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, Repository } from 'typeorm';
-import { UserRegisterDto } from './dto/user-register.dto';
+import { UserRegisterDto } from './dtos/user-register.dto';
 import { UserEntity } from './user';
 import { PostEntity } from '../post/entity/post';
 import { ChangeInfoDto } from './users.controller';
-import { FriendRequestEntity } from './entity/friend-request';
+import { FriendRequestEntity } from './entites/friend-request';
 import { FriendRequestResponse, FriendRequestStatus } from '../shared/constants/enum';
-import { ChangePasswordDto } from './dto/change-password.dto';
+import { ChangePasswordDto } from './dtos/change-password.dto';
 import * as bcrypt from 'bcryptjs';
 import { hashPassword } from '../shared/utils/hash-password';
 

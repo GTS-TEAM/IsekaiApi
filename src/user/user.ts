@@ -24,7 +24,7 @@ import { NotificationEntity } from '../notification/notification';
 // import { UserFollowerEntity } from 'src/user/user-follow';
 import { ConversationEntity } from 'src/conversation/entity/conversation';
 import { MessageEntity } from 'src/conversation/entity/message';
-import { FriendRequestEntity } from './entity/friend-request';
+import { FriendRequestEntity } from './entites/friend-request';
 import { MusicEntity } from '../music/music';
 import { hashPassword as hash } from '../shared/utils/hash-password';
 

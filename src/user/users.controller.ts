@@ -2,8 +2,8 @@ import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Put, Query, 
 import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiProperty, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { FriendRequestResponse } from '../shared/constants/enum';
-import { ChangePasswordDto } from './dto/change-password.dto';
-import { UserDto } from './dto/user.dto';
+import { ChangePasswordDto } from './dtos/change-password.dto';
+import { UserDto } from './dtos/user.dto';
 
 import { UserService } from './users.service';
 

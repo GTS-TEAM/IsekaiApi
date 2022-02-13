@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RolesEnum } from '../shared/constants/enum';
 import { TokenService } from '../token/token.service';
-import { UserLoginDto } from '../user/dto/user-login.dto';
-import { UserRegisterDto } from '../user/dto/user-register.dto';
+import { UserLoginDto } from '../user/dtos/user-login.dto';
+import { UserRegisterDto } from '../user/dtos/user-register.dto';
 import { UserService } from '../user/users.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';

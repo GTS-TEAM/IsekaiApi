@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { FindOneOptions, Repository } from 'typeorm';
 import { RolesEnum } from '../shared/constants/enum';
-import { UserRegisterDto } from './dto/user-register.dto';
+import { UserRegisterDto } from './dtos/user-register.dto';
 import { UserEntity } from './user';
 import { UserService } from './users.service';
 const registerUser: UserRegisterDto = {

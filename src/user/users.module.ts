@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostModule } from '../post/post.module';
-import { FriendRequestEntity } from './entity/friend-request';
+import { FriendRequestEntity } from './entites/friend-request';
 // import { UserFollowerEntity } from 'src/user/user-follow';
 import { UserEntity } from './user';
 import { UsersController } from './users.controller';
