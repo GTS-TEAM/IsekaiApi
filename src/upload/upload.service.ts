@@ -1,34 +1,50 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { UploadApiErrorResponse, UploadApiResponse } from 'cloudinary';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { UploadApiErrorResponse, UploadApiResponse, v2 } from 'cloudinary';
+import * as ytdl from 'ytdl-core';
+import { Readable } from 'typeorm/platform/PlatformTools';
 
 @Injectable()
 export class UploadService {
   private readonly logger = new Logger(UploadService.name);
-
-  constructor(private readonly cloudinary: CloudinaryService) {}
   async uploadImageToCloudinary(files: Array<Express.Multer.File>): Promise<(UploadApiResponse | UploadApiErrorResponse)[]> {
-    return await this.cloudinary.uploadImage(files).catch((e) => {
+    return await this.uploadImage(files).catch((e) => {
       this.logger.error(e);
       throw new BadRequestException('Invalid file type.', e.message);
     });
   }
 
-  async uploadFileToCloudinary(file: Express.Multer.File): Promise<UploadApiResponse | UploadApiErrorResponse> {
-    try {
-      return await this.cloudinary.uploadFile(file);
-    } catch (error) {
-      this.logger.error(error);
-      throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error.message);
-    }
+  async uploadImage(files: Array<Express.Multer.File>) {
+    return Promise.all(files.map((file) => this.uploadStream(file)));
+  }
+
+  async uploadStream(file: Express.Multer.File): Promise<UploadApiResponse | UploadApiErrorResponse> {
+    return new Promise((resolve, reject) => {
+      const upload = v2.uploader.upload_stream((error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      });
+      Readable.from(file.buffer).pipe(upload);
+    });
+  }
+
+  async uploadFile(file: Express.Multer.File): Promise<UploadApiResponse | UploadApiErrorResponse> {
+    return await new Promise((resolve, reject) => {
+      v2.uploader
+        .upload_stream({ resource_type: 'video', image_metadata: true }, (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        })
+        .end(file.buffer);
+    });
   }
 
   async youtubeUrlToMp3(url: string): Promise<UploadApiResponse | UploadApiErrorResponse> {
-    try {
-      return await this.cloudinary.youtubeUrlToMp3(url);
-    } catch (error) {
-      this.logger.error(error);
-      throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error.message);
-    }
+    return new Promise((resolve, reject) => {
+      const upload = v2.uploader.upload_stream({ resource_type: 'video', image_metadata: true }, (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      });
+      ytdl(url, { filter: 'audioonly' }).pipe(upload);
+    });
   }
 }

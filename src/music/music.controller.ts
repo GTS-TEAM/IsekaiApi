@@ -2,10 +2,16 @@ import { Body, Controller, Get, Post, Request, UploadedFile, UseGuards, UseInter
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UploadService } from '../upload/upload.service';
 import { MusicService } from './music.service';
 export class YoutubeUrlToMp3Dto {
   @ApiProperty()
   url: string;
+}
+
+export class UploadMusicDto {
+  @ApiProperty()
+  name: string;
 }
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -34,10 +40,9 @@ export class MusicController {
   })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file'))
-  @Post('/')
-  async uploadMp3(@Request() req, @UploadedFile() file: Express.Multer.File) {
-    const uploadApiRes = await this.musicService.uploadMusic(req.user, file);
-    return uploadApiRes;
+  @Post('/file')
+  async uploadMp3(@Request() req, @Body() uploadMusicDto: UploadMusicDto, @UploadedFile() file: Express.Multer.File) {
+    return await this.musicService.uploadMusic(req.user, uploadMusicDto.name, file);
   }
 
   @Post('/youtube')

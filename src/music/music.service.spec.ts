@@ -3,8 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { MusicService } from './music.service';
 import { MusicEntity } from './music';
 import { UserEntity } from '../user/user';
-import { UploadApiResponse } from 'cloudinary';
-import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { UploadService } from '../upload/upload.service';
 
 const OneMusic = new MusicEntity();
 const OneUser = new UserEntity();
@@ -47,7 +46,7 @@ describe('MusicService', () => {
           },
         },
         {
-          provide: CloudinaryService,
+          provide: UploadService,
           useValue: {
             uploadByYoutube: jest.fn().mockReturnValue({}),
             youtubeUrlToMp3: jest.fn().mockImplementation((a) => Promise.resolve({ secure_url: '' })),
