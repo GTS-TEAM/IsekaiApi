@@ -47,7 +47,9 @@ async function bootstrap() {
     ),
   });
   let appOptions = {};
-  appOptions = { ...appOptions, cors: true, logger };
+  if (process.env.NODE_ENV === 'production') {
+    appOptions = { ...appOptions, cors: true, logger };
+  }
   const app = await NestFactory.create(AppModule, appOptions);
   app.setGlobalPrefix('api');
   app.enableCors();
