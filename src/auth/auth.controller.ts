@@ -10,7 +10,7 @@ import {
 import { Expose } from 'class-transformer';
 import { Response } from 'express';
 import { EmailService } from 'src/email/email.service';
-import { Roles } from 'src/common/decorators/roles.decorator';
+import { Roles } from 'src/decorators/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { RolesEnum, TokenType } from '../common/constants/enum';
 import { HttpExeptionDto } from '../common/error/error.dto';

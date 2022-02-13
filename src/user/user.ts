@@ -118,6 +118,9 @@ export class UserEntity extends UserDto {
   @CreateDateColumn()
   created_at: Date;
 
+  @UpdateDateColumn()
+  updated_at: Date;
+
   toJSON() {
     return classToPlain(this);
   }
