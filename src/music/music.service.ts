@@ -35,13 +35,14 @@ export class MusicService {
       const uploadApiRes = await this.uploadService.youtubeUrlToMp3(url);
       let info = await ytdl.getInfo(url);
 
-      const musicSnapshot = await this.musicRepo.save({
+      const music = this.musicRepo.create({
         name: info.videoDetails.title,
         url: uploadApiRes.secure_url,
         uploader: user,
         duration: parseInt(info.videoDetails.lengthSeconds),
         author: info.videoDetails.author.name,
       });
+      const musicSnapshot = await this.musicRepo.save(music);
 
       return musicSnapshot;
     } catch (error) {
