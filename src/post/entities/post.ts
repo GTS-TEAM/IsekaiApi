@@ -12,20 +12,17 @@ import {
 } from 'typeorm';
 import { UserEntity } from '../../user/user';
 import { ApiProperty } from '@nestjs/swagger';
+import { AbstractEntity } from '../../common/abstract.entity';
 
 @Entity('posts')
-export class PostEntity {
-  @ApiProperty()
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class PostEntity extends AbstractEntity {
   @ApiProperty()
   @Column()
   description: string;
 
   @ApiProperty()
-  @Column('simple-array')
-  image: string[];
+  @Column('simple-array', { nullable: true })
+  image?: string[];
 
   @ApiProperty({ type: () => UserEntity })
   @ManyToOne(() => UserEntity, (user) => user.posts, { onDelete: 'CASCADE' })
@@ -43,12 +40,4 @@ export class PostEntity {
   @ApiProperty({ nullable: true })
   @Column({ nullable: true })
   emoji: number;
-
-  @ApiProperty()
-  @CreateDateColumn()
-  created_at: Date;
-
-  @ApiProperty()
-  @UpdateDateColumn()
-  updated_at: Date;
 }

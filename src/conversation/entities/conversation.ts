@@ -10,13 +10,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { AbstractEntity } from '../../common/abstract.entity';
 import { ConversationType } from '../../common/constants/enum';
 
 @Entity('conversations')
-export class ConversationEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class ConversationEntity extends AbstractEntity {
   @ManyToMany((type) => UserEntity, (user) => user.conversations, {
     cascade: true,
   })
@@ -28,10 +26,4 @@ export class ConversationEntity {
 
   @Column({ enum: ConversationType, default: ConversationType.PRIVATE })
   type: ConversationType;
-
-  @CreateDateColumn()
-  created_at: Date;
-
-  @UpdateDateColumn()
-  updated_at: Date;
 }
