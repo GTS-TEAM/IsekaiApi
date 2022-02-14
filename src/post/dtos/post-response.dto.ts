@@ -1,27 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserEntity } from '../../user/user';
+import { AbstractDto } from '../../common/abstract.dto';
+import { UserDto } from '../../user/dtos/user.dto';
 
-export class PostResponseDto {
-  @ApiProperty()
-  id: string;
-
+export class PostResponseDto extends AbstractDto {
   @ApiProperty()
   description: string;
 
   @ApiProperty()
-  image: string[];
+  image?: string[];
+
   @ApiProperty({ nullable: true })
   emoji?: number;
-  @ApiProperty()
-  created_at: Date;
 
-  @ApiProperty()
-  updated_at: Date;
-  @ApiProperty()
-  user: UserEntity;
+  @ApiProperty({ type: UserDto })
+  user: UserDto;
 
-  @ApiProperty({ isArray: true, type: UserEntity })
-  likes: UserEntity[];
+  @ApiProperty({ isArray: true, type: UserDto })
+  likes: UserDto[];
 
   @ApiProperty()
   commentCount: number;

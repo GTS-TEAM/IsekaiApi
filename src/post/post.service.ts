@@ -4,6 +4,7 @@ import { CommentEntity } from 'src/post/entities/comment';
 import { FindOneOptions, Repository } from 'typeorm';
 import { PhotoRouterType } from '../common/constants/enum';
 import { UserEntity } from '../user/user';
+import { UserService } from '../user/users.service';
 import { PostDto } from './dtos/post-request.dto';
 import { PostResponseDto } from './dtos/post-response.dto';
 import { PostEntity } from './entities/post';
@@ -18,8 +19,7 @@ export class PostService {
     private readonly postRepo: Repository<PostEntity>,
     @InjectRepository(CommentEntity)
     private readonly commentRepo: Repository<CommentEntity>,
-    @InjectRepository(UserEntity)
-    private readonly userRepo: Repository<UserEntity>,
+    private readonly userService: UserService,
     private readonly likeService: LikeService, // private readonly redisCache: RedisCacheService,
   ) {}
   /**
@@ -32,20 +32,7 @@ export class PostService {
       .orderBy('posts.created_at', 'DESC')
       .skip(7 * (offset - 1))
       .take(7)
-      .select([
-        'posts.id',
-        'posts.image',
-        'posts.description',
-        'posts.emoji',
-        'posts.created_at',
-        'posts.updated_at',
-        'user.id',
-        'user.avatar',
-        'user.username',
-        'user.background',
-        'user.bio',
-      ])
-      .leftJoin('posts.user', 'user')
+      .leftJoinAndSelect('posts.user', 'user')
       .loadRelationCountAndMap('posts.commentCount', 'posts.comments')
       .loadRelationCountAndMap('posts.likeCount', 'posts.likes')
       .leftJoinAndSelect('posts.likes', 'likes');
@@ -64,8 +51,10 @@ export class PostService {
   async createPost(post: PostDto, userId: string): Promise<PostResponseDto> {
     try {
       const postSnapshot = this.postRepo.create(post);
-      const user = await this.userRepo.findOne({ where: { id: userId } });
+      const user = await this.userService.getUserById(userId);
+
       postSnapshot.user = user;
+
       const postRes = await this.postRepo.save(postSnapshot);
       return {
         ...postRes,
@@ -89,7 +78,7 @@ export class PostService {
         relations: ['comments'],
       });
 
-      const user = await this.userRepo.findOneOrFail(userId);
+      const user = await this.userService.getUserById(userId);
 
       const newComment = this.commentRepo.create({
         content: comment,
@@ -140,8 +129,7 @@ export class PostService {
   async getUserTimeline(userId: string, page: number) {
     try {
       const postsSnapshot = await this.createQueryBuilderGetPosts(page).getMany();
-      const posts = await this.likeService.checkLikedAndReturnPosts(postsSnapshot, userId);
-      return posts;
+      return await this.likeService.checkLikedAndReturnPosts(postsSnapshot, userId);
     } catch (error) {
       this.logger.error(error);
       throw new BadRequestException('Có lỗi xảy ra vui lòng thử lại', error.message);
@@ -161,24 +149,16 @@ export class PostService {
   }
 
   async getPost(userId: string, id: string) {
+    const test = await this.postRepo
+      .createQueryBuilder('posts')
+      .select('posts.id')
+      .where('posts.id = :id', { id: id })
+      .getOne();
     try {
       const postSnapshot = await this.postRepo
         .createQueryBuilder('posts')
         .where('posts.id = :id', { id })
-        .select([
-          'posts.id',
-          'posts.image',
-          'posts.description',
-          'posts.emoji',
-          'posts.created_at',
-          'posts.updated_at',
-          'user.id',
-          'user.avatar',
-          'user.username',
-          'user.background',
-          'user.bio',
-        ])
-        .leftJoin('posts.user', 'user')
+        .leftJoinAndSelect('posts.user', 'user')
         .loadRelationCountAndMap('posts.commentCount', 'posts.comments')
         .loadRelationCountAndMap('posts.likeCount', 'posts.likes')
         .leftJoinAndSelect('posts.likes', 'likes')

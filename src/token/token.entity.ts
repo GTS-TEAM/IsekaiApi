@@ -1,11 +1,9 @@
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { AbstractEntity } from '../common/abstract.entity';
 import { TokenType } from '../common/constants/enum';
 import { UserEntity } from '../user/user';
 @Entity()
-export class Tokens {
-  @PrimaryGeneratedColumn('uuid')
-  id: number;
-
+export class Tokens extends AbstractEntity {
   @Column()
   token: string;
 
@@ -15,15 +13,9 @@ export class Tokens {
   @Column({ default: true })
   active: boolean;
 
-  @CreateDateColumn()
-  created_at: Date;
-
   @ManyToOne(() => UserEntity, (user) => user.token, {
     onDelete: 'CASCADE',
     cascade: true,
   })
   user: UserEntity;
-
-  @UpdateDateColumn()
-  updated_at: Date;
 }

@@ -28,12 +28,10 @@ import { FriendRequestEntity } from './entities/friend-request';
 import { MusicEntity } from '../music/music';
 import { hashPassword as hash } from '../common/utils/hash-password';
 import { UserDto } from './dtos/user.dto';
+import { AbstractEntity } from '../common/abstract.entity';
 
 @Entity('users')
-export class UserEntity extends UserDto {
-  @PrimaryColumn({ type: 'varchar', length: 255 })
-  id: string;
-
+export class UserEntity extends AbstractEntity {
   @Column()
   username: string;
 
@@ -128,12 +126,5 @@ export class UserEntity extends UserDto {
   @BeforeInsert()
   hashPassword() {
     this.password = hash(this.password);
-  }
-
-  @BeforeInsert()
-  generateId() {
-    const alphabet = '0123456789';
-    const id = customAlphabet(alphabet, 8);
-    this.id = (11000000000 + parseInt(id())).toString();
   }
 }
