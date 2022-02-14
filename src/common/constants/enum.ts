@@ -10,12 +10,6 @@ export enum RolesEnum {
   USER = 'user',
 }
 
-export enum PostFields {
-  description = 'description',
-  likes = 'likes',
-  comments = 'comments',
-}
-
 export enum FriendRequestStatus {
   PENDING = 'pending',
   ACCEPTED = 'accepted',

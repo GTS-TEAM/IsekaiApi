@@ -1,15 +1,5 @@
 import { CommentEntity } from 'src/post/entities/comment';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 import { UserEntity } from '../../user/user';
 import { ApiProperty } from '@nestjs/swagger';
 import { AbstractEntity } from '../../common/abstract.entity';
