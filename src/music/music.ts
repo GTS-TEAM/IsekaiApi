@@ -9,6 +9,9 @@ export class MusicEntity extends AbstractEntity {
   name: string;
 
   @Column({ nullable: true })
+  image: string;
+
+  @Column({ nullable: true })
   author: string;
 
   @ManyToOne(() => UserEntity, (user) => user.musics)

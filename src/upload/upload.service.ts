@@ -9,7 +9,7 @@ export class UploadService {
   async uploadImageToCloudinary(files: Array<Express.Multer.File>): Promise<(UploadApiResponse | UploadApiErrorResponse)[]> {
     return await this.uploadImage(files).catch((e) => {
       this.logger.error(e);
-      throw new BadRequestException('Invalid file type.', e.message);
+      throw new BadRequestException(e.message);
     });
   }
 
@@ -18,13 +18,18 @@ export class UploadService {
   }
 
   async uploadStream(file: Express.Multer.File): Promise<UploadApiResponse | UploadApiErrorResponse> {
-    return new Promise((resolve, reject) => {
-      const upload = v2.uploader.upload_stream((error, result) => {
-        if (error) return reject(error);
-        resolve(result);
+    try {
+      return new Promise((resolve, reject) => {
+        const upload = v2.uploader.upload_stream((error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        });
+        Readable.from(file.buffer).pipe(upload);
       });
-      Readable.from(file.buffer).pipe(upload);
-    });
+    } catch (error) {
+      this.logger.error(error);
+      throw new BadRequestException(error.message);
+    }
   }
 
   async uploadFile(file: Express.Multer.File): Promise<UploadApiResponse | UploadApiErrorResponse> {
