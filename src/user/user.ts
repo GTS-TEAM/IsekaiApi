@@ -11,6 +11,8 @@ import {
   JoinTable,
   OneToOne,
   ManyToOne,
+  AfterLoad,
+  BeforeUpdate,
 } from 'typeorm';
 import { customAlphabet } from 'nanoid';
 import * as bcrypt from 'bcryptjs';
@@ -51,9 +53,6 @@ export class UserEntity extends AbstractEntity {
   @Column({ nullable: true })
   background?: string;
 
-  @Column({ default: false })
-  online?: boolean;
-
   @Column({ nullable: true })
   bio?: string;
 
@@ -65,6 +64,9 @@ export class UserEntity extends AbstractEntity {
 
   @Column({ nullable: true })
   address?: string;
+
+  @Column({ default: new Date() })
+  last_activity: Date;
 
   // @OneToMany(() => UserFollowerEntity, (uf) => uf.following)
   // followers: UserFollowerEntity[];
@@ -102,16 +104,16 @@ export class UserEntity extends AbstractEntity {
   messages: MessageEntity[];
 
   @OneToMany(() => FriendRequestEntity, (friendRequest) => friendRequest.creator)
-  receivedFriendRequests: FriendRequestEntity[];
+  received_friend_requests: FriendRequestEntity[];
 
   @OneToMany(() => FriendRequestEntity, (friendRequest) => friendRequest.receiver)
-  sentFriendRequests: FriendRequestEntity[];
+  sent_friend_requests: FriendRequestEntity[];
 
   @OneToMany(() => MusicEntity, (musicEntity) => musicEntity.uploader)
   musics: MusicEntity[];
 
   @ManyToOne(() => MusicEntity, (music) => music.favoriteUsers)
-  favoriteMusics: MusicEntity;
+  favorite_musics: MusicEntity;
 
   @CreateDateColumn()
   created_at: Date;

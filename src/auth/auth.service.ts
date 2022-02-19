@@ -12,12 +12,12 @@ export class AuthService {
     const user = await this.userService.findByEmail(userLoginDto.email);
     const isMatchPassword = this.userService.isMatchPassword(userLoginDto.password, user.password);
 
-    delete user.online;
-    user.avatar = resizeAvatar(40, 40, user.avatar);
-
     if (!isMatchPassword) {
       throw new UnauthorizedException('Password is incorrect');
     }
+
+    user.avatar = resizeAvatar(40, 40, user.avatar);
+    await this.userService.healthCheck(user.id);
     return user;
   }
 

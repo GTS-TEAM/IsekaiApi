@@ -23,6 +23,6 @@ export class MusicEntity extends AbstractEntity {
   @Column()
   url: string;
 
-  @OneToMany(() => UserEntity, (user) => user.favoriteMusics)
+  @OneToMany(() => UserEntity, (user) => user.favorite_musics)
   favoriteUsers: UserEntity[];
 }

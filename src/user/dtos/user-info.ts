@@ -17,9 +17,6 @@ export class UserInfo {
   @ApiProperty({ default: RolesEnum.USER })
   roles: RolesEnum;
 
-  @ApiProperty({ default: false })
-  online?: boolean;
-
   @ApiProperty()
   phone?: string;
 

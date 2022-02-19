@@ -22,6 +22,10 @@ export class UserService {
     @InjectRepository(FriendRequestEntity) private friendRequestRepo: Repository<FriendRequestEntity>, // @InjectRepository(UserFollowerEntity) // private userFollowerRepo: Repository<UserFollowerEntity>,
   ) {}
 
+  async healthCheck(userId: string) {
+    await this.userRepo.update({ id: userId }, { last_activity: new Date() });
+  }
+
   /**
    * COMMON
    */

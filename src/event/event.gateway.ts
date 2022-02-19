@@ -53,7 +53,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const message = await this.conversationService.createMessage(data.conversationId, data.content, data.senderId);
 
-      delete message.sender.email;
       delete message.sender.roles;
       // delete message.sender.emailVerified;
       delete message.sender.created_at;
