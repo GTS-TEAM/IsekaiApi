@@ -37,10 +37,8 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       this.logger.debug(user.username + ' connected');
       this.connectedUsers.push({ userId: user.id, clientId: client.id });
-      this.server.emit('user-connected', user.username + ' connected');
     } catch (error) {
       this.logger.error(error);
-      this.server.emit('user-connected', { error: error.response, message: error.message });
     }
   }
 
@@ -64,18 +62,5 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.error(error);
       client.broadcast.to(client.id).emit('message', { error: error.response, message: error.message });
     }
-  }
-
-  @SubscribeMessage('join')
-  async onRoomJoin(client, data: any): Promise<any> {
-    if (data.conversationId === undefined) {
-      return;
-    }
-    client.join(data?.conversationId);
-  }
-
-  @SubscribeMessage('leave')
-  onRoomLeave(client, data: any): void {
-    client.leave(data?.conversationId);
   }
 }

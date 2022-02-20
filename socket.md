@@ -6,41 +6,39 @@
 
   - **message:**
 
-    **_Receive:_**
-
-    ```
-    {
-    "conversationId":"123",
-    "content":"hello"
-    "senderId":"123"
-    }
-    ```
-
     **_Send:_**
 
     ```
     {
-    "id": "eb094526-9055-409a-993d-ff2d49913770"
-    "content": "7",
-    "conversation": {
-        "id": "310fffb0-d595-48e1-90d5-f302a4f8e64b",
-    },
-    "sender": {
-        "id": "f9285895-e8dc-446a-b5ba-c4209baf2fea",
-        "username": "123",
-        "avatar": "http://placeimg.com/640/480"
-    },
-    "created_at": "2022-01-26T05:05:19.883Z",
-    "updated_at": "2022-01-26T05:05:19.883Z"
+    "message": "string",
+    "receiverId":"string"
     }
     ```
-
-  - **join:**
 
     **_Receive:_**
 
     ```
     {
-        "conversationId":"123
+    "content": "string",
+    "conversation": {
+        "id": "11010752240-11014607850",
+        "type": "private"
+      },
+    "sender": {
+        "id": "11010752240",
+        "updated_at": "2022-02-20T15:23:39.136Z",
+        "username": "Minh Nguyen",
+        "roles": "user",
+        "avatar": "https://res.cloudinary.com/titus-nguyen/image/upload/c_fill,w_40,h_40/undefined",
+        "background": null,
+        "bio": null,
+        "phone": null,
+        "date": null,
+        "address": null,
+        "last_activity": "2022-02-20T15:23:39.134Z"
+      },
+    "id": "11072867748",
+    "created_at": "2022-02-20T15:24:08.883Z",
+    "updated_at": "2022-02-20T15:24:08.883Z"
     }
     ```
