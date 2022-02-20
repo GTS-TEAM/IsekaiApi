@@ -11,6 +11,7 @@ import {
 import { Socket, Server } from 'socket.io';
 
 import { ConversationService } from 'src/conversation/conversation.service';
+import { In } from 'typeorm';
 import { TokenType } from '../common/constants/enum';
 import { TokenService } from '../token/token.service';
 
@@ -20,7 +21,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private tokenSerivce: TokenService, private readonly conversationService: ConversationService) {}
   @WebSocketServer()
   server: Server;
-  // connectedUsers: string[] = [];
+  connectedUsers: { userId: string; clientId: string }[] = [];
   async handleDisconnect(client: Socket) {
     try {
       client.handshake.query.token;
@@ -33,38 +34,34 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
 
-      //TODO: Set user is online
-
       this.logger.debug(user.username + ' connected');
-
-      // this.connectedUsers = [...this.connectedUsers, user.id];
-      // this.logger.debug(this.connectedUsers);
-      // this.server.emit('online', this.connectedUsers);
+      this.connectedUsers.push({ userId: user.id, clientId: client.id });
+      this.server.emit('user-connected', user.username + ' connected');
     } catch (error) {
       this.logger.error(error);
-      this.server.emit('online', { error: error.response, message: error.message });
+      this.server.emit('user-connected', { error: error.response, message: error.message });
     }
   }
 
   @UseFilters(new BaseWsExceptionFilter())
   @SubscribeMessage('message')
-  async onMessage(client: Socket, data: any) {
-    const event: string = 'message';
+  async onMessage(client, data: { receiverId: string; message: string }) {
     try {
-      const message = await this.conversationService.createMessage(data.conversationId, data.content, data.senderId);
+      console.log(data);
+
+      const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
+      const conversation = await this.conversationService.getConversation(user.id, data.receiverId);
+
+      const message = await this.conversationService.createMessage(conversation.id, data.message, user.id);
 
       delete message.sender.email;
-      delete message.sender.roles;
       // delete message.sender.emailVerified;
       delete message.sender.created_at;
-
-      delete message.conversation.created_at;
-      delete message.conversation.updated_at;
-      this.logger.debug(message.content);
-      client.broadcast.to(data.conversationId).emit(event, message);
+      const receiverClientId = this.connectedUsers.find((u) => u.userId === data.receiverId)?.clientId;
+      client.broadcast.to(receiverClientId).emit('message', message);
     } catch (error) {
       this.logger.error(error);
-      client.broadcast.to(client.id).emit(event, { error: error.response, message: error.message });
+      client.broadcast.to(client.id).emit('message', { error: error.response, message: error.message });
     }
   }
 

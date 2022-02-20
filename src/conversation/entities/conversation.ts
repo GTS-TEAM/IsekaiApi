@@ -1,20 +1,13 @@
 import { MessageEntity } from 'src/conversation/entities/message';
 import { UserEntity } from 'src/user/user';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
-import { AbstractEntity } from '../../common/abstract.entity';
+import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { ConversationType } from '../../common/constants/enum';
 
 @Entity('conversations')
-export class ConversationEntity extends AbstractEntity {
+export class ConversationEntity {
+  @PrimaryColumn()
+  id: string;
+
   @ManyToMany((type) => UserEntity, (user) => user.conversations, {
     cascade: true,
   })

@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Like, Repository } from 'typeorm';
+import { reverseConversationId } from '../common/utils/reverse-conversation-id';
 import { UserEntity } from '../user/user';
 import { ConversationEntity } from './entities/conversation';
 import { MessageEntity } from './entities/message';
@@ -16,6 +17,30 @@ export class ConversationService {
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
   ) {}
+
+  /**
+   * COMMON FUNCTIONS
+   */
+
+  async getConversationByUsers(userId: string, targetId: string): Promise<ConversationEntity> {
+    try {
+      const user = await this.userRepo.findOne({
+        where: { id: userId },
+      });
+      const target = await this.userRepo.findOne({
+        where: { id: targetId },
+      });
+      const conversation = await this.conversationRepo.findOne({
+        where: { members: In([userId, targetId]) },
+      });
+      if (!conversation) {
+        await this.createConversation([user, target]);
+      }
+      return conversation;
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
 
   async getConversations(userId: string): Promise<ConversationEntity[]> {
     const thisUser = await this.userRepo.findOne({
@@ -33,12 +58,31 @@ export class ConversationService {
     return conversations;
   }
 
-  async getConversation(conversationId: string): Promise<ConversationEntity> {
+  // async getConversation(conversationId: string): Promise<ConversationEntity> {
+  //   try {
+  //     return await this.conversationRepo
+  //       .createQueryBuilder('conversations')
+  //       .innerJoin('conversations.members', 'members')
+  //       .getOne();
+  //   } catch (error) {
+  //     this.logger.error(error);
+  //   }
+  // }
+  async getConversation(userId: string, targetId: string) {
     try {
-      return await this.conversationRepo
-        .createQueryBuilder('conversations')
-        .innerJoin('conversations.members', 'members')
-        .getOne();
+      const ids = [userId + '-' + targetId, targetId + '-' + userId];
+      const user = await this.userRepo.findOne({
+        where: { id: userId },
+      });
+      const target = await this.userRepo.findOne({
+        where: { id: targetId },
+      });
+      const conversation = await this.conversationRepo.createQueryBuilder('conversations').whereInIds(ids).getOne();
+
+      if (!conversation) {
+        await this.createConversation([user, target]);
+      }
+      return conversation;
     } catch (error) {
       this.logger.error(error);
     }
@@ -47,22 +91,34 @@ export class ConversationService {
   async createConversation(members: UserEntity[]): Promise<ConversationEntity> {
     try {
       const conversation = this.conversationRepo.create({
+        id: members.map((m) => m.id).join('-'),
         members,
       });
-      return await this.conversationRepo.save(conversation);
+      await this.conversationRepo.save(conversation);
+      return conversation;
     } catch (error) {
       this.logger.error(error);
     }
   }
 
-  async getMessages(conversationId: string): Promise<MessageEntity[]> {
+  async getMessages(conversationId: string, limit: number, offset: number): Promise<MessageEntity[]> {
     // get messages of conversation by conversation id
+    conversationId.split('-').reduce((id1, id2) => {
+      return id1 + '-' + id2;
+    });
+    const converIdReverse = reverseConversationId(conversationId);
+    console.log(converIdReverse);
+
     const messages = await this.messageRepo
       .createQueryBuilder('messages')
-      .leftJoinAndSelect('messages.conversation', 'conversations')
+      .limit(limit)
+      .offset(offset)
+      .orderBy('messages.created_at', 'DESC')
+      .andWhere('conversation.id = :conversationId', { conversationId })
+      .orWhere('conversation.id = :conversationId', { conversationId: converIdReverse })
+      .leftJoinAndSelect('messages.conversation', 'conversation')
       .leftJoinAndSelect('messages.sender', 'users')
       .select(['users.id', 'users.username', 'users.avatar', 'messages.id', 'messages.content', 'messages.created_at'])
-      .andWhere('conversations.id = :conversationId', { conversationId })
       .getMany();
     return messages;
   }
