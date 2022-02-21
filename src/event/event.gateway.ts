@@ -31,11 +31,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleConnection(client) {
     try {
-      console.log(client.handshake.query);
-
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
-
-      this.logger.debug(user.username + ' connected');
       this.connectedUsers.push({ userId: user.id, clientId: client.id });
       this.server.to(client.id).emit('connect-response', user.username);
     } catch (error) {
@@ -48,8 +44,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('message')
   async onMessage(client, data: { receiverId: string; message: string }) {
     try {
-      console.log(data);
-
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
       const conversation = await this.conversationService.getConversation(user.id, data.receiverId);
 
@@ -59,10 +53,10 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // delete message.sender.emailVerified;
       delete message.sender.created_at;
       const receiverClientId = this.connectedUsers.find((u) => u.userId === data.receiverId)?.clientId;
-      client.broadcast.to(receiverClientId).emit('message', message);
+      client.to(receiverClientId).emit('message', message);
     } catch (error) {
       this.logger.error(error);
-      client.broadcast.to(client.id).emit('message', { error: error.response, message: error.message });
+      client.to(client.id).emit('message', { error: error.response, message: error.message });
     }
   }
 }

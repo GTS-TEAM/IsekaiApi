@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Get, Logger, Param, Post, Query, Request, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UserService } from 'src/user/users.service';
 import { ConversationService } from './conversation.service';
@@ -20,9 +20,12 @@ export class ConversationController {
     @Query('limit') limit: number,
     @Query('offset') offset: number,
   ) {
-    console.log(req.user + '-' + receiverId);
+    return await this.conversationService.getMessages(req.user + '-' + receiverId, limit, offset);
+  }
 
-    const messages = await this.conversationService.getMessages(req.user + '-' + receiverId, limit, offset);
-    return messages;
+  @ApiResponse({ status: 200, description: 'Trả về các cuộc hội thoại của người dùng' })
+  @Get('/')
+  async getUserConversations(@Request() req) {
+    return await this.conversationService.getUserConversations(req.user);
   }
 }

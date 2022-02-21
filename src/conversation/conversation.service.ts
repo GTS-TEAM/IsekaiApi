@@ -22,42 +22,6 @@ export class ConversationService {
    * COMMON FUNCTIONS
    */
 
-  async getConversationByUsers(userId: string, targetId: string): Promise<ConversationEntity> {
-    try {
-      const user = await this.userRepo.findOne({
-        where: { id: userId },
-      });
-      const target = await this.userRepo.findOne({
-        where: { id: targetId },
-      });
-      const conversation = await this.conversationRepo.findOne({
-        where: { members: In([userId, targetId]) },
-      });
-      if (!conversation) {
-        await this.createConversation([user, target]);
-      }
-      return conversation;
-    } catch (error) {
-      this.logger.error(error);
-    }
-  }
-
-  async getConversations(userId: string): Promise<ConversationEntity[]> {
-    const thisUser = await this.userRepo.findOne({
-      where: { id: userId },
-      relations: ['conversations'],
-    });
-
-    const conversations = await this.conversationRepo.find({
-      where: {
-        id: In(thisUser.conversations.map((c) => c.id)),
-      },
-      relations: ['members'],
-    });
-
-    return conversations;
-  }
-
   // async getConversation(conversationId: string): Promise<ConversationEntity> {
   //   try {
   //     return await this.conversationRepo
@@ -80,11 +44,25 @@ export class ConversationService {
       const conversation = await this.conversationRepo.createQueryBuilder('conversations').whereInIds(ids).getOne();
 
       if (!conversation) {
-        await this.createConversation([user, target]);
+        return await this.createConversation([user, target]);
       }
       return conversation;
     } catch (error) {
       this.logger.error(error);
+    }
+  }
+
+  async getUserConversations(userId: string) {
+    try {
+      const conversations = await this.conversationRepo
+        .createQueryBuilder('conversations')
+        .innerJoinAndSelect('conversations.members', 'members')
+        .where('members.id = :userId', { userId })
+        .getMany();
+      return conversations;
+    } catch (error) {
+      this.logger.error(error);
+      throw new BadRequestException("Can't get user conversations", error.message);
     }
   }
 
