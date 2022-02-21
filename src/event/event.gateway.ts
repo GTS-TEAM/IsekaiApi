@@ -53,10 +53,10 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // delete message.sender.emailVerified;
       delete message.sender.created_at;
       const receiverClientId = this.connectedUsers.find((u) => u.userId === data.receiverId)?.clientId;
-      client.to(receiverClientId).emit('message', message);
+      this.server.to([client.id, receiverClientId]).emit('message', message);
     } catch (error) {
       this.logger.error(error);
-      client.to(client.id).emit('message', { error: error.response, message: error.message });
+      this.server.to(client.id).emit('message', { error: error.response, message: error.message });
     }
   }
 }
