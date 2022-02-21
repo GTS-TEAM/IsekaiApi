@@ -37,7 +37,9 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       this.logger.debug(user.username + ' connected');
       this.connectedUsers.push({ userId: user.id, clientId: client.id });
+      this.server.to(client.id).emit('connect-response', user.username);
     } catch (error) {
+      this.server.emit('connect-response', error.message);
       this.logger.error(error);
     }
   }
