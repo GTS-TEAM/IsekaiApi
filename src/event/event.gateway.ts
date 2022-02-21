@@ -25,17 +25,25 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleDisconnect(client: Socket) {
     try {
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token as string, TokenType.AccessToken);
+      const index = this.connectedUsers.indexOf(this.connectedUsers.find((u) => u.clientId === client.id));
+      if (index > -1) {
+        this.connectedUsers.splice(index, 1);
+      }
       this.logger.debug(user.username + ' disconnected');
-    } catch (error) {}
+    } catch (error) {
+      this.logger.error(error);
+      this.server.emit('error', error.message);
+    }
   }
 
   async handleConnection(client) {
     try {
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
       this.connectedUsers.push({ userId: user.id, clientId: client.id });
+      this.logger.debug(user.username + ' connected');
       this.server.to(client.id).emit('connect-response', user.username);
     } catch (error) {
-      this.server.emit('connect-response', error.message);
+      this.server.to(client.id).emit('connect-response', error.message);
       this.logger.error(error);
     }
   }

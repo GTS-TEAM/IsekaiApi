@@ -23,7 +23,7 @@ export class ConversationController {
     return await this.conversationService.getMessages(req.user + '-' + receiverId, limit, offset);
   }
 
-  @ApiResponse({ status: 200, description: 'Trả về các cuộc hội thoại của người dùng' })
+  @ApiResponse({ status: 200, description: "Return user's conversations" })
   @Get('/')
   async getUserConversations(@Request() req) {
     return await this.conversationService.getUserConversations(req.user);

@@ -32,6 +32,19 @@ async function bootstrap() {
         filename: 'logs/error/Errors-' + new Date(Date.now()).toDateString() + '.log',
         level: 'error',
       }),
+      new winston.transports.File({
+        filename: 'logs/debug/Debug-' + new Date(Date.now()).toDateString() + '.log',
+        level: 'debug',
+        handleExceptions: true,
+        format: winston.format.combine(
+          winston.format.uncolorize(),
+          winston.format.errors({ stack: true }),
+          winston.format.timestamp(),
+          winston.format.printf(({ level, message, context, timestamp, stack, trace }) => {
+            return `${timestamp} [${context}] ${level}: ${message} ${stack ? stack : ''} ${trace ? trace : ''}`;
+          }),
+        ),
+      }),
     ],
     exceptionHandlers: [new winston.transports.File({ filename: 'logs/exceptions.log' })],
     format: winston.format.combine(
