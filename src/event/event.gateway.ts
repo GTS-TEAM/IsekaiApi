@@ -1,4 +1,4 @@
-import { BadGatewayException, Logger, UseFilters } from '@nestjs/common';
+import { Logger, UseFilters } from '@nestjs/common';
 import {
   BaseWsExceptionFilter,
   OnGatewayConnection,
@@ -10,7 +10,6 @@ import {
 import { Socket, Server } from 'socket.io';
 
 import { ConversationService } from 'src/conversation/conversation.service';
-import { isBuffer } from 'util';
 import { TokenType } from '../common/constants/enum';
 import { ConversationEntity } from '../conversation/entities/conversation';
 import { TokenService } from '../token/token.service';
