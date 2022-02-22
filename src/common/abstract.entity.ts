@@ -1,6 +1,7 @@
 import { customAlphabet } from 'nanoid';
 import { BeforeInsert, CreateDateColumn, PrimaryColumn, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { AbstractDto } from './abstract.dto';
+import * as utils from '../common/utils/generate-id';
 
 export abstract class AbstractEntity<DTO extends AbstractDto = AbstractDto, O = never> {
   @PrimaryColumn({ type: 'bigint' })
@@ -14,8 +15,6 @@ export abstract class AbstractEntity<DTO extends AbstractDto = AbstractDto, O = 
 
   @BeforeInsert()
   generateId() {
-    const alphabet = '0123456789';
-    const id = customAlphabet(alphabet, 8);
-    this.id = (11000000000 + parseInt(id())).toString();
+    this.id = utils.generateId({ constraint: 11000000000 });
   }
 }

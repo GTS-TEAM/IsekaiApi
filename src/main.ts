@@ -63,7 +63,10 @@ async function bootstrap() {
   if (process.env.NODE_ENV === 'production') {
     appOptions = { ...appOptions, cors: true, logger };
   }
-  const app = await NestFactory.create(AppModule, appOptions);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+    ...appOptions,
+  });
   app.setGlobalPrefix('api');
   app.enableCors();
   app.use(compression());

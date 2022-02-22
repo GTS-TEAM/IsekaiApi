@@ -11,21 +11,21 @@ import { CreateConversationDto } from './dtos/create-conversation.dto';
 @Controller('conversations')
 export class ConversationController {
   logger = new Logger(ConversationController.name);
-  constructor(private readonly conversationService: ConversationService, private readonly userService: UserService) {}
+  constructor(private readonly conversationService: ConversationService) {}
 
-  @Get('/message/:receiverId')
+  @Get('/message/:conversation_id')
   async getMessages(
     @Request() req,
-    @Param('receiverId') receiverId: string,
+    @Param('conversation_id') conversation_id: string,
     @Query('limit') limit: number,
     @Query('offset') offset: number,
   ) {
-    return await this.conversationService.getMessages(req.user + '-' + receiverId, limit, offset);
+    return await this.conversationService.getMessages(conversation_id, limit, offset);
   }
 
   @ApiResponse({ status: 200, description: "Return user's conversations" })
   @Get('/')
-  async getUserConversations(@Request() req) {
-    return await this.conversationService.getUserConversations(req.user);
+  async getUserConversations(@Request() req, @Query('limit') limit: number, @Query('offset') offset: number) {
+    return await this.conversationService.getUserConversations(req.user, limit, offset);
   }
 }
