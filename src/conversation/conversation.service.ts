@@ -194,4 +194,41 @@ export class ConversationService {
       throw new Error(error);
     }
   }
+
+  async removeUserFromGroupConversation(id: string, user: UserEntity, user1: UserEntity) {
+    try {
+      const conversation = await this.getGroupConversation(id);
+
+      if (!conversation) {
+        throw new BadRequestException('Conversation not found');
+      }
+      conversation.members.forEach((member) => {
+        this.logger.log(JSON.stringify(member));
+      });
+      const isJoined = conversation.members.find((m) => m.id === user1.id);
+      if (!isJoined) {
+        throw new Error('User not joined');
+      }
+      conversation.members = conversation.members.filter((m) => m.id !== user1.id);
+      conversation.last_message = `${user.username} removed ${user1.username} from the group`;
+      const messageEntity = this.messageRepo.create({
+        content: `${user.username} removed ${user1.username} from the group`,
+        type: MessageType.SYSTEM,
+        conversation,
+      });
+      await this.conversationRepo.save(conversation);
+      return await this.messageRepo.save(messageEntity);
+    } catch (error) {
+      this.logger.error(error);
+      throw new Error(error);
+    }
+  }
+
+  async deleteAllMessages() {
+    try {
+      await this.messageRepo.clear();
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
 }
