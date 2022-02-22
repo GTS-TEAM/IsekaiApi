@@ -32,7 +32,6 @@ export class ConversationController {
   }
   @Get('/message/:conversation_id')
   async getMessages(
-    @Request() req,
     @Param('conversation_id') conversation_id: string,
     @Query('limit') limit: number,
     @Query('offset') offset: number,

@@ -15,6 +15,6 @@ export abstract class AbstractEntity<DTO extends AbstractDto = AbstractDto, O = 
 
   @BeforeInsert()
   generateId() {
-    this.id = utils.generateId({ constraint: 11000000000 });
+    this.id = utils.generateId(8, { constraint: 11000000000 });
   }
 }

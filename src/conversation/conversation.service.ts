@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Like, Not, Repository } from 'typeorm';
 import { reverseConversationId } from '../common/utils/reverse-conversation-id';
@@ -70,6 +70,8 @@ export class ConversationService {
         .where('members.id = :id', { id: userId })
         .leftJoinAndSelect('conversations.members', 'all_users')
         .orderBy('conversations.updated_at', 'DESC')
+        .skip(offset)
+        .take(limit)
         .getMany();
 
       const conversations = await converQ;
@@ -97,7 +99,7 @@ export class ConversationService {
   async createGroupConversation(creator: UserEntity, members: UserEntity[]) {
     try {
       const conversation = this.conversationRepo.create({
-        id: utils.generateId({ size: 11, constraint: 0 }),
+        id: utils.generateId(11),
         last_message: `${creator.username} created a group`,
         type: ConversationType.GROUP,
         members: [creator, ...members],
@@ -226,9 +228,10 @@ export class ConversationService {
 
   async deleteAllMessages() {
     try {
-      await this.messageRepo.clear();
+      await this.messageRepo.delete({});
     } catch (error) {
       this.logger.error(error);
+      throw new InternalServerErrorException("Can't delete all messages");
     }
   }
 }
