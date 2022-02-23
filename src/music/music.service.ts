@@ -15,12 +15,12 @@ export class MusicService {
     private readonly uploadService: UploadService,
   ) {}
 
-  async getAllMusic(userId: string): Promise<any> {
+  async getAllMusic(userId: string): Promise<MusicEntity[]> {
     const musics = await this.musicRepo.find({ order: { created_at: 'DESC' }, relations: ['uploader'] });
     return musics;
   }
 
-  async uploadMusic(userId: string, file: Express.Multer.File) {
+  async uploadMusic(userId: string, file: Express.Multer.File): Promise<MusicEntity> {
     try {
       const user = await this.userService.getUserById(userId);
       if (!user) throw new BadRequestException('Không tìm thấy người dùng');
@@ -37,7 +37,7 @@ export class MusicService {
     }
   }
 
-  async uploadByYoutube(userId: string, url: string): Promise<any> {
+  async uploadByYoutube(userId: string, url: string): Promise<MusicEntity> {
     try {
       const user = await this.userService.getUserById(userId);
       const uploadApiRes = await this.uploadService.youtubeUrlToMp3(url);
