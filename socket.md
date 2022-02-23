@@ -90,3 +90,11 @@
     ```
     Return on event "message" type Message
     ```
+
+  **_On: "error"_**
+
+  ```
+  {
+    mesage:"string"
+  }
+  ```

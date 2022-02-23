@@ -91,7 +91,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
       } else {
         // group
-        conversation = await this.conversationService.getGroupConversation(convId);
+        conversation = await this.conversationService.getConversationById(convId);
       }
       convId = conversation.id;
 

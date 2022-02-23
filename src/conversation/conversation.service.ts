@@ -34,28 +34,29 @@ export class ConversationService {
   //     this.logger.error(error);
   //   }
   // }
-  async getPrivateConversation(userId: string, targetId: string) {
+
+  async getPrivateConversation(user: string, receiverId: string) {
     try {
-      /**
-       * ('conversations.id = :id', { id: `${userId}-${targetId}` })
-        .orWhere('conversations.id = :id', { id: `${targetId}-${userId}` })
-       */
-      const ids = [`${userId}-${targetId}`, `${targetId}-${userId}`];
       const conversation = await this.conversationRepo
         .createQueryBuilder('conversations')
-        .whereInIds(ids)
-        .leftJoinAndSelect('conversations.members', 'members')
-        // .andWhere('conversations.type = :type', { type: ConversationType.PRIVATE })
-        // .leftJoinAndSelect('conversations.members', 'all_users')
         .orderBy('conversations.updated_at', 'DESC')
+        .leftJoin('conversations.members', 'members')
+        .where('members.id =:id', { id: user })
+        .andWhere('members.id =:id', { id: receiverId })
+        .andWhere('conversations.type =:type', { type: ConversationType.PRIVATE })
+        .leftJoinAndSelect('conversations.members', 'all_users')
         .getOne();
+      if (!conversation) {
+        throw new Error('Conversation not found');
+      }
       return conversation;
     } catch (error) {
       this.logger.error(error);
+      throw new InternalServerErrorException('Can not get conversation', error.message);
     }
   }
 
-  async getGroupConversation(id: string) {
+  async getConversationById(id: string) {
     return await this.conversationRepo.findOne({
       where: { id },
       relations: ['members'],
@@ -170,7 +171,7 @@ export class ConversationService {
 
   async addUserToGroupConversation(id: string, user: UserEntity, user1: UserEntity) {
     try {
-      const conversation = await this.getGroupConversation(id);
+      const conversation = await this.getConversationById(id);
 
       if (!conversation) {
         throw new BadRequestException('Conversation not found');
@@ -199,7 +200,7 @@ export class ConversationService {
 
   async removeUserFromGroupConversation(id: string, user: UserEntity, user1: UserEntity) {
     try {
-      const conversation = await this.getGroupConversation(id);
+      const conversation = await this.getConversationById(id);
 
       if (!conversation) {
         throw new BadRequestException('Conversation not found');

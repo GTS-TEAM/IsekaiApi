@@ -11,11 +11,13 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UserService } from 'src/user/users.service';
 import { ConversationService } from './conversation.service';
 import { CreateConversationDto } from './dtos/create-conversation.dto';
+import { ConversationEntity } from './entities/conversation';
+import { MessageEntity } from './entities/message';
 
 @ApiTags('Conversation')
 @UseGuards(JwtAuthGuard)
@@ -25,11 +27,13 @@ export class ConversationController {
   logger = new Logger(ConversationController.name);
   constructor(private readonly conversationService: ConversationService) {}
 
-  @ApiResponse({ status: 200, description: "Return user's conversations" })
+  @ApiResponse({ status: 200, description: "Return user's conversations", type: ConversationEntity, isArray: true })
   @Get('/')
   async getUserConversations(@Request() req, @Query('limit') limit: number, @Query('offset') offset: number) {
     return await this.conversationService.getUserConversations(req.user, limit, offset);
   }
+
+  @ApiOkResponse({ status: 200, description: 'Return message in conversation', type: MessageEntity })
   @Get('/message/:conversation_id')
   async getMessages(
     @Param('conversation_id') conversation_id: string,
@@ -37,6 +41,18 @@ export class ConversationController {
     @Query('offset') offset: number,
   ) {
     return await this.conversationService.getMessages(conversation_id, limit, offset);
+  }
+
+  @ApiOkResponse({ status: 200, description: 'Return conversation', type: ConversationEntity })
+  @Get('/:receiver_id')
+  async getPrivateConversation(@Request() req, @Param('receiver_id') conversation_id: string): Promise<ConversationEntity> {
+    return await this.conversationService.getPrivateConversation(req.user, conversation_id);
+  }
+
+  @ApiOkResponse({ status: 200, description: 'Return conversation', type: ConversationEntity })
+  @Get('/:conversation_id')
+  async getConversationById(@Param('conversation_id') conversation_id: string): Promise<ConversationEntity> {
+    return await this.conversationService.getConversationById(conversation_id);
   }
 
   @Delete('/all-message-dev')
