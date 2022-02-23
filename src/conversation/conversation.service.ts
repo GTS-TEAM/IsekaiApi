@@ -8,6 +8,8 @@ import { MessageEntity } from './entities/message';
 import * as utils from '../common/utils/generate-id';
 import { ConversationType, MessageType } from '../common/constants/enum';
 import { AnErrorOccuredException, ConversationNotFoundException } from '../common/error/error.dto';
+import { IConversationFields } from '../interfaces/conversation-field.interface';
+import { IPage } from '../interfaces/page.interface';
 
 @Injectable()
 export class ConversationService {
@@ -25,7 +27,7 @@ export class ConversationService {
    * COMMON FUNCTIONS
    */
 
-  async getPrivateConversation(user: string, receiverId: string) {
+  async getPrivateConversation(user: string, receiverId: string): Promise<ConversationEntity> {
     try {
       const conversation = await this.conversationRepo
         .createQueryBuilder('conversations')
@@ -50,21 +52,17 @@ export class ConversationService {
     });
   }
 
-  async getUserConversations(userId: string, limit?: number, offset?: number) {
+  async getUserConversations(userId: string, page?: IPage): Promise<ConversationEntity[]> {
     try {
-      const converQ = this.conversationRepo
+      const queryB = await this.conversationRepo
         .createQueryBuilder('conversations')
         .leftJoin('conversations.members', 'members')
         .where('members.id = :id', { id: userId })
-        .leftJoinAndSelect('conversations.members', 'all_users')
-        .orderBy('conversations.updated_at', 'DESC')
-        .skip(offset)
-        .take(limit)
-        .getMany();
-
-      const conversations = await converQ;
-
-      return conversations;
+        .leftJoinAndSelect('conversations.members', 'all_users');
+      if (page) {
+        queryB.orderBy('conversations.updated_at', 'DESC').skip(page.offset).take(page.limit);
+      }
+      return queryB.getMany();
     } catch (error) {
       this.logger.error(error);
       throw new AnErrorOccuredException(error.message);
@@ -85,7 +83,7 @@ export class ConversationService {
     }
   }
 
-  async createGroupConversation(creator: UserEntity, members: UserEntity[]) {
+  async createGroupConversation(creator: UserEntity, members: UserEntity[]): Promise<MessageEntity[]> {
     try {
       const last_message = `${creator.username} đã thêm ${members[members.length - 1].username} vào cuộc trò chuyện`;
 
@@ -126,7 +124,7 @@ export class ConversationService {
     }
   }
 
-  async leaveGroupConversation(user: UserEntity, conversationId: string) {
+  async leaveGroupConversation(user: UserEntity, conversationId: string): Promise<MessageEntity> {
     try {
       const last_message = `${user.username} đã rời khỏi cuộc trò chuyện`;
       const conversation = await this.conversationRepo.findOne({
@@ -160,7 +158,11 @@ export class ConversationService {
     }
   }
 
-  async updateGroupConversation(user: UserEntity, conversationId: string, fields?: { name?: string; avatar?: string }) {
+  async updateGroupConversation(
+    user: UserEntity,
+    conversationId: string,
+    fields: IConversationFields,
+  ): Promise<MessageEntity> {
     try {
       let MESS = '';
 
@@ -199,6 +201,7 @@ export class ConversationService {
 
     try {
       const messages = [];
+
       members.forEach(async (member) => {
         const message = this.messageRepo.create({
           content: `${user.username} đã thêm ${member.username} vào cuộc trò chuyện`,
@@ -221,34 +224,28 @@ export class ConversationService {
       throw new AnErrorOccuredException(error.message);
     }
   }
-  async getMessages(conversationId: string, limit: number, offset: number): Promise<MessageEntity[]> {
-    const messages = await this.messageRepo
+  async getMessages(conversationId: string, page: IPage): Promise<MessageEntity[]> {
+    return await this.messageRepo
       .createQueryBuilder('messages')
-      .limit(limit)
-      .offset(offset)
+      .limit(page.limit)
+      .offset(page.offset)
       .orderBy('messages.created_at', 'DESC')
       .leftJoin('messages.conversation', 'conversation')
       .where('conversation.id = :conversationId', { conversationId })
       .leftJoinAndSelect('messages.sender', 'users')
       .select(['users.id', 'users.username', 'users.avatar', 'messages.id', 'messages.content', 'messages.created_at'])
       .getMany();
-    return messages;
   }
 
-  async getMessagesByCombineId(
-    userId: string,
-    receiver_id: string,
-    limit: number,
-    offset: number,
-  ): Promise<MessageEntity[]> {
+  async getMessagesByCombineId(userId: string, receiver_id: string, page: IPage): Promise<MessageEntity[]> {
     const conversationId = userId + '-' + receiver_id;
 
     const converIdReverse = reverseConversationId(conversationId);
-    console.log(conversationId);
-    const messages = await this.messageRepo
+
+    return await this.messageRepo
       .createQueryBuilder('messages')
-      .limit(limit)
-      .offset(offset)
+      .limit(page.limit)
+      .offset(page.offset)
       .orderBy('messages.created_at', 'DESC')
       .leftJoinAndSelect('messages.conversation', 'conversation')
       .where('conversation.id = :conversationId', { conversationId })
@@ -256,7 +253,6 @@ export class ConversationService {
       .leftJoinAndSelect('messages.sender', 'users')
       .select(['users.id', 'users.username', 'users.avatar', 'messages.id', 'messages.content', 'messages.created_at'])
       .getMany();
-    return messages;
   }
   async deleteGroupConversation(user: UserEntity, conversationId: string) {
     try {
@@ -312,13 +308,12 @@ export class ConversationService {
       if (!conversation) {
         throw new ConversationNotFoundException();
       }
-      conversation.members.forEach((member) => {
-        this.logger.log(JSON.stringify(member));
-      });
+
       const isJoined = conversation.members.find((m) => m.id === user1.id);
       if (!isJoined) {
         throw new Error('Người dùng chưa tham gia cuộc trò chuyện');
       }
+
       conversation.members = conversation.members.filter((m) => m.id !== user1.id);
       conversation.last_message = MESS;
       const messageEntity = this.messageRepo.create({

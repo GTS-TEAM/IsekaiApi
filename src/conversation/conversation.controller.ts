@@ -30,7 +30,7 @@ export class ConversationController {
   @ApiResponse({ status: 200, description: "Return user's conversations", type: ConversationEntity, isArray: true })
   @Get('/')
   async getUserConversations(@Request() req, @Query('limit') limit: number, @Query('offset') offset: number) {
-    return await this.conversationService.getUserConversations(req.user, limit, offset);
+    return await this.conversationService.getUserConversations(req.user, { limit, offset });
   }
 
   @ApiOkResponse({ status: 200, description: 'Return message in conversation', type: MessageEntity })
@@ -40,7 +40,7 @@ export class ConversationController {
     @Query('limit') limit: number,
     @Query('offset') offset: number,
   ) {
-    return await this.conversationService.getMessages(conversation_id, limit, offset);
+    return await this.conversationService.getMessages(conversation_id, { limit, offset });
   }
 
   @ApiOkResponse({ status: 200, description: 'Return conversation', type: ConversationEntity })
@@ -62,7 +62,7 @@ export class ConversationController {
     @Query('limit') limit: number,
     @Query('offset') offset: number,
   ) {
-    return await this.conversationService.getMessagesByCombineId(req.user, receiver_id, limit, offset);
+    return await this.conversationService.getMessagesByCombineId(req.user, receiver_id, { limit, offset });
   }
 
   @Delete('/all-message-dev')
