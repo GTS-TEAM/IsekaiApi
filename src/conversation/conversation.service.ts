@@ -1,6 +1,6 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Like, Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { reverseConversationId } from '../common/utils/reverse-conversation-id';
 import { UserEntity } from '../user/user';
 import { ConversationEntity } from './entities/conversation';
@@ -87,20 +87,18 @@ export class ConversationService {
 
   async createGroupConversation(creator: UserEntity, members: UserEntity[]) {
     try {
-      const MESS = `${creator.username} đã tạo cuộc trò chuyện`;
-      console.log(utils.generateId(11));
-      console.log(utils.generateId(11));
+      const last_message = `${creator.username} đã thêm ${members[members.length - 1].username} vào cuộc trò chuyện`;
 
       const conversation = this.conversationRepo.create({
         id: utils.generateId(11),
-        last_message: MESS,
         type: ConversationType.GROUP,
+        last_message,
         members: [creator, ...members],
       });
       const messages = [];
 
       const message = this.messageRepo.create({
-        content: MESS,
+        content: `${creator.username} đã tạo cuộc trò chuyện`,
         type: MessageType.SYSTEM,
         conversation,
       });
@@ -130,7 +128,7 @@ export class ConversationService {
 
   async leaveGroupConversation(user: UserEntity, conversationId: string) {
     try {
-      const last_message = `${user.username} left the conversation`;
+      const last_message = `${user.username} đã rời khỏi cuộc trò chuyện`;
       const conversation = await this.conversationRepo.findOne({
         where: { id: conversationId },
         relations: ['members'],
@@ -141,7 +139,7 @@ export class ConversationService {
       }
 
       const message = this.messageRepo.create({
-        content: `${user.username} đã rời khỏi cuộc trò chuyện`,
+        content: last_message,
         type: MessageType.SYSTEM,
         conversation,
       });
@@ -237,6 +235,29 @@ export class ConversationService {
     return messages;
   }
 
+  async getMessagesByCombineId(
+    userId: string,
+    receiver_id: string,
+    limit: number,
+    offset: number,
+  ): Promise<MessageEntity[]> {
+    const conversationId = userId + '-' + receiver_id;
+
+    const converIdReverse = reverseConversationId(conversationId);
+    console.log(conversationId);
+    const messages = await this.messageRepo
+      .createQueryBuilder('messages')
+      .limit(limit)
+      .offset(offset)
+      .orderBy('messages.created_at', 'DESC')
+      .leftJoinAndSelect('messages.conversation', 'conversation')
+      .where('conversation.id = :conversationId', { conversationId })
+      .orWhere('conversation.id = :id', { id: converIdReverse })
+      .leftJoinAndSelect('messages.sender', 'users')
+      .select(['users.id', 'users.username', 'users.avatar', 'messages.id', 'messages.content', 'messages.created_at'])
+      .getMany();
+    return messages;
+  }
   async deleteGroupConversation(user: UserEntity, conversationId: string) {
     try {
       const conversation = await this.conversationRepo.findOne({

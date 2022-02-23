@@ -44,7 +44,7 @@ export class ConversationController {
   }
 
   @ApiOkResponse({ status: 200, description: 'Return conversation', type: ConversationEntity })
-  @Get('/:receiver_id')
+  @Get('/r/:receiver_id')
   async getPrivateConversation(@Request() req, @Param('receiver_id') conversation_id: string): Promise<ConversationEntity> {
     return await this.conversationService.getPrivateConversation(req.user, conversation_id);
   }
@@ -53,6 +53,16 @@ export class ConversationController {
   @Get('/:conversation_id')
   async getConversationById(@Param('conversation_id') conversation_id: string): Promise<ConversationEntity> {
     return await this.conversationService.getConversationById(conversation_id);
+  }
+
+  @Get('/:receiver_id/messages')
+  async getMessagesByCombineId(
+    @Request() req,
+    @Param('receiver_id') receiver_id: string,
+    @Query('limit') limit: number,
+    @Query('offset') offset: number,
+  ) {
+    return await this.conversationService.getMessagesByCombineId(req.user, receiver_id, limit, offset);
   }
 
   @Delete('/all-message-dev')
