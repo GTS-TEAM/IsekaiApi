@@ -35,21 +35,21 @@
     {
     content: string,
     conversation: {
-        id: 11010752240-11014607850,
-        type: private
+        id: string,
+        type: ConversationType
       },
     sender: {
-        id: 11010752240,
-        updated_at: 2022-02-20T15:23:39.136Z,
+        id: string,
+        updated_at:Date,
         username: Minh Nguyen,
         roles: user,
         avatar: string,
-        background: null,
-        bio: null,
-        phone: null,
-        date: null,
-        address: null,
-        last_activity: 2022-02-20T15:23:39.134Z
+        background: string,
+        bio: string,
+        phone: string,
+        date: Date,
+        address: string,
+        last_activity: Date
       },
     id: 11072867748,
     created_at: 2022-02-20T15:24:08.883Z,
@@ -62,9 +62,29 @@
     **_Emit:_**
 
     ```
+    [membersId]
+
+    example:["1000123","1000456","1000789",...]
+    - membersId length > 2
+    ```
+
+    **_On:_**
+
+    ```
+    Return on event "message" type Message
+    ```
+
+  - **add-members-to-group:**
+
+    **_Emit:_**
+
+    ```
     {
-      user1_id: string,
-      user2_id:string
+        "membersId":[
+            "string",
+            "string"
+        ],
+        "conversationId":"string"
     }
     ```
 
@@ -74,14 +94,33 @@
     Return on event "message" type Message
     ```
 
-  - **add-user-to-group:**
+  - **leave-group:**
 
     **_Emit:_**
 
     ```
     {
-      user_id: string,
       conversationId:string
+    }
+    ```
+
+    **_On:_**
+
+    ```
+    Return on event "message" type Message
+    ```
+
+  - **update-group:**
+
+    **_Emit:_**
+
+    ```
+    {
+      conversationId: string;
+      fields: {
+        name?: string;
+        avatar?: string;
+      }
     }
     ```
 

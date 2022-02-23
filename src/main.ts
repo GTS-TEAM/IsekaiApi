@@ -13,7 +13,16 @@ import { NotFoundExceptionFilter } from './common/error/catch.dto';
 async function bootstrap() {
   const logger = WinstonModule.createLogger({
     transports: [
-      new winston.transports.Console(),
+      new winston.transports.Console({
+        format: winston.format.combine(
+          winston.format.uncolorize(),
+          winston.format.errors({ stack: true }),
+          winston.format.timestamp(),
+          winston.format.printf(({ level, message, context, timestamp, stack, trace }) => {
+            return `${timestamp} [${context}] ${level}: ${message} ${stack ? stack : ''} ${trace ? trace : ''}`;
+          }),
+        ),
+      }),
 
       new winston.transports.File({
         filename: 'logs/combined/Combined-' + new Date(Date.now()).toDateString() + '.log',
@@ -53,8 +62,8 @@ async function bootstrap() {
       }),
       winston.format.printf(
         (log) =>
-          `[Nest] - ${[log.timestamp]} ${log.level.toUpperCase()} [${log.context ? log.context : log.stack}] : ${
-            log.message
+          `[Nest] - ${[log.timestamp]} ${log.level.toUpperCase()} [${log.context && log.context}] : ${
+            log.message + ' ' + log.stack + ' ' + log.trace
           }`,
       ),
     ),

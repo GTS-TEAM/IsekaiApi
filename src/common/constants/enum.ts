@@ -59,6 +59,7 @@ export enum NotiType {
 export enum ConversationType {
   PRIVATE = 'private',
   GROUP = 'group',
+  DELETED = 'deleted',
 }
 
 export enum PhotoRouterType {
@@ -70,4 +71,9 @@ export enum PostType {
   AVATAR = 'avatar',
   SHARE = 'share',
   POST = 'post',
+}
+
+export enum PostPrivacy {
+  PUBLIC = 'public',
+  PRIVATE = 'private',
 }

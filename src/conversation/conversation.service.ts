@@ -7,6 +7,7 @@ import { ConversationEntity } from './entities/conversation';
 import { MessageEntity } from './entities/message';
 import * as utils from '../common/utils/generate-id';
 import { ConversationType, MessageType } from '../common/constants/enum';
+import { AnErrorOccuredException, ConversationNotFoundException } from '../common/error/error.dto';
 
 @Injectable()
 export class ConversationService {
@@ -24,17 +25,6 @@ export class ConversationService {
    * COMMON FUNCTIONS
    */
 
-  // async getConversation(conversationId: string): Promise<ConversationEntity> {
-  //   try {
-  //     return await this.conversationRepo
-  //       .createQueryBuilder('conversations')
-  //       .innerJoin('conversations.members', 'members')
-  //       .getOne();
-  //   } catch (error) {
-  //     this.logger.error(error);
-  //   }
-  // }
-
   async getPrivateConversation(user: string, receiverId: string) {
     try {
       const conversation = await this.conversationRepo
@@ -46,13 +36,10 @@ export class ConversationService {
         .andWhere('conversations.type =:type', { type: ConversationType.PRIVATE })
         .leftJoinAndSelect('conversations.members', 'all_users')
         .getOne();
-      if (!conversation) {
-        throw new Error('Conversation not found');
-      }
       return conversation;
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException('Can not get conversation', error.message);
+      throw new AnErrorOccuredException(error.message);
     }
   }
 
@@ -80,11 +67,11 @@ export class ConversationService {
       return conversations;
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException("Can't get user conversations", error.message);
+      throw new AnErrorOccuredException(error.message);
     }
   }
 
-  async createConversation(members: UserEntity[]): Promise<ConversationEntity> {
+  async createPrivateConversation(members: UserEntity[]): Promise<ConversationEntity> {
     try {
       const conversation = this.conversationRepo.create({
         id: members.map((m) => m.id).join('-'),
@@ -94,36 +81,149 @@ export class ConversationService {
       return conversation;
     } catch (error) {
       this.logger.error(error);
+      throw new AnErrorOccuredException(error.message);
     }
   }
 
   async createGroupConversation(creator: UserEntity, members: UserEntity[]) {
     try {
+      const MESS = `${creator.username} đã tạo cuộc trò chuyện`;
+      console.log(utils.generateId(11));
+      console.log(utils.generateId(11));
+
       const conversation = this.conversationRepo.create({
         id: utils.generateId(11),
-        last_message: `${creator.username} created a group`,
+        last_message: MESS,
         type: ConversationType.GROUP,
         members: [creator, ...members],
       });
+      const messages = [];
+
       const message = this.messageRepo.create({
-        content: `${creator.username} created a group`,
+        content: MESS,
         type: MessageType.SYSTEM,
         conversation,
       });
 
-      await this.conversationRepo.save(conversation);
-      return await this.messageRepo.save(message);
+      messages.push(message);
+
+      members.forEach(async (member) => {
+        const m = this.messageRepo.create({
+          content: `${creator.username} đã thêm ${member.username} vào cuộc trò chuyện`,
+          type: MessageType.SYSTEM,
+          conversation,
+        });
+        messages.push(m);
+      });
+
+      try {
+        await this.conversationRepo.save(conversation);
+      } catch (error) {
+        console.log(error);
+      }
+      return await this.messageRepo.save(messages);
     } catch (error) {
       this.logger.error(error);
+      throw new AnErrorOccuredException(error.message);
     }
   }
 
+  async leaveGroupConversation(user: UserEntity, conversationId: string) {
+    try {
+      const last_message = `${user.username} left the conversation`;
+      const conversation = await this.conversationRepo.findOne({
+        where: { id: conversationId },
+        relations: ['members'],
+      });
+
+      if (!conversation) {
+        throw new ConversationNotFoundException();
+      }
+
+      const message = this.messageRepo.create({
+        content: `${user.username} đã rời khỏi cuộc trò chuyện`,
+        type: MessageType.SYSTEM,
+        conversation,
+      });
+
+      const members = conversation.members.filter((m) => m.id !== user.id);
+
+      if (members.length === 0) {
+        await this.conversationRepo.delete({ id: conversationId });
+      } else {
+        conversation.members = members;
+        conversation.last_message = last_message;
+        await this.conversationRepo.save(conversation);
+      }
+
+      return await this.messageRepo.save(message);
+    } catch (error) {
+      throw new AnErrorOccuredException(error.message);
+    }
+  }
+
+  async updateGroupConversation(user: UserEntity, conversationId: string, fields?: { name?: string; avatar?: string }) {
+    try {
+      let MESS = '';
+
+      if (fields.name) {
+        MESS = `${user.username} đã đổi tên cuộc trò chuyện thành ${fields.name}`;
+      } else if (fields.avatar) {
+        MESS = `${user.username} đã đổi ảnh đại diện cuộc trò chuyện`;
+      }
+
+      await this.conversationRepo.update({ id: conversationId }, fields);
+      const message = this.messageRepo.create({
+        content: MESS,
+        type: MessageType.SYSTEM,
+        conversation: await this.conversationRepo.findOne({ id: conversationId }),
+      });
+      return await this.messageRepo.save(message);
+    } catch (error) {
+      this.logger.error(error);
+      throw new AnErrorOccuredException(error.message);
+    }
+  }
+
+  async addMembersToGroupConversation(
+    user: UserEntity,
+    conversationId: string,
+    members: UserEntity[],
+  ): Promise<MessageEntity[]> {
+    const conversation = await this.conversationRepo.findOne({
+      where: { id: conversationId },
+      relations: ['members'],
+    });
+
+    if (!conversation) {
+      throw new ConversationNotFoundException();
+    }
+
+    try {
+      const messages = [];
+      members.forEach(async (member) => {
+        const message = this.messageRepo.create({
+          content: `${user.username} đã thêm ${member.username} vào cuộc trò chuyện`,
+          type: MessageType.SYSTEM,
+          conversation,
+        });
+        messages.push(message);
+      });
+
+      const last_message = `${user.username} đã thêm ${members[members.length - 1]} vào cuộc trò chuyện`;
+
+      const membersAdded = conversation.members.concat(members);
+      conversation.members = membersAdded;
+      conversation.last_message = last_message;
+      await this.conversationRepo.save(conversation);
+
+      return await this.messageRepo.save(messages);
+    } catch (error) {
+      this.logger.error(error);
+      throw new AnErrorOccuredException(error.message);
+    }
+  }
   async getMessages(conversationId: string, limit: number, offset: number): Promise<MessageEntity[]> {
-    // get messages of conversation by conversation id
-    // conversationId.split('-').reduce((id1, id2) => {
-    //   return id1 + '-' + id2;
-    // });
-    // const converIdReverse = reverseConversationId(conversationId);
     const messages = await this.messageRepo
       .createQueryBuilder('messages')
       .limit(limit)
@@ -134,24 +234,38 @@ export class ConversationService {
       .leftJoinAndSelect('messages.sender', 'users')
       .select(['users.id', 'users.username', 'users.avatar', 'messages.id', 'messages.content', 'messages.created_at'])
       .getMany();
-    // const messages = await this.messageRepo
-    //   .createQueryBuilder('messages')
-    //   .limit(limit)
-    //   .offset(offset)
-    //   .orderBy('messages.created_at', 'DESC')
-    //   .andWhere('conversation.id = :conversationId', { conversationId })
-    //   .orWhere('conversation.id = :conversationId', { conversationId: converIdReverse })
-    //   .leftJoinAndSelect('messages.conversation', 'conversation')
-    //   .leftJoinAndSelect('messages.sender', 'users')
-    //   .select(['users.id', 'users.username', 'users.avatar', 'messages.id', 'messages.content', 'messages.created_at'])
-    //   .getMany();
     return messages;
+  }
+
+  async deleteGroupConversation(user: UserEntity, conversationId: string) {
+    try {
+      const conversation = await this.conversationRepo.findOne({
+        where: { id: conversationId },
+        relations: ['members'],
+      });
+      if (!conversation) {
+        throw new ConversationNotFoundException();
+      }
+
+      const message = this.messageRepo.create({
+        content: `${user.username} đã xóa nhóm`,
+        type: MessageType.SYSTEM,
+        conversation,
+      });
+
+      await this.conversationRepo.update({ id: conversationId }, { type: ConversationType.DELETED });
+      return await this.messageRepo.save(message);
+    } catch (error) {
+      this.logger.error(error);
+      throw new AnErrorOccuredException(error.message);
+    }
   }
 
   async createMessage(conversationId: string, content: string, senderId: string): Promise<MessageEntity> {
     try {
       const conversation = await this.conversationRepo.findOne({
         where: { id: conversationId },
+        relations: ['members'],
       });
       conversation.last_message = content;
 
@@ -162,60 +276,32 @@ export class ConversationService {
         sender,
         conversation,
       });
-      this.conversationRepo.save(conversation);
-      return await this.messageRepo.save(messageEntity);
-    } catch (error) {
-      this.logger.error(error);
-    }
-  }
-
-  async addUserToGroupConversation(id: string, user: UserEntity, user1: UserEntity) {
-    try {
-      const conversation = await this.getConversationById(id);
-
-      if (!conversation) {
-        throw new BadRequestException('Conversation not found');
-      }
-      conversation.members.forEach((member) => {
-        this.logger.log(JSON.stringify(member));
-      });
-      const isJoined = conversation.members.find((m) => m.id === user1.id);
-      if (isJoined) {
-        throw new Error('User already joined');
-      }
-      conversation.members.push(user);
-      conversation.last_message = `${user.username} added ${user1.username} to the group`;
-      const messageEntity = this.messageRepo.create({
-        content: `${user.username} added ${user1.username} to the group`,
-        type: MessageType.SYSTEM,
-        conversation,
-      });
       await this.conversationRepo.save(conversation);
       return await this.messageRepo.save(messageEntity);
     } catch (error) {
       this.logger.error(error);
-      throw new Error(error);
+      throw new AnErrorOccuredException(error.message);
     }
   }
 
   async removeUserFromGroupConversation(id: string, user: UserEntity, user1: UserEntity) {
     try {
       const conversation = await this.getConversationById(id);
-
+      const MESS = `${user.username} đã xóa ${user1.username}`;
       if (!conversation) {
-        throw new BadRequestException('Conversation not found');
+        throw new ConversationNotFoundException();
       }
       conversation.members.forEach((member) => {
         this.logger.log(JSON.stringify(member));
       });
       const isJoined = conversation.members.find((m) => m.id === user1.id);
       if (!isJoined) {
-        throw new Error('User not joined');
+        throw new Error('Người dùng chưa tham gia cuộc trò chuyện');
       }
       conversation.members = conversation.members.filter((m) => m.id !== user1.id);
-      conversation.last_message = `${user.username} removed ${user1.username} from the group`;
+      conversation.last_message = MESS;
       const messageEntity = this.messageRepo.create({
-        content: `${user.username} removed ${user1.username} from the group`,
+        content: MESS,
         type: MessageType.SYSTEM,
         conversation,
       });
@@ -223,7 +309,16 @@ export class ConversationService {
       return await this.messageRepo.save(messageEntity);
     } catch (error) {
       this.logger.error(error);
-      throw new Error(error);
+      throw new AnErrorOccuredException(error.message);
+    }
+  }
+
+  async deleteAllConversations() {
+    try {
+      await this.conversationRepo.delete({});
+    } catch (error) {
+      this.logger.error(error);
+      throw new AnErrorOccuredException(error.message);
     }
   }
 
@@ -232,7 +327,7 @@ export class ConversationService {
       await this.messageRepo.delete({});
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException("Can't delete all messages");
+      throw new AnErrorOccuredException(error.message);
     }
   }
 }

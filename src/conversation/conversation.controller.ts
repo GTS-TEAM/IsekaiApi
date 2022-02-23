@@ -59,4 +59,9 @@ export class ConversationController {
   async deleteAllMessages() {
     return await this.conversationService.deleteAllMessages();
   }
+
+  @Delete('/all-conversation-dev')
+  async deleteAllConversations() {
+    return await this.conversationService.deleteAllConversations();
+  }
 }
