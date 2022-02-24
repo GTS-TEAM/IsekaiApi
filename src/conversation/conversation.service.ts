@@ -233,7 +233,15 @@ export class ConversationService {
       .leftJoin('messages.conversation', 'conversation')
       .where('conversation.id = :conversationId', { conversationId })
       .leftJoinAndSelect('messages.sender', 'users')
-      .select(['users.id', 'users.username', 'users.avatar', 'messages.id', 'messages.content', 'messages.created_at'])
+      .select([
+        'users.id',
+        'users.username',
+        'users.avatar',
+        'messages.id',
+        'messages.content',
+        'messages.created_at',
+        'messages.type',
+      ])
       .getMany();
   }
 
@@ -251,7 +259,15 @@ export class ConversationService {
       .where('conversation.id = :conversationId', { conversationId })
       .orWhere('conversation.id = :id', { id: converIdReverse })
       .leftJoinAndSelect('messages.sender', 'users')
-      .select(['users.id', 'users.username', 'users.avatar', 'messages.id', 'messages.content', 'messages.created_at'])
+      .select([
+        'users.id',
+        'users.username',
+        'users.avatar',
+        'messages.id',
+        'messages.content',
+        'messages.created_at',
+        'messages.type',
+      ])
       .getMany();
   }
   async deleteGroupConversation(user: UserEntity, conversationId: string) {

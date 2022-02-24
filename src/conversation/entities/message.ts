@@ -1,6 +1,6 @@
 import { ConversationEntity } from 'src/conversation/entities/conversation';
 import { UserEntity } from 'src/user/user';
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { AbstractEntity } from '../../common/abstract.entity';
 import { MessageType } from '../../common/constants/enum';
 

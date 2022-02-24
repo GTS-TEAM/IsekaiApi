@@ -56,7 +56,6 @@ export class AuthController {
 
   @ApiOkResponse({ description: 'Return user information and token', type: LoginResponseDto })
   @ApiNotFoundResponse({ description: 'Return exception email not found', type: HttpExeptionDto })
-  @HttpCode(200)
   @Post('/login')
   async login(@Body() userLoginDto: UserLoginDto): Promise<LoginResponseDto> {
     const user = await this.authService.validateUser(userLoginDto);
