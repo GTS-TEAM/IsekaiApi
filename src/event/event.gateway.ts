@@ -88,7 +88,9 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
           const receiverClient = this.connectedUsers.find((s) => s.userId === data.receiverId);
 
           client.join(conversation.id);
-          receiverClient.client.join(conversation.id);
+          if (receiverClient) {
+            receiverClient.client.join(conversation.id);
+          }
         }
       } else {
         // group
