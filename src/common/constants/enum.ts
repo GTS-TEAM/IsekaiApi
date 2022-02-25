@@ -33,6 +33,7 @@ export enum MessageType {
   AUDIO = 'audio',
   FILE = 'file',
   SYSTEM = 'system',
+  GIF = 'gif',
 }
 
 export enum MessageStatus {

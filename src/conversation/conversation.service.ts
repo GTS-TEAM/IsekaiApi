@@ -27,16 +27,16 @@ export class ConversationService {
    * COMMON FUNCTIONS
    */
 
-  async getPrivateConversation(user: string, receiverId: string): Promise<ConversationEntity> {
+  async getPrivateConversation(userId: string, receiverId: string): Promise<ConversationEntity> {
     try {
+      const conversationId = userId + '-' + receiverId;
+
+      const converIdReverse = reverseConversationId(conversationId);
       const conversation = await this.conversationRepo
         .createQueryBuilder('conversations')
-        .orderBy('conversations.updated_at', 'DESC')
-        .leftJoin('conversations.members', 'members')
-        .where('members.id =:id', { id: user })
-        .andWhere('members.id =:id', { id: receiverId })
-        .andWhere('conversations.type =:type', { type: ConversationType.PRIVATE })
-        .leftJoinAndSelect('conversations.members', 'all_users')
+        .where('conversations.id = :conversationId', { conversationId })
+        .orWhere('conversations.id = :id', { id: converIdReverse })
+        .leftJoinAndSelect('conversations.members', 'members')
         .getOne();
       return conversation;
     } catch (error) {
@@ -69,11 +69,11 @@ export class ConversationService {
     }
   }
 
-  async createPrivateConversation(members: UserEntity[]): Promise<ConversationEntity> {
+  async createPrivateConversation(user1: UserEntity, user2: UserEntity): Promise<ConversationEntity> {
     try {
       const conversation = this.conversationRepo.create({
-        id: members.map((m) => m.id).join('-'),
-        members,
+        id: user1.id + '-' + user2.id,
+        members: [user1, user2],
       });
       await this.conversationRepo.save(conversation);
       return conversation;
@@ -294,7 +294,7 @@ export class ConversationService {
     }
   }
 
-  async createMessage(conversationId: string, content: string, senderId: string): Promise<MessageEntity> {
+  async createMessage(conversationId: string, content: string, senderId: string, type: MessageType): Promise<MessageEntity> {
     try {
       const conversation = await this.conversationRepo.findOne({
         where: { id: conversationId },
@@ -309,6 +309,9 @@ export class ConversationService {
         sender,
         conversation,
       });
+
+      messageEntity.type = type;
+
       await this.conversationRepo.save(conversation);
       return await this.messageRepo.save(messageEntity);
     } catch (error) {
