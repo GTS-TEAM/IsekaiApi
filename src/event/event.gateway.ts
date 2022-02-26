@@ -194,7 +194,10 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('update-group')
-  async onChangeGroupName(client, data: { conversationId: string; fields: { name?: string; avatar?: string } }) {
+  async onChangeGroupName(
+    client,
+    data: { conversationId: string; fields: { name?: string; avatar?: string; theme?: string } },
+  ) {
     try {
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
 

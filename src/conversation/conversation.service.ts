@@ -170,6 +170,8 @@ export class ConversationService {
         MESS = `${user.username} đã đổi tên cuộc trò chuyện thành ${fields.name}`;
       } else if (fields.avatar) {
         MESS = `${user.username} đã đổi ảnh đại diện cuộc trò chuyện`;
+      } else if (fields.theme) {
+        MESS = `${user.username} đã đổi chủ đề cuộc trò chuyện thành ${fields.theme}`;
       }
 
       await this.conversationRepo.update({ id: conversationId }, fields);
