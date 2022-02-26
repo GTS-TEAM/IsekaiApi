@@ -36,11 +36,12 @@ export class ConversationController {
   @ApiOkResponse({ status: 200, description: 'Return message in conversation', type: MessageEntity })
   @Get('/message/:conversation_id')
   async getMessages(
+    @Request() req,
     @Param('conversation_id') conversation_id: string,
     @Query('limit') limit: number,
     @Query('offset') offset: number,
   ) {
-    return await this.conversationService.getMessages(conversation_id, { limit, offset });
+    return await this.conversationService.getMessages(req.user, conversation_id, { limit, offset });
   }
 
   @ApiOkResponse({ status: 200, description: 'Return conversation', type: ConversationEntity })
@@ -63,6 +64,11 @@ export class ConversationController {
     @Query('offset') offset: number,
   ) {
     return await this.conversationService.getMessagesByCombineId(req.user, receiver_id, { limit, offset });
+  }
+
+  @Delete('/:conversation_id')
+  async deleteConversation(@Request() req, @Param('conversation_id') conversation_id: string) {
+    return await this.conversationService.deleteConversation(req.user, conversation_id);
   }
 
   @Delete('/all-message-dev')

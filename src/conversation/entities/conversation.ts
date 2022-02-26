@@ -31,8 +31,7 @@ export class ConversationEntity {
   @Column({ enum: ConversationType, default: ConversationType.PRIVATE })
   type: ConversationType;
 
-  @ManyToMany((type) => MemberEntity, (member) => member.conversations)
-  @JoinTable()
+  @OneToMany((type) => MemberEntity, (member) => member.conversations)
   members: MemberEntity[];
 
   @OneToMany((type) => MessageEntity, (message) => message.conversation, {

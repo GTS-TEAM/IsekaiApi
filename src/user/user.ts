@@ -31,6 +31,7 @@ import { MusicEntity } from '../music/music';
 import { hashPassword as hash } from '../common/utils/hash-password';
 import { UserDto } from './dtos/user.dto';
 import { AbstractEntity } from '../common/abstract.entity';
+import { MemberEntity } from 'src/conversation/entities/member';
 
 @Entity('users')
 export class UserEntity extends AbstractEntity {
@@ -97,8 +98,8 @@ export class UserEntity extends AbstractEntity {
   // @Column({ default: false })
   // emailVerified: boolean;
 
-  @OneToMany(() => MessageEntity, (message) => message.sender)
-  messages: MessageEntity[];
+  @OneToMany(() => MemberEntity, (member) => member.user)
+  members: MemberEntity[];
 
   @OneToMany(() => FriendRequestEntity, (friendRequest) => friendRequest.creator)
   received_friend_requests: FriendRequestEntity[];
