@@ -83,7 +83,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
         // create new conversation
         if (!conversation) {
           conversation = await this.conversationService.createPrivateConversation(user, target);
-
+          this.logger.debug(user.username + ' created a new conversation with ' + target.username);
           const receiverClient = this.connectedUsers.find((s) => s.userId === data.receiverId);
 
           client.join(conversation.id);
@@ -99,12 +99,9 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
         throw new Error('Nhóm này đã bị xóa');
       }
       convId = conversation.id;
-
+      //TODO: Optimize
       const message = await this.conversationService.createMessage(convId, data.message, user.id, data.type);
-
-      delete message.sender.email;
-      // delete message.sender.emailVerified;
-      delete message.sender.created_at;
+      this.logger.debug(user.username + ' sent a message to ' + target.username);
       this.server.to(convId).emit('message', message);
     } catch (error) {
       this.server.to(client.id).emit('message', { message: error.message });

@@ -7,7 +7,7 @@ import { ConversationEntity } from './entities/conversation';
 import { MessageEntity } from './entities/message';
 import * as utils from '../common/utils/generate-id';
 import { ConversationType, MessageType } from '../common/constants/enum';
-import { AnErrorOccuredException, ConversationNotFoundException } from '../common/error/error.dto';
+import { AnErrorOccuredException, ConversationNotFoundException, MemberNotFoundException } from '../common/error/error.dto';
 import { IConversationFields } from '../interfaces/conversation-field.interface';
 import { IPage } from '../interfaces/page.interface';
 import { MemberEntity } from './entities/member';
@@ -33,15 +33,18 @@ export class ConversationService {
   async getPrivateConversation(userId: string, receiverId: string): Promise<ConversationEntity> {
     try {
       const conversationId = userId + '-' + receiverId;
-
+      const member = await this.findMember(userId, conversationId);
       const converIdReverse = reverseConversationId(conversationId);
       const conversation = await this.conversationRepo
         .createQueryBuilder('conversations')
         .where('conversations.id = :conversationId', { conversationId })
         .orWhere('conversations.id = :id', { id: converIdReverse })
-        .leftJoinAndSelect('conversations.members', 'members')
+        .andWhere('conversations.updated_at > :updated_at', { updated_at: member.deleted_conversation_at })
         .leftJoinAndSelect('conversations.last_message', 'last_message')
+        .leftJoinAndSelect('conversations.members', 'members')
         .leftJoinAndSelect('last_message.sender', 'last_message_sender')
+        .leftJoinAndSelect('last_message_sender.user', 'last_message_sender_user')
+        .leftJoinAndSelect('members.user', 'users')
         .getOne();
       return conversation;
     } catch (error) {
@@ -59,17 +62,36 @@ export class ConversationService {
 
   async getUserConversations(userId: string, page?: IPage): Promise<ConversationEntity[]> {
     try {
-      const queryB = await this.conversationRepo
+      const user = await this.userRepo.findOne({
+        where: { id: userId },
+      });
+      const queryB = this.conversationRepo
         .createQueryBuilder('conversations')
-        .leftJoin('conversations.members', 'members')
-        .where('members.id = :id', { id: userId })
+        .leftJoinAndSelect('conversations.members', 'members')
+        .leftJoin('members.user', 'users')
+        .where('users.id = :id', { id: userId })
         .leftJoinAndSelect('conversations.members', 'all_users')
         .leftJoinAndSelect('conversations.last_message', 'last_message')
-        .leftJoinAndSelect('last_message.sender', 'last_message_sender');
+        .leftJoinAndSelect('last_message.sender', 'last_message_sender')
+        .leftJoinAndSelect('last_message_sender.user', 'last_message_sender_user');
       if (page) {
         queryB.orderBy('conversations.updated_at', 'DESC').skip(page.offset).take(page.limit);
       }
-      return queryB.getMany();
+      let conversations = await queryB.getMany();
+
+      if (user.deleted_conversations && page) {
+        conversations = conversations.filter((c) => {
+          const isDeleted = user.deleted_conversations.some((d) => {
+            return c.id === d;
+          });
+          if (!isDeleted) {
+            return c;
+          }
+        });
+      }
+      this.logger.debug(user.deleted_conversations);
+      this.logger.debug(conversations);
+      return conversations;
     } catch (error) {
       this.logger.error(error);
       throw new AnErrorOccuredException(error.message);
@@ -81,11 +103,11 @@ export class ConversationService {
       const member1 = this.memberRepo.create({ user: user1 });
       const member2 = this.memberRepo.create({ user: user2 });
 
-      this.memberRepo.save([member1, member2]);
+      const members = await this.memberRepo.save([member1, member2]);
 
       const conversation = this.conversationRepo.create({
         id: user1.id + '-' + user2.id,
-        members: [member1, member2],
+        members: members,
       });
       await this.conversationRepo.save(conversation);
       return conversation;
@@ -107,6 +129,8 @@ export class ConversationService {
         members: [creatorMember, ...membersEntity],
       });
 
+      const converSnapshot = await this.conversationRepo.save(conversation);
+
       const messages: MessageEntity[] = [];
 
       const message = this.messageRepo.create({
@@ -118,12 +142,14 @@ export class ConversationService {
       messages.push(message);
 
       members.forEach(async (u) => {
-        const m = this.messageRepo.create({
-          content: `${creator.username} đã thêm ${u.user.username} vào cuộc trò chuyện`,
-          type: MessageType.SYSTEM,
-          conversation,
-        });
-        messages.push(m);
+        if (u.id !== creatorMember.id) {
+          const m = this.messageRepo.create({
+            content: `${creator.username} đã thêm ${u.user.username} vào cuộc trò chuyện`,
+            type: MessageType.SYSTEM,
+            conversation: converSnapshot,
+          });
+          messages.push(m);
+        }
       });
 
       const m = await this.messageRepo.save(messages);
@@ -256,25 +282,22 @@ export class ConversationService {
       throw new AnErrorOccuredException(error.message);
     }
   }
-  async getMessages(conversationId: string, page: IPage): Promise<MessageEntity[]> {
-    return await this.messageRepo
+  async getMessages(userId: string, conversationId: string, page: IPage): Promise<MessageEntity[]> {
+    const member = await this.findMember(userId, conversationId);
+
+    const query = this.messageRepo
       .createQueryBuilder('messages')
       .limit(page.limit)
       .offset(page.offset)
       .orderBy('messages.created_at', 'DESC')
       .leftJoin('messages.conversation', 'conversation')
       .where('conversation.id = :conversationId', { conversationId })
-      .leftJoinAndSelect('messages.sender', 'users')
-      .select([
-        'users.id',
-        'users.username',
-        'users.avatar',
-        'messages.id',
-        'messages.content',
-        'messages.created_at',
-        'messages.type',
-      ])
-      .getMany();
+      .leftJoinAndSelect('messages.sender', 'member');
+
+    if (member.deleted_conversation_at) {
+      query.andWhere('messages.created_at >= :created', { created: member.deleted_conversation_at });
+    }
+    return await query.leftJoinAndSelect('member.user', 'user').getMany();
   }
 
   async getMessagesByCombineId(userId: string, receiver_id: string, page: IPage): Promise<MessageEntity[]> {
@@ -333,13 +356,20 @@ export class ConversationService {
     type?: MessageType,
   ): Promise<MessageEntity> {
     try {
+      const user = await this.userRepo.findOne({ where: { id: senderId } });
       const conversation = await this.conversationRepo.findOne({
         where: { id: conversationId },
         relations: ['members'],
       });
+      // update deleted conversation
+      user.deleted_conversations = user.deleted_conversations || [];
+      var index = user.deleted_conversations.indexOf(conversation.id);
+      if (index !== -1) {
+        user.deleted_conversations.splice(index, 1);
+      }
+      await this.userRepo.save(user);
 
-      const sender = await this.userRepo.findOne({ where: { id: senderId } });
-
+      const sender = await this.findMember(senderId, conversationId);
       const messageEntity = this.messageRepo.create({
         content,
         sender,
@@ -352,8 +382,7 @@ export class ConversationService {
 
       const m = await this.messageRepo.save(messageEntity);
       conversation.last_message = m;
-      const c = await this.conversationRepo.save(conversation);
-      this.logger.debug(c);
+      await this.conversationRepo.save(conversation);
       return m;
     } catch (error) {
       this.logger.error(error + '\n' + error.stack);
@@ -390,6 +419,24 @@ export class ConversationService {
     }
   }
 
+  async deleteConversation(userId: string, conversationId: string) {
+    try {
+      const member = await this.findMember(userId, conversationId);
+      const user = await this.userRepo.findOne({ where: { id: userId } });
+      if (!user.deleted_conversations) {
+        user.deleted_conversations = [];
+      }
+      user.deleted_conversations.push(conversationId);
+
+      member.deleted_conversation_at = new Date();
+      await this.userRepo.save(user);
+      await this.memberRepo.save(member);
+    } catch (error) {
+      this.logger.error(error);
+      throw new AnErrorOccuredException(error.message);
+    }
+  }
+
   async deleteAllConversations() {
     try {
       await this.conversationRepo.delete({});
@@ -406,5 +453,18 @@ export class ConversationService {
       this.logger.error(error);
       throw new AnErrorOccuredException(error.message);
     }
+  }
+
+  async findMember(userId: string, conversationId: string): Promise<MemberEntity> {
+    const member = await this.memberRepo
+      .createQueryBuilder('members')
+      .where('members.user_id = :userId', { userId })
+      .andWhere('members.conversation_id = :conversationId', { conversationId })
+      .leftJoinAndSelect('members.user', 'user')
+      .getOne();
+    if (!member) {
+      throw new MemberNotFoundException();
+    }
+    return member;
   }
 }

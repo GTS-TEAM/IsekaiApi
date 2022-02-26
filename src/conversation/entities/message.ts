@@ -3,6 +3,7 @@ import { UserEntity } from 'src/user/user';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { AbstractEntity } from '../../common/abstract.entity';
 import { MessageType } from '../../common/constants/enum';
+import { MemberEntity } from './member';
 
 @Entity('messages')
 export class MessageEntity extends AbstractEntity {
@@ -17,8 +18,8 @@ export class MessageEntity extends AbstractEntity {
   @Column({ default: MessageType.TEXT })
   type: MessageType;
 
-  @ManyToOne((type) => UserEntity, (user) => user.messages)
-  sender: UserEntity;
+  @ManyToOne((type) => MemberEntity, (m) => m.messages)
+  sender: MemberEntity;
 
   @Column()
   content: string;

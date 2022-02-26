@@ -30,7 +30,13 @@ export class ConversationNotFoundException extends HttpException {
 }
 
 export class AnErrorOccuredException extends HttpException {
-  constructor(mesage: string) {
-    super('Đã xảy ra lỗi: ' + mesage, HttpStatus.INTERNAL_SERVER_ERROR);
+  constructor(message: string) {
+    super('Đã xảy ra lỗi: ' + message, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
+
+export class MemberNotFoundException extends HttpException {
+  constructor() {
+    super('Không tìm thấy thành viên', HttpStatus.NOT_FOUND);
   }
 }
