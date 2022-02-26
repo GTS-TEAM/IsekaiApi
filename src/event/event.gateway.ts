@@ -130,7 +130,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.server.to(messages[0].conversation.id).emit('message', messages[i]);
       }
     } catch (error) {
-      this.logger.error(error);
       this.server.to(client.id).emit('error', { message: error.message });
     }
   }

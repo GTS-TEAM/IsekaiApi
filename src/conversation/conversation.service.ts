@@ -10,6 +10,7 @@ import { ConversationType, MessageType } from '../common/constants/enum';
 import { AnErrorOccuredException, ConversationNotFoundException } from '../common/error/error.dto';
 import { IConversationFields } from '../interfaces/conversation-field.interface';
 import { IPage } from '../interfaces/page.interface';
+import { MemberEntity } from './entities/member';
 
 @Injectable()
 export class ConversationService {
@@ -19,6 +20,8 @@ export class ConversationService {
     private readonly conversationRepo: Repository<ConversationEntity>,
     @InjectRepository(MessageEntity)
     private readonly messageRepo: Repository<MessageEntity>,
+    @InjectRepository(MemberEntity)
+    private readonly memberRepo: Repository<MemberEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
   ) {}
@@ -75,9 +78,14 @@ export class ConversationService {
 
   async createPrivateConversation(user1: UserEntity, user2: UserEntity): Promise<ConversationEntity> {
     try {
+      const member1 = this.memberRepo.create({ user: user1 });
+      const member2 = this.memberRepo.create({ user: user2 });
+
+      this.memberRepo.save([member1, member2]);
+
       const conversation = this.conversationRepo.create({
         id: user1.id + '-' + user2.id,
-        members: [user1, user2],
+        members: [member1, member2],
       });
       await this.conversationRepo.save(conversation);
       return conversation;
@@ -87,12 +95,16 @@ export class ConversationService {
     }
   }
 
-  async createGroupConversation(creator: UserEntity, members: UserEntity[]): Promise<MessageEntity[]> {
+  async createGroupConversation(creator: UserEntity, users: UserEntity[]): Promise<MessageEntity[]> {
     try {
+      const creatorMember = this.memberRepo.create({ user: creator });
+      const membersEntity = users.map((u) => this.memberRepo.create({ user: u }));
+      const members = await this.memberRepo.save([creatorMember, ...membersEntity]);
+
       const conversation = this.conversationRepo.create({
         id: utils.generateId(11),
         type: ConversationType.GROUP,
-        members: [creator, ...members],
+        members: [creatorMember, ...membersEntity],
       });
 
       const messages: MessageEntity[] = [];
@@ -105,9 +117,9 @@ export class ConversationService {
 
       messages.push(message);
 
-      members.forEach(async (member) => {
+      members.forEach(async (u) => {
         const m = this.messageRepo.create({
-          content: `${creator.username} đã thêm ${member.username} vào cuộc trò chuyện`,
+          content: `${creator.username} đã thêm ${u.user.username} vào cuộc trò chuyện`,
           type: MessageType.SYSTEM,
           conversation,
         });
@@ -145,7 +157,7 @@ export class ConversationService {
         conversation,
       });
 
-      const members = conversation.members.filter((m) => m.id !== user.id);
+      const members = conversation.members.filter((m) => m.user.id !== user.id);
 
       if (members.length === 0) {
         await this.conversationRepo.delete({ id: conversationId });
@@ -206,7 +218,7 @@ export class ConversationService {
   async addMembersToGroupConversation(
     user: UserEntity,
     conversationId: string,
-    members: UserEntity[],
+    users: UserEntity[],
   ): Promise<MessageEntity[]> {
     const conversation = await this.conversationRepo.findOne({
       where: { id: conversationId },
@@ -220,7 +232,7 @@ export class ConversationService {
     try {
       const messages = [];
 
-      members.forEach(async (member) => {
+      users.forEach(async (member) => {
         const message = this.messageRepo.create({
           content: `${user.username} đã thêm ${member.username} vào cuộc trò chuyện`,
           type: MessageType.SYSTEM,
@@ -228,6 +240,8 @@ export class ConversationService {
         });
         messages.push(message);
       });
+
+      const members = users.map((m) => this.memberRepo.create({ user: m }));
 
       const membersAdded = conversation.members.concat(members);
 
@@ -355,12 +369,12 @@ export class ConversationService {
         throw new ConversationNotFoundException();
       }
 
-      const isJoined = conversation.members.find((m) => m.id === user1.id);
+      const isJoined = conversation.members.find((m) => m.user.id === user1.id);
       if (!isJoined) {
         throw new Error('Người dùng chưa tham gia cuộc trò chuyện');
       }
 
-      conversation.members = conversation.members.filter((m) => m.id !== user1.id);
+      conversation.members = conversation.members.filter((m) => m.user.id !== user1.id);
       const messageEntity = this.messageRepo.create({
         content: MESS,
         type: MessageType.SYSTEM,

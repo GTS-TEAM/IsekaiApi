@@ -15,6 +15,7 @@ import {
 } from 'typeorm';
 import { AbstractEntity } from '../../common/abstract.entity';
 import { ConversationType } from '../../common/constants/enum';
+import { MemberEntity } from './member';
 
 @Entity('conversations')
 export class ConversationEntity {
@@ -30,9 +31,9 @@ export class ConversationEntity {
   @Column({ enum: ConversationType, default: ConversationType.PRIVATE })
   type: ConversationType;
 
-  @ManyToMany((type) => UserEntity)
+  @ManyToMany((type) => MemberEntity, (member) => member.conversations)
   @JoinTable()
-  members: UserEntity[];
+  members: MemberEntity[];
 
   @OneToMany((type) => MessageEntity, (message) => message.conversation, {
     cascade: true,

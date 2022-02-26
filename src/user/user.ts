@@ -97,9 +97,6 @@ export class UserEntity extends AbstractEntity {
   // @Column({ default: false })
   // emailVerified: boolean;
 
-  @ManyToMany(() => ConversationEntity, (conversation) => conversation.members)
-  conversations: ConversationEntity[];
-
   @OneToMany(() => MessageEntity, (message) => message.sender)
   messages: MessageEntity[];
 

@@ -10,6 +10,11 @@ export enum RolesEnum {
   USER = 'user',
 }
 
+export enum MemberRole {
+  MEMBER = 'member',
+  ADMIN = 'admin',
+}
+
 export enum FriendRequestStatus {
   PENDING = 'pending',
   ACCEPTED = 'accepted',

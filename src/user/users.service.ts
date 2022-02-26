@@ -101,24 +101,24 @@ export class UserService {
    * Conversation
    */
 
-  async checkIfUserHasConversation(userId: string, friendId: string) {
-    const thisUser = await this.userRepo
-      .createQueryBuilder('users')
-      .leftJoinAndSelect('users.conversations', 'conversations')
-      .leftJoinAndSelect('conversations.members', 'members')
-      .where('users.id =:id', { id: userId })
-      .getOne();
+  // async checkIfUserHasConversation(userId: string, friendId: string) {
+  //   const thisUser = await this.userRepo
+  //     .createQueryBuilder('users')
+  //     .leftJoinAndSelect('users.conversations', 'conversations')
+  //     .leftJoinAndSelect('conversations.members', 'members')
+  //     .where('users.id =:id', { id: userId })
+  //     .getOne();
 
-    const exist = thisUser?.conversations.some((conversation) => {
-      return conversation.members.map((member) => member.id).includes(friendId);
-    });
+  //   const exist = thisUser?.conversations.some((conversation) => {
+  //     return conversation.members.map((member) => member.id).includes(friendId);
+  //   });
 
-    if (exist) {
-      return false;
-    }
-    const friend = await this.getUserById(friendId);
-    return friend;
-  }
+  //   if (exist) {
+  //     return false;
+  //   }
+  //   const friend = await this.getUserById(friendId);
+  //   return friend;
+  // }
 
   // async getWholeUserEntity(user: UserEntity): Promise<any> {
   //   try {
