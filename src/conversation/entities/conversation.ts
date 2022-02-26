@@ -39,8 +39,9 @@ export class ConversationEntity {
   })
   messages: MessageEntity[];
 
-  @Column({ nullable: true })
-  last_message: string;
+  @OneToOne(() => MessageEntity)
+  @JoinColumn()
+  last_message: MessageEntity;
 
   @Column({ nullable: true })
   theme: string;

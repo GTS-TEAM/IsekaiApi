@@ -85,14 +85,12 @@ export class ConversationService {
 
   async createGroupConversation(creator: UserEntity, members: UserEntity[]): Promise<MessageEntity[]> {
     try {
-      const last_message = `${creator.username} đã thêm ${members[members.length - 1].username} vào cuộc trò chuyện`;
-
       const conversation = this.conversationRepo.create({
         id: utils.generateId(11),
         type: ConversationType.GROUP,
-        last_message,
         members: [creator, ...members],
       });
+
       const messages = [];
 
       const message = this.messageRepo.create({
@@ -111,6 +109,9 @@ export class ConversationService {
         });
         messages.push(m);
       });
+
+      // add last message to conversation
+      conversation.last_message = messages[messages.length - 1];
 
       try {
         await this.conversationRepo.save(conversation);
@@ -148,7 +149,7 @@ export class ConversationService {
         await this.conversationRepo.delete({ id: conversationId });
       } else {
         conversation.members = members;
-        conversation.last_message = last_message;
+        conversation.last_message = message;
         await this.conversationRepo.save(conversation);
       }
 
@@ -213,13 +214,11 @@ export class ConversationService {
         messages.push(message);
       });
 
-      const last_message = `${user.username} đã thêm ${members[members.length - 1]} vào cuộc trò chuyện`;
-
       const membersAdded = conversation.members.concat(members);
       conversation.members = membersAdded;
-      conversation.last_message = last_message;
-      await this.conversationRepo.save(conversation);
+      conversation.last_message = messages[messages.length - 1];
 
+      await this.conversationRepo.save(conversation);
       return await this.messageRepo.save(messages);
     } catch (error) {
       this.logger.error(error);
@@ -302,22 +301,22 @@ export class ConversationService {
         where: { id: conversationId },
         relations: ['members'],
       });
-      conversation.last_message = content;
 
       const sender = await this.userRepo.findOne({ where: { id: senderId } });
 
       const messageEntity = this.messageRepo.create({
         content,
         sender,
-        conversation,
       });
+      conversation.last_message = messageEntity;
 
       messageEntity.type = type;
+      messageEntity.conversation = conversation;
 
       await this.conversationRepo.save(conversation);
       return await this.messageRepo.save(messageEntity);
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error(error + '\n' + error.stack);
       throw new AnErrorOccuredException(error.message);
     }
   }
@@ -336,12 +335,13 @@ export class ConversationService {
       }
 
       conversation.members = conversation.members.filter((m) => m.id !== user1.id);
-      conversation.last_message = MESS;
       const messageEntity = this.messageRepo.create({
         content: MESS,
         type: MessageType.SYSTEM,
         conversation,
       });
+      conversation.last_message = messageEntity;
+
       await this.conversationRepo.save(conversation);
       return await this.messageRepo.save(messageEntity);
     } catch (error) {
