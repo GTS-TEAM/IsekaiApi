@@ -11,7 +11,7 @@ import { Socket, Server } from 'socket.io';
 
 import { ConversationService } from 'src/conversation/conversation.service';
 import { In } from 'typeorm';
-import { ConversationType, TokenType } from '../common/constants/enum';
+import { ConversationType, MessageType, TokenType } from '../common/constants/enum';
 import { ConversationEntity } from '../conversation/entities/conversation';
 import { TokenService } from '../token/token.service';
 import { UserService } from '../user/users.service';
@@ -67,7 +67,9 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseFilters(new BaseWsExceptionFilter())
   @SubscribeMessage('message')
-  async onMessage(client, data: { message: string; receiverId?: string; conversationId?: string }) {
+  async onMessage(client, data: { message: string; receiverId?: string; conversationId?: string; type?: MessageType }) {
+    this.logger.debug(data.receiverId);
+    this.logger.debug(data.conversationId);
     try {
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
       const target = await this.userService.findOne({
@@ -80,15 +82,18 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (!data.conversationId) {
         // private
         conversation = await this.conversationService.getPrivateConversation(user.id, data.receiverId);
-
+        console.log(conversation);
         // create new conversation
         if (!conversation) {
-          conversation = await this.conversationService.createPrivateConversation([user, target]);
+          conversation = await this.conversationService.createPrivateConversation(user, target);
+          console.log(conversation.id + ' created');
 
           const receiverClient = this.connectedUsers.find((s) => s.userId === data.receiverId);
 
           client.join(conversation.id);
-          receiverClient.client.join(conversation.id);
+          if (receiverClient) {
+            receiverClient.client.join(conversation.id);
+          }
         }
       } else {
         // group
@@ -99,11 +104,12 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
       convId = conversation.id;
 
-      const message = await this.conversationService.createMessage(convId, data.message, user.id);
+      const message = await this.conversationService.createMessage(convId, data.message, user.id, data.type);
 
       delete message.sender.email;
       // delete message.sender.emailVerified;
       delete message.sender.created_at;
+      console.log(convId);
       this.server.to(convId).emit('message', message);
     } catch (error) {
       this.server.to(client.id).emit('message', { message: error.message });
