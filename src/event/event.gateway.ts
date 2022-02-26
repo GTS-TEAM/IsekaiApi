@@ -68,8 +68,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @UseFilters(new BaseWsExceptionFilter())
   @SubscribeMessage('message')
   async onMessage(client, data: { message: string; receiverId?: string; conversationId?: string; type?: MessageType }) {
-    this.logger.debug(data.receiverId);
-    this.logger.debug(data.conversationId);
     try {
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
       const target = await this.userService.findOne({
@@ -82,11 +80,9 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (!data.conversationId) {
         // private
         conversation = await this.conversationService.getPrivateConversation(user.id, data.receiverId);
-        console.log(conversation);
         // create new conversation
         if (!conversation) {
           conversation = await this.conversationService.createPrivateConversation(user, target);
-          console.log(conversation.id + ' created');
 
           const receiverClient = this.connectedUsers.find((s) => s.userId === data.receiverId);
 
@@ -109,7 +105,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       delete message.sender.email;
       // delete message.sender.emailVerified;
       delete message.sender.created_at;
-      console.log(convId);
       this.server.to(convId).emit('message', message);
     } catch (error) {
       this.server.to(client.id).emit('message', { message: error.message });
