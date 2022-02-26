@@ -42,6 +42,9 @@ export class ConversationEntity {
   @Column({ nullable: true })
   last_message: string;
 
+  @Column({ nullable: true })
+  theme: string;
+
   @CreateDateColumn()
   created_at: Date;
 
