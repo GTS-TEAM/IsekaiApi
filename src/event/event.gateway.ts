@@ -193,8 +193,8 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  @SubscribeMessage('update-group')
-  async onChangeGroupName(
+  @SubscribeMessage('update-conversation')
+  async onUpdateConversation(
     client,
     data: { conversationId: string; fields: { name?: string; avatar?: string; theme?: string } },
   ) {

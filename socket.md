@@ -120,6 +120,7 @@
       fields: {
         name?: string;
         avatar?: string;
+        theme?: string;
       }
     }
     ```
