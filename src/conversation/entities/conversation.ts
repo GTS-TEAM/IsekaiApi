@@ -29,6 +29,9 @@ export class ConversationEntity {
   @Column({ enum: ConversationType, default: ConversationType.PRIVATE })
   type: ConversationType;
 
+  @Column({ nullable: true })
+  theme: string;
+
   @CreateDateColumn()
   created_at: Date;
 
