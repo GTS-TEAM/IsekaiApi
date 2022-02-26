@@ -95,6 +95,8 @@ export class ConversationService {
         members: [creator, ...members],
       });
 
+      const converSnapshot = await this.conversationRepo.save(conversation);
+
       const messages: MessageEntity[] = [];
 
       const message = this.messageRepo.create({
@@ -109,7 +111,7 @@ export class ConversationService {
         const m = this.messageRepo.create({
           content: `${creator.username} đã thêm ${member.username} vào cuộc trò chuyện`,
           type: MessageType.SYSTEM,
-          conversation,
+          conversation: converSnapshot,
         });
         messages.push(m);
       });
