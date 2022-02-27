@@ -31,7 +31,9 @@ export class ConversationEntity {
   @Column({ enum: ConversationType, default: ConversationType.PRIVATE })
   type: ConversationType;
 
-  @OneToMany((type) => MemberEntity, (member) => member.conversations)
+  @OneToMany((type) => MemberEntity, (member) => member.conversations, {
+    onDelete: 'CASCADE',
+  })
   members: MemberEntity[];
 
   @OneToMany((type) => MessageEntity, (message) => message.conversation, {

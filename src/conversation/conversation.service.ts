@@ -33,9 +33,13 @@ export class ConversationService {
   async checkIfConversationExists(userId: string, receiverId: string): Promise<ConversationEntity> {
     try {
       const conversationId = userId + '-' + receiverId;
-      const conversation = await this.conversationRepo.findOne({
-        where: { id: conversationId },
-      });
+      const converIdReverse = reverseConversationId(conversationId);
+
+      const conversation = await this.conversationRepo
+        .createQueryBuilder('conversations')
+        .where('conversations.id = :conversationId', { conversationId })
+        .orWhere('conversations.id = :id', { id: converIdReverse })
+        .getOne();
       return conversation;
     } catch (error) {
       this.logger.error(error);
@@ -446,7 +450,6 @@ export class ConversationService {
       await this.userRepo.save(user);
       await this.memberRepo.save(member);
     } catch (error) {
-      this.logger.error(error);
       throw new AnErrorOccuredException(error.message);
     }
   }
@@ -455,7 +458,7 @@ export class ConversationService {
     try {
       await this.conversationRepo.delete({});
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error(error, this.deleteAllConversations.name);
       throw new AnErrorOccuredException(error.message);
     }
   }

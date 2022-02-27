@@ -52,18 +52,13 @@ export class ConversationController {
     return await this.conversationService.getMessagesByCombineId(req.user, receiver_id, { limit, offset });
   }
 
-  @Delete('/:conversation_id')
-  async deleteConversation(@Request() req, @Param('conversation_id') conversation_id: string) {
-    return await this.conversationService.deleteConversation(req.user, conversation_id);
-  }
-
-  @Delete('/all-message-dev')
-  async deleteAllMessages() {
-    return await this.conversationService.deleteAllMessages();
-  }
-
   @Delete('/all-conversation-dev')
   async deleteAllConversations() {
     return await this.conversationService.deleteAllConversations();
+  }
+
+  @Delete('/:conversation_id')
+  async deleteConversation(@Request() req, @Param('conversation_id') conversation_id: string) {
+    return await this.conversationService.deleteConversation(req.user, conversation_id);
   }
 }
