@@ -1,21 +1,7 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Logger,
-  Param,
-  Post,
-  Query,
-  Request,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Delete, Get, Logger, Param, Query, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { UserService } from 'src/user/users.service';
 import { ConversationService } from './conversation.service';
-import { CreateConversationDto } from './dtos/create-conversation.dto';
 import { ConversationEntity } from './entities/conversation';
 import { MessageEntity } from './entities/message';
 

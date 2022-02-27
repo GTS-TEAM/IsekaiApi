@@ -70,16 +70,16 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async onMessage(client, data: { message: string; receiverId?: string; conversationId?: string; type?: MessageType }) {
     try {
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
-      const target = await this.userService.findOne({
-        where: { id: data.receiverId },
-      });
 
       let convId = data.conversationId;
 
       let conversation: ConversationEntity;
       if (!data.conversationId) {
+        const target = await this.userService.findOne({
+          where: { id: data.receiverId },
+        });
         // private
-        conversation = await this.conversationService.getPrivateConversation(user.id, data.receiverId);
+        conversation = await this.conversationService.checkIfConversationExists(user.id, data.receiverId);
         // create new conversation
         if (!conversation) {
           conversation = await this.conversationService.createPrivateConversation(user, target);
@@ -101,7 +101,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       convId = conversation.id;
       //TODO: Optimize
       const message = await this.conversationService.createMessage(convId, data.message, user.id, data.type);
-      this.logger.debug(user.username + ' sent a message to ' + target.username);
       this.server.to(convId).emit('message', message);
     } catch (error) {
       this.server.to(client.id).emit('message', { message: error.message });

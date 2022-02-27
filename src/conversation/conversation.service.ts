@@ -30,6 +30,19 @@ export class ConversationService {
    * COMMON FUNCTIONS
    */
 
+  async checkIfConversationExists(userId: string, receiverId: string): Promise<ConversationEntity> {
+    try {
+      const conversationId = userId + '-' + receiverId;
+      const conversation = await this.conversationRepo.findOne({
+        where: { id: conversationId },
+      });
+      return conversation;
+    } catch (error) {
+      this.logger.error(error);
+      throw new AnErrorOccuredException(error.message);
+    }
+  }
+
   async getPrivateConversation(userId: string, receiverId: string): Promise<ConversationEntity> {
     try {
       const conversationId = userId + '-' + receiverId;
@@ -71,6 +84,7 @@ export class ConversationService {
         .leftJoin('members.user', 'users')
         .where('users.id = :id', { id: userId })
         .leftJoinAndSelect('conversations.members', 'all_users')
+        .leftJoinAndSelect('all_users.user', 'all_users_users')
         .leftJoinAndSelect('conversations.last_message', 'last_message')
         .leftJoinAndSelect('last_message.sender', 'last_message_sender')
         .leftJoinAndSelect('last_message_sender.user', 'last_message_sender_user');
