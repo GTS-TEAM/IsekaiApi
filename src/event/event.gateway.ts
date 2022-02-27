@@ -99,9 +99,9 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
         throw new Error('Nhóm này đã bị xóa');
       }
       convId = conversation.id;
-
+      //TODO: Optimize
       const message = await this.conversationService.createMessage(convId, data.message, user.id, data.type);
-
+      this.logger.debug(user.username + ' sent a message to ' + target.username);
       this.server.to(convId).emit('message', message);
     } catch (error) {
       this.server.to(client.id).emit('message', { message: error.message });

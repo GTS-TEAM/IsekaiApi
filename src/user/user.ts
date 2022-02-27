@@ -113,6 +113,9 @@ export class UserEntity extends AbstractEntity {
   @ManyToOne(() => MusicEntity, (music) => music.favoriteUsers)
   favorite_musics: MusicEntity;
 
+  @Column('simple-array', { default: [], nullable: true })
+  deleted_conversations: string[];
+
   @CreateDateColumn()
   created_at: Date;
 

@@ -33,15 +33,17 @@ export class ConversationService {
   async getPrivateConversation(userId: string, receiverId: string): Promise<ConversationEntity> {
     try {
       const conversationId = userId + '-' + receiverId;
-
+      const member = await this.findMember(userId, conversationId);
       const converIdReverse = reverseConversationId(conversationId);
       const conversation = await this.conversationRepo
         .createQueryBuilder('conversations')
         .where('conversations.id = :conversationId', { conversationId })
         .orWhere('conversations.id = :id', { id: converIdReverse })
+        .andWhere('conversations.updated_at > :updated_at', { updated_at: member.deleted_conversation_at })
         .leftJoinAndSelect('conversations.last_message', 'last_message')
         .leftJoinAndSelect('conversations.members', 'members')
         .leftJoinAndSelect('last_message.sender', 'last_message_sender')
+        .leftJoinAndSelect('last_message_sender.user', 'last_message_sender_user')
         .leftJoinAndSelect('members.user', 'users')
         .getOne();
       return conversation;
@@ -60,6 +62,9 @@ export class ConversationService {
 
   async getUserConversations(userId: string, page?: IPage): Promise<ConversationEntity[]> {
     try {
+      const user = await this.userRepo.findOne({
+        where: { id: userId },
+      });
       const queryB = this.conversationRepo
         .createQueryBuilder('conversations')
         .leftJoinAndSelect('conversations.members', 'members')
@@ -67,11 +72,26 @@ export class ConversationService {
         .where('users.id = :id', { id: userId })
         .leftJoinAndSelect('conversations.members', 'all_users')
         .leftJoinAndSelect('conversations.last_message', 'last_message')
-        .leftJoinAndSelect('last_message.sender', 'last_message_sender');
+        .leftJoinAndSelect('last_message.sender', 'last_message_sender')
+        .leftJoinAndSelect('last_message_sender.user', 'last_message_sender_user');
       if (page) {
         queryB.orderBy('conversations.updated_at', 'DESC').skip(page.offset).take(page.limit);
       }
-      return queryB.getMany();
+      let conversations = await queryB.getMany();
+
+      if (user.deleted_conversations && page) {
+        conversations = conversations.filter((c) => {
+          const isDeleted = user.deleted_conversations.some((d) => {
+            return c.id === d;
+          });
+          if (!isDeleted) {
+            return c;
+          }
+        });
+      }
+      this.logger.debug(user.deleted_conversations);
+      this.logger.debug(conversations);
+      return conversations;
     } catch (error) {
       this.logger.error(error);
       throw new AnErrorOccuredException(error.message);
@@ -336,10 +356,18 @@ export class ConversationService {
     type?: MessageType,
   ): Promise<MessageEntity> {
     try {
+      const user = await this.userRepo.findOne({ where: { id: senderId } });
       const conversation = await this.conversationRepo.findOne({
         where: { id: conversationId },
         relations: ['members'],
       });
+      // update deleted conversation
+      user.deleted_conversations = user.deleted_conversations || [];
+      var index = user.deleted_conversations.indexOf(conversation.id);
+      if (index !== -1) {
+        user.deleted_conversations.splice(index, 1);
+      }
+      await this.userRepo.save(user);
 
       const sender = await this.findMember(senderId, conversationId);
       const messageEntity = this.messageRepo.create({
@@ -394,9 +422,14 @@ export class ConversationService {
   async deleteConversation(userId: string, conversationId: string) {
     try {
       const member = await this.findMember(userId, conversationId);
+      const user = await this.userRepo.findOne({ where: { id: userId } });
+      if (!user.deleted_conversations) {
+        user.deleted_conversations = [];
+      }
+      user.deleted_conversations.push(conversationId);
 
       member.deleted_conversation_at = new Date();
-
+      await this.userRepo.save(user);
       await this.memberRepo.save(member);
     } catch (error) {
       this.logger.error(error);
