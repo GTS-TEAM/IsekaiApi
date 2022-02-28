@@ -6,7 +6,7 @@ import * as compression from 'compression';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { AppModule } from './app.module';
-import { NotFoundExceptionFilter } from './common/error/catch.dto';
+import { NotFoundExceptionFilter } from './error/catch.dto';
 
 // somewhere in your initialization file
 

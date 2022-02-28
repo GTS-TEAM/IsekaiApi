@@ -7,7 +7,7 @@ import { ConversationEntity } from './entities/conversation';
 import { MessageEntity } from './entities/message';
 import * as utils from '../common/utils/generate-id';
 import { ConversationType, MessageType } from '../common/constants/enum';
-import { AnErrorOccuredException, ConversationNotFoundException, MemberNotFoundException } from '../common/error/error.dto';
+import { AnErrorOccuredException, ConversationNotFoundException, MemberNotFoundException } from '../error/error.dto';
 import { IConversationFields } from '../interfaces/conversation-field.interface';
 import { IPage } from '../interfaces/page.interface';
 import { MemberEntity } from './entities/member';

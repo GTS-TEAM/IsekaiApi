@@ -13,7 +13,7 @@ import { EmailService } from 'src/email/email.service';
 import { Roles } from 'src/decorators/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { RolesEnum, TokenType } from '../common/constants/enum';
-import { HttpExeptionDto } from '../common/error/error.dto';
+import { HttpExeptionDto } from '../error/error.dto';
 import { TokenService } from '../token/token.service';
 import { UserLoginDto } from '../user/dtos/user-login.dto';
 import { UserRegisterDto } from '../user/dtos/user-register.dto';
