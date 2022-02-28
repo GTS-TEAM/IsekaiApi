@@ -287,6 +287,7 @@ export class ConversationService {
 
       const members = users.map((m) => this.memberRepo.create({ user: m }));
 
+      await this.memberRepo.save(members);
       const membersAdded = conversation.members.concat(members);
 
       conversation.members = membersAdded;

@@ -140,7 +140,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       const messages = await this.conversationService.addMembersToGroupConversation(user, data.conversationId, members);
       const membersClient = this.connectedUsers.filter((s) => data.membersId.includes(s.userId));
-
+      this.logger.debug(user.username + ' added ' + members.length + ' members to group conversation');
       for (let i = 0; i < membersClient.length; i++) {
         membersClient[i].client.join(messages[0].conversation.id);
       }
