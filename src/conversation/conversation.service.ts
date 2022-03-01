@@ -186,11 +186,12 @@ export class ConversationService {
   async leaveGroupConversation(user: UserEntity, conversationId: string): Promise<MessageEntity> {
     try {
       const last_message = `${user.username} đã rời khỏi cuộc trò chuyện`;
-      const conversation = await this.conversationRepo.findOne({
-        where: { id: conversationId },
-        relations: ['members'],
-      });
-
+      const conversation = await this.conversationRepo
+        .createQueryBuilder('conversations')
+        .where('conversations.id = :id', { id: conversationId })
+        .leftJoinAndSelect('conversations.members', 'members')
+        .leftJoinAndSelect('members.user', 'users')
+        .getOne();
       if (!conversation) {
         throw new ConversationNotFoundException();
       }
