@@ -141,7 +141,9 @@ export class ConversationService {
       const membersEntity = users.map((u) => this.memberRepo.create({ user: u }));
       const members = await this.memberRepo.save([creatorMember, ...membersEntity]);
 
+      const groupName = creator.username + members[0].user.username + ` và ${users.length - 1} người khác`;
       const conversation = this.conversationRepo.create({
+        name: groupName,
         id: utils.generateId(11),
         type: ConversationType.GROUP,
         members: [creatorMember, ...membersEntity],
@@ -208,6 +210,18 @@ export class ConversationService {
         await this.conversationRepo.delete({ id: conversationId });
       } else {
         conversation.members = members;
+        if (conversation.name.includes(user.username)) {
+          // Neu cuoc tro chuyen co ten la creator + 1 nguoi khac
+          if (conversation.name.includes(members[0].user.username) && members[0].user.username !== user.username) {
+            conversation.name = conversation.name.replace(user.username, members[1].user.username);
+          } else {
+            conversation.name = conversation.name.replace(user.username, members[0].user.username);
+          }
+        }
+
+        const convSplitName = conversation.name.split(' và ');
+        conversation.name = convSplitName[0] + ` và ${conversation.members.length - 2} người khác`;
+
         await this.conversationRepo.save(conversation);
       }
       // add last message to conversation
@@ -216,6 +230,7 @@ export class ConversationService {
 
       return;
     } catch (error) {
+      this.logger.error(error, this.leaveGroupConversation.name);
       throw new AnErrorOccuredException(error.message);
     }
   }
@@ -265,15 +280,17 @@ export class ConversationService {
     conversationId: string,
     users: UserEntity[],
   ): Promise<MessageEntity[]> {
-    const conversation = await this.conversationRepo.findOne({
-      where: { id: conversationId },
-      relations: ['members'],
-    });
+    const conversation = await this.conversationRepo
+      .createQueryBuilder('conversations')
+      .where('conversations.id = :id', { id: conversationId })
+      .leftJoinAndSelect('conversations.members', 'members')
+      .leftJoinAndSelect('members.user', 'users')
+      .getOne();
 
     if (!conversation) {
       throw new ConversationNotFoundException();
     }
-
+    const convSplitName = conversation.name.split(' và ');
     try {
       const messages = [];
 
@@ -292,6 +309,7 @@ export class ConversationService {
       const membersAdded = conversation.members.concat(members);
 
       conversation.members = membersAdded;
+      conversation.name = convSplitName[0] + ` và ${membersAdded.length - 1} người khác`;
       const ms = await this.messageRepo.save(messages);
       conversation.last_message = ms[ms.length - 1];
       await this.conversationRepo.save(conversation);
