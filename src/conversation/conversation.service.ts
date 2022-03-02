@@ -141,7 +141,7 @@ export class ConversationService {
       const membersEntity = users.map((u) => this.memberRepo.create({ user: u }));
       const members = await this.memberRepo.save([creatorMember, ...membersEntity]);
 
-      const groupName = creator.username + members[0].user.username + ` và ${users.length - 1} người khác`;
+      const groupName = creator.username + ', ' + members[0].user.username + ` và ${users.length - 1} người khác`;
       const conversation = this.conversationRepo.create({
         name: groupName,
         id: utils.generateId(11),
@@ -222,7 +222,13 @@ export class ConversationService {
 
           const convSplitName = conversation?.name.split(' và ');
           conversation.name = convSplitName[0] + ` và ${conversation.members.length - 2} người khác`;
-
+          if (members.length > 2) {
+            conversation.name = convSplitName[0] + ` và ${members.length - 2} người khác`;
+          } else if (members.length === 2) {
+            conversation.name = convSplitName[0];
+          } else {
+            conversation.name = members[0].user.username;
+          }
           await this.conversationRepo.save(conversation);
         }
       }
