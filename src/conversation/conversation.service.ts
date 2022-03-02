@@ -249,7 +249,7 @@ export class ConversationService {
     fields: IConversationFields,
   ): Promise<MessageEntity> {
     try {
-      const conversation = await this.conversationRepo.findOne({ where: { id: conversationId } });
+      const conversation = await this.getConversationWithRelationMember(conversationId);
       if (!conversation) {
         throw new ConversationNotFoundException();
       }
@@ -264,6 +264,11 @@ export class ConversationService {
       } else if (fields.theme) {
         conversation.theme = fields.theme;
         MESS = `${user.username} đã đổi chủ đề cuộc trò chuyện thành ${fields.theme}`;
+      } else if (fields.member) {
+        const member = conversation.members.find((m) => m.user.id === fields.member.id);
+        MESS = `${user.username} đã đặt tên biệt danh của ${member.user.username} thành ${fields.member.nickname}`;
+        member.nickname = fields.member.nickname;
+        await this.memberRepo.save(member);
       }
 
       const message = this.messageRepo.create({

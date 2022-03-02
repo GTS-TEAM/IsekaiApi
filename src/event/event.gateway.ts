@@ -13,6 +13,7 @@ import { ConversationService } from 'src/conversation/conversation.service';
 import { In } from 'typeorm';
 import { ConversationType, MessageType, TokenType } from '../common/constants/enum';
 import { ConversationEntity } from '../conversation/entities/conversation';
+import { MemberFields } from '../interfaces/conversation-field.interface';
 import { TokenService } from '../token/token.service';
 import { UserService } from '../user/users.service';
 
@@ -186,7 +187,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('update-conversation')
   async onUpdateConversation(
     client,
-    data: { conversationId: string; fields: { name?: string; avatar?: string; theme?: string } },
+    data: { conversationId: string; fields: { name?: string; avatar?: string; theme?: string; member?: MemberFields } },
   ) {
     try {
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
