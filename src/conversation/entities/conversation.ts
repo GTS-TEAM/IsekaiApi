@@ -45,6 +45,10 @@ export class ConversationEntity {
   @JoinColumn()
   last_message: MessageEntity;
 
+  @ManyToMany((type) => UserEntity)
+  @JoinTable({ name: 'users_deleted' })
+  users_deleted: UserEntity[];
+
   @Column({ nullable: true })
   theme: string;
 

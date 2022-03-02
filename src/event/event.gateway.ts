@@ -93,7 +93,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
       } else {
         // group
-        conversation = await this.conversationService.getConversationById(convId);
+        conversation = await this.conversationService.getConversationWithRelationMember(convId);
       }
       if (conversation.type === ConversationType.DELETED) {
         throw new Error('Nhóm này đã bị xóa');

@@ -88,9 +88,7 @@ export class ConversationService {
 
   async getUserConversations(userId: string, page?: IPage): Promise<ConversationEntity[]> {
     try {
-      const user = await this.userRepo.findOne({
-        where: { id: userId },
-      });
+      let conversations: ConversationEntity[];
       const queryB = this.conversationRepo
         .createQueryBuilder('conversations')
         .leftJoinAndSelect('conversations.members', 'members')
@@ -100,24 +98,17 @@ export class ConversationService {
         .leftJoinAndSelect('all_users.user', 'all_users_users')
         .leftJoinAndSelect('conversations.last_message', 'last_message')
         .leftJoinAndSelect('last_message.sender', 'last_message_sender')
-        .leftJoinAndSelect('last_message_sender.user', 'last_message_sender_user');
+        .leftJoinAndSelect('last_message_sender.user', 'last_message_sender_user')
+        .leftJoinAndSelect('conversations.users_deleted', 'users_deleted');
       if (page) {
         queryB.orderBy('conversations.updated_at', 'DESC').skip(page.offset).take(page.limit);
       }
-      let conversations = await queryB.getMany();
-
-      if (user.deleted_conversations && page) {
-        conversations = conversations.filter((c) => {
-          const isDeleted = user.deleted_conversations.some((d) => {
-            return c.id === d;
-          });
-          if (!isDeleted) {
-            return c;
-          }
+      conversations = await queryB.getMany();
+      if (page) {
+        conversations = conversations.filter((conversation) => {
+          return !conversation.users_deleted.some((u) => u.id === userId);
         });
       }
-      this.logger.debug(user.deleted_conversations);
-      this.logger.debug(conversations);
       return conversations;
     } catch (error) {
       this.logger.error(error);
@@ -421,13 +412,22 @@ export class ConversationService {
   ): Promise<MessageEntity> {
     try {
       const user = await this.userRepo.findOne({ where: { id: senderId } });
-      const conversation = await this.getConversationWithRelationMember(conversationId);
+      const conversation = await this.conversationRepo
+        .createQueryBuilder('conversations')
+        .where('conversations.id = :id', { id: conversationId })
+        .leftJoinAndSelect('conversations.members', 'members')
+        .leftJoinAndSelect('members.user', 'users')
+        // .leftJoinAndSelect('conversations.last_message', 'last_message')
+        // .leftJoinAndSelect('last_message.sender', 'senders')
+        .getOne();
+
+      conversation.users_deleted = [];
       // update deleted conversation
-      user.deleted_conversations = user.deleted_conversations || [];
-      var index = user.deleted_conversations.indexOf(conversation.id);
-      if (index !== -1) {
-        user.deleted_conversations.splice(index, 1);
-      }
+      // user.deleted_conversations = user.deleted_conversations || [];
+      // var index = user.deleted_conversations.indexOf(conversation.id);
+      // if (index !== -1) {
+      //   user.deleted_conversations.splice(index, 1);
+      // }
       await this.userRepo.save(user);
 
       const sender = await this.findMember(senderId, conversationId);
@@ -482,15 +482,20 @@ export class ConversationService {
 
   async deleteConversation(userId: string, conversationId: string) {
     try {
+      const user = await this.userRepo.findOneOrFail({ where: { id: userId } });
       const member = await this.findMember(userId, conversationId);
-      const user = await this.userRepo.findOne({ where: { id: userId } });
-      if (!user.deleted_conversations) {
-        user.deleted_conversations = [];
-      }
-      user.deleted_conversations.push(conversationId);
 
       member.deleted_conversation_at = new Date();
-      await this.userRepo.save(user);
+
+      const conversation = await this.getConversationById(conversationId);
+      if (!conversation) {
+        throw new ConversationNotFoundException();
+      }
+
+      conversation.users_deleted = conversation.users_deleted || [];
+      conversation.users_deleted.push(user);
+
+      await this.conversationRepo.save(conversation);
       await this.memberRepo.save(member);
     } catch (error) {
       throw new AnErrorOccuredException(error.message);
