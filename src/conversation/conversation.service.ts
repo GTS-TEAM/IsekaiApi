@@ -30,6 +30,15 @@ export class ConversationService {
    * COMMON FUNCTIONS
    */
 
+  async getConversationWithRelationMember(conversationId: string) {
+    return this.conversationRepo
+      .createQueryBuilder('conversations')
+      .where('conversations.id = :id', { id: conversationId })
+      .leftJoinAndSelect('conversations.members', 'members')
+      .leftJoinAndSelect('members.user', 'users')
+      .getOne();
+  }
+
   async checkIfConversationExists(userId: string, receiverId: string): Promise<ConversationEntity> {
     try {
       const conversationId = userId + '-' + receiverId;
@@ -288,12 +297,7 @@ export class ConversationService {
     conversationId: string,
     users: UserEntity[],
   ): Promise<MessageEntity[]> {
-    const conversation = await this.conversationRepo
-      .createQueryBuilder('conversations')
-      .where('conversations.id = :id', { id: conversationId })
-      .leftJoinAndSelect('conversations.members', 'members')
-      .leftJoinAndSelect('members.user', 'users')
-      .getOne();
+    const conversation = await this.getConversationWithRelationMember(conversationId);
 
     if (!conversation) {
       throw new ConversationNotFoundException();
@@ -417,10 +421,7 @@ export class ConversationService {
   ): Promise<MessageEntity> {
     try {
       const user = await this.userRepo.findOne({ where: { id: senderId } });
-      const conversation = await this.conversationRepo.findOne({
-        where: { id: conversationId },
-        relations: ['members'],
-      });
+      const conversation = await this.getConversationWithRelationMember(conversationId);
       // update deleted conversation
       user.deleted_conversations = user.deleted_conversations || [];
       var index = user.deleted_conversations.indexOf(conversation.id);
@@ -498,6 +499,7 @@ export class ConversationService {
 
   async deleteAllConversations() {
     try {
+      this.logger.debug('delete all conversations');
       await this.conversationRepo.delete({});
     } catch (error) {
       this.logger.error(error, this.deleteAllConversations.name);
