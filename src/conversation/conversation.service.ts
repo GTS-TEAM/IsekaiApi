@@ -210,19 +210,21 @@ export class ConversationService {
         await this.conversationRepo.delete({ id: conversationId });
       } else {
         conversation.members = members;
-        if (conversation.name.includes(user.username)) {
-          // Neu cuoc tro chuyen co ten la creator + 1 nguoi khac
-          if (conversation.name.includes(members[0].user.username) && members[0].user.username !== user.username) {
-            conversation.name = conversation.name.replace(user.username, members[1].user.username);
-          } else {
-            conversation.name = conversation.name.replace(user.username, members[0].user.username);
+        if (conversation.name) {
+          if (conversation.name.includes(user.username)) {
+            // Neu cuoc tro chuyen co ten la creator + 1 nguoi khac
+            if (conversation.name.includes(members[0].user.username) && members[0].user.username !== user.username) {
+              conversation.name = conversation.name.replace(user.username, members[1].user.username);
+            } else {
+              conversation.name = conversation.name.replace(user.username, members[0].user.username);
+            }
           }
+
+          const convSplitName = conversation?.name.split(' và ');
+          conversation.name = convSplitName[0] + ` và ${conversation.members.length - 2} người khác`;
+
+          await this.conversationRepo.save(conversation);
         }
-
-        const convSplitName = conversation.name.split(' và ');
-        conversation.name = convSplitName[0] + ` và ${conversation.members.length - 2} người khác`;
-
-        await this.conversationRepo.save(conversation);
       }
       // add last message to conversation
       const m = await this.messageRepo.save(message);
