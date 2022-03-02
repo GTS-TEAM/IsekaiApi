@@ -118,11 +118,22 @@
     {
       conversationId: string;
       fields: {
-        name?: string;
-        avatar?: string;
-        theme?: string;
-      }
+          name?: string;
+          avatar?: string;
+          theme?: string;
+          member?: MemberFields
+        }
     }
+    ```
+
+    ENUM:
+
+    ```
+      MemberFields {
+        id: string;
+        nickname?: string;
+        role?: string;
+      }
     ```
 
     **_On:_**
@@ -131,10 +142,10 @@
     Return on event "message" type Message
     ```
 
-  **_On: "error"_**
+**_On: "error"_**
 
-  ```
-  {
-    mesage:"string"
-  }
-  ```
+```
+{
+  mesage:"string"
+}
+```
