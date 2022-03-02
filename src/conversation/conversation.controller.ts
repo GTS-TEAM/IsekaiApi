@@ -1,6 +1,7 @@
 import { Controller, Delete, Get, Logger, Param, Query, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { MessageType } from 'src/common/constants/enum';
 import { ConversationService } from './conversation.service';
 import { ConversationEntity } from './entities/conversation';
 import { MessageEntity } from './entities/message';
@@ -52,6 +53,15 @@ export class ConversationController {
     return await this.conversationService.getMessagesByCombineId(req.user, receiver_id, { limit, offset });
   }
 
+  @Get('/:conversation_id/files')
+  async getFiles(
+    @Param('conversation_id') conversation_id: string,
+    @Query('limit') limit: number,
+    @Query('offset') offset: number,
+    @Query('type') type: MessageType,
+  ) {
+    return await this.conversationService.getFiles(conversation_id, { limit, offset }, type);
+  }
   @Delete('/all-conversation-dev')
   async deleteAllConversations() {
     return await this.conversationService.deleteAllConversations();

@@ -371,6 +371,20 @@ export class ConversationService {
       ])
       .getMany();
   }
+
+  async getFiles(conversationId: string, page: IPage, type: MessageType): Promise<string[]> {
+    const messages = await this.messageRepo
+      .createQueryBuilder('messages')
+      .limit(page.limit)
+      .offset(page.offset)
+      .orderBy('messages.created_at', 'DESC')
+      .leftJoin('messages.conversation', 'conversation')
+      .where('conversation.id = :conversationId', { conversationId })
+      .andWhere('messages.type = :type', { type })
+      .getMany();
+    return messages.map((m) => m.content);
+  }
+
   async deleteGroupConversation(user: UserEntity, conversationId: string) {
     try {
       const conversation = await this.conversationRepo.findOne({
