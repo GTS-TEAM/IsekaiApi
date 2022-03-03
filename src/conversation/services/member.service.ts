@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MemberNotFoundException } from 'src/error/error.dto';
 import { UserEntity } from 'src/user/user';
 import { DeepPartial, Repository } from 'typeorm';
-import { MemberEntity } from './entities/member';
+import { MemberEntity } from '../entities/member';
 
 @Injectable()
 export class MemberService {

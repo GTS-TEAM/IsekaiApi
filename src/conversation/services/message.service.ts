@@ -6,9 +6,8 @@ import { AnErrorOccuredException } from 'src/error/error.dto';
 import { IPage } from 'src/interfaces/page.interface';
 import { UserEntity } from 'src/user/user';
 import { DeepPartial, Repository } from 'typeorm';
-import { ConversationEntity } from './entities/conversation';
-import { MemberEntity } from './entities/member';
-import { MessageEntity } from './entities/message';
+import { ConversationEntity } from '../entities/conversation';
+import { MessageEntity } from '../entities/message';
 import { MemberService } from './member.service';
 
 @Injectable()
