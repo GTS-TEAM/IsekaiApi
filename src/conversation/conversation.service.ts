@@ -141,7 +141,7 @@ export class ConversationService {
       const membersEntity = users.map((u) => this.memberRepo.create({ user: u }));
       const members = await this.memberRepo.save([creatorMember, ...membersEntity]);
 
-      const groupName = creator.username + ', ' + members[0].user.username + ` và ${users.length - 1} người khác`;
+      const groupName = members.map((m) => m.user.username).join(', ');
       const conversation = this.conversationRepo.create({
         name: groupName,
         id: utils.generateId(11),
@@ -210,33 +210,14 @@ export class ConversationService {
         await this.conversationRepo.delete({ id: conversationId });
       } else {
         conversation.members = members;
-        if (conversation.name) {
-          if (conversation.name.includes(user.username)) {
-            // Neu cuoc tro chuyen co ten la creator + 1 nguoi khac
-            if (conversation.name.includes(members[0].user.username) && members[0].user.username !== user.username) {
-              conversation.name = conversation.name.replace(user.username, members[1].user.username);
-            } else {
-              conversation.name = conversation.name.replace(user.username, members[0].user.username);
-            }
-          }
-
-          const convSplitName = conversation?.name.split(' và ');
-          conversation.name = convSplitName[0] + ` và ${conversation.members.length - 2} người khác`;
-          if (members.length > 2) {
-            conversation.name = convSplitName[0] + ` và ${members.length - 2} người khác`;
-          } else if (members.length === 2) {
-            conversation.name = convSplitName[0];
-          } else {
-            conversation.name = members[0].user.username;
-          }
-          await this.conversationRepo.save(conversation);
-        }
+        conversation.name = members.map((m) => m.user.username).join(', ');
       }
       // add last message to conversation
       const m = await this.messageRepo.save(message);
       conversation.last_message = m;
-
-      return;
+      //TODO: MAYBE
+      this.conversationRepo.save(conversation);
+      return m;
     } catch (error) {
       this.logger.error(error, this.leaveGroupConversation.name);
       throw new AnErrorOccuredException(error.message);
@@ -298,7 +279,6 @@ export class ConversationService {
     if (!conversation) {
       throw new ConversationNotFoundException();
     }
-    const convSplitName = conversation.name.split(' và ');
     try {
       const messages = [];
 
@@ -317,7 +297,7 @@ export class ConversationService {
       const membersAdded = conversation.members.concat(members);
 
       conversation.members = membersAdded;
-      conversation.name = convSplitName[0] + ` và ${membersAdded.length - 1} người khác`;
+      conversation.name = membersAdded.map((m) => m.user.username).join(', ');
       const ms = await this.messageRepo.save(messages);
       conversation.last_message = ms[ms.length - 1];
       await this.conversationRepo.save(conversation);
@@ -509,7 +489,6 @@ export class ConversationService {
 
   async deleteAllConversations() {
     try {
-      this.logger.debug('delete all conversations');
       await this.conversationRepo.delete({});
     } catch (error) {
       this.logger.error(error, this.deleteAllConversations.name);
