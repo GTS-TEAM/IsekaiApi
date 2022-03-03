@@ -25,6 +25,7 @@ import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { RegisterResponseDto } from './dtos/register-respose.dto';
 import { TokenPayloadDto } from './dtos/token-payload.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { GoogleLoginDto } from './dtos/google-login.dto';
 class DeactivateRefreshTokenDto {
   @ApiProperty()
   @Expose()
@@ -59,6 +60,19 @@ export class AuthController {
   @Post('/login')
   async login(@Body() userLoginDto: UserLoginDto): Promise<LoginResponseDto> {
     const user = await this.authService.validateUser(userLoginDto);
+    const tokens = await this.tokenService.generateAuthToken(user);
+    return {
+      user,
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+    };
+  }
+
+  @ApiOkResponse({ description: 'Return user information and token', type: LoginResponseDto })
+  @Post('/google')
+  async googleLogin(@Body() dto: GoogleLoginDto) {
+    const tokenPayload = await this.tokenService.verifyGoogleToken(dto.token);
+    const user = await this.authService.googleLogin(tokenPayload);
     const tokens = await this.tokenService.generateAuthToken(user);
     return {
       user,

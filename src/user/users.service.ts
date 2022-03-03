@@ -79,7 +79,8 @@ export class UserService {
     return this.userRepo.save(userDoc);
   }
 
-  async createUser(user: UserEntity): Promise<UserEntity> {
+  async createUser(email: string, image: string): Promise<UserEntity> {
+    const user = this.userRepo.create({ email, avatar: image });
     return this.userRepo.save(user);
   }
 
