@@ -1,4 +1,5 @@
 import { Logger, UseFilters } from '@nestjs/common';
+import { In } from 'typeorm';
 import {
   BaseWsExceptionFilter,
   OnGatewayConnection,
@@ -8,9 +9,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
-
-import { ConversationService } from 'src/conversation/conversation.service';
-import { In } from 'typeorm';
+import { ConversationService } from 'src/conversation/services/conversation.service';
 import { ConversationType, MessageType, TokenType } from '../common/constants/enum';
 import { ConversationEntity } from '../conversation/entities/conversation';
 import { MemberFields } from '../interfaces/conversation-field.interface';
@@ -72,8 +71,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
 
-      let convId = data.conversationId;
-
       let conversation: ConversationEntity;
       if (!data.conversationId) {
         const target = await this.userService.findOne({
@@ -94,15 +91,15 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
       } else {
         // group
-        conversation = await this.conversationService.getConversationWithRelationMember(convId);
+        conversation = await this.conversationService.getConversationWithRelationMember(data.conversationId);
       }
       if (conversation.type === ConversationType.DELETED) {
         throw new Error('Nhóm này đã bị xóa');
       }
-      convId = conversation.id;
       //TODO: Optimize
-      const message = await this.conversationService.createMessage(convId, data.message, user.id, data.type);
-      this.server.to(convId).emit('message', message);
+      const message = await this.conversationService.createMessage(conversation, data.message, user.id, data.type);
+
+      this.server.to(conversation.id).emit('message', message);
     } catch (error) {
       this.server.to(client.id).emit('message', { message: error.message });
     }

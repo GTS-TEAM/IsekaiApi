@@ -2,9 +2,10 @@ import { Controller, Delete, Get, Logger, Param, Query, Request, UseGuards } fro
 import { ApiBearerAuth, ApiOkResponse, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { MessageType } from 'src/common/constants/enum';
-import { ConversationService } from './conversation.service';
+import { ConversationService } from './services/conversation.service';
 import { ConversationEntity } from './entities/conversation';
 import { MessageEntity } from './entities/message';
+import { MessageService } from './services/message.service';
 
 @ApiTags('Conversation')
 @UseGuards(JwtAuthGuard)
@@ -12,7 +13,7 @@ import { MessageEntity } from './entities/message';
 @Controller('conversations')
 export class ConversationController {
   logger = new Logger(ConversationController.name);
-  constructor(private readonly conversationService: ConversationService) {}
+  constructor(private readonly conversationService: ConversationService, private readonly messageService: MessageService) {}
 
   @ApiResponse({ status: 200, description: "Return user's conversations", type: ConversationEntity, isArray: true })
   @Get('/')
@@ -28,7 +29,7 @@ export class ConversationController {
     @Query('limit') limit: number,
     @Query('offset') offset: number,
   ) {
-    return await this.conversationService.getMessages(req.user, conversation_id, { limit, offset });
+    return await this.messageService.getMessages(req.user, conversation_id, { limit, offset });
   }
 
   @ApiOkResponse({ status: 200, description: 'Return conversation', type: ConversationEntity })
@@ -50,7 +51,7 @@ export class ConversationController {
     @Query('limit') limit: number,
     @Query('offset') offset: number,
   ) {
-    return await this.conversationService.getMessagesByCombineId(req.user, receiver_id, { limit, offset });
+    return await this.messageService.getMessagesByCombineId(req.user, receiver_id, { limit, offset });
   }
 
   @ApiQuery({ name: 'type', enum: MessageType })
@@ -61,7 +62,7 @@ export class ConversationController {
     @Query('offset') offset: number,
     @Query('type') type: MessageType,
   ) {
-    return await this.conversationService.getFiles(conversation_id, { limit, offset }, type);
+    return await this.messageService.getFilesInMessage(conversation_id, { limit, offset }, type);
   }
   @Delete('/all-conversation-dev')
   async deleteAllConversations() {
