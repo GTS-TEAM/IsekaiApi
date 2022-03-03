@@ -1,13 +1,15 @@
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { AbstractEntity } from '../common/abstract.entity';
+import { UserDto } from '../user/dtos/user.dto';
 import { UserEntity } from '../user/user';
 
 @Entity('musics')
-export class MusicEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class MusicEntity extends AbstractEntity {
   @Column()
   name: string;
+
+  @Column({ nullable: true })
+  image: string;
 
   @Column({ nullable: true })
   author: string;
@@ -21,9 +23,6 @@ export class MusicEntity {
   @Column()
   url: string;
 
-  @OneToMany(() => UserEntity, (user) => user.favoriteMusics)
+  @OneToMany(() => UserEntity, (user) => user.favorite_musics)
   favoriteUsers: UserEntity[];
-
-  @CreateDateColumn()
-  create_at: Date;
 }

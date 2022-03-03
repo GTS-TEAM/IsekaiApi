@@ -6,41 +6,146 @@
 
   - **message:**
 
-    **_Receive:_**
+    **_Enum:_**
 
     ```
-    {
-    "conversationId":"123",
-    "content":"hello"
-    "senderId":"123"
+    export enum MessageType {
+      TEXT = 'text',
+      IMAGE = 'image',
+      VIDEO = 'video',
+      AUDIO = 'audio',
+      FILE = 'file',
+      SYSTEM = 'system',
     }
     ```
 
-    **_Send:_**
+    **_Emit:_**
 
     ```
     {
-    "id": "eb094526-9055-409a-993d-ff2d49913770"
-    "content": "7",
-    "conversation": {
-        "id": "310fffb0-d595-48e1-90d5-f302a4f8e64b",
-    },
-    "sender": {
-        "id": "f9285895-e8dc-446a-b5ba-c4209baf2fea",
-        "username": "123",
-        "avatar": "http://placeimg.com/640/480"
-    },
-    "created_at": "2022-01-26T05:05:19.883Z",
-    "updated_at": "2022-01-26T05:05:19.883Z"
+      message: string,
+      receiverId?:string // private
+      conversationId?: string // group
     }
     ```
 
-  - **join:**
-
-    **_Receive:_**
+    **_On:_**
 
     ```
     {
-        "conversationId":"123
+    content: string,
+    conversation: {
+        id: string,
+        type: ConversationType
+      },
+    sender: {
+        id: string,
+        updated_at:Date,
+        username: Minh Nguyen,
+        roles: user,
+        avatar: string,
+        background: string,
+        bio: string,
+        phone: string,
+        date: Date,
+        address: string,
+        last_activity: Date
+      },
+    id: 11072867748,
+    created_at: 2022-02-20T15:24:08.883Z,
+    updated_at: 2022-02-20T15:24:08.883Z
     }
     ```
+
+  - **create-group:**
+
+    **_Emit:_**
+
+    ```
+    [membersId]
+
+    example:["1000123","1000456","1000789",...]
+    - membersId length > 2
+    ```
+
+    **_On:_**
+
+    ```
+    Return on event "message" type Message
+    ```
+
+  - **add-members-to-group:**
+
+    **_Emit:_**
+
+    ```
+    {
+        "membersId":[
+            "string",
+            "string"
+        ],
+        "conversationId":"string"
+    }
+    ```
+
+    **_On:_**
+
+    ```
+    Return on event "message" type Message
+    ```
+
+  - **leave-group:**
+
+    **_Emit:_**
+
+    ```
+    {
+      conversationId:string
+    }
+    ```
+
+    **_On:_**
+
+    ```
+    Return on event "message" type Message
+    ```
+
+  - **update-group:**
+
+    **_Emit:_**
+
+    ```
+    {
+      conversationId: string;
+      fields: {
+          name?: string;
+          avatar?: string;
+          theme?: string;
+          member?: MemberFields
+        }
+    }
+    ```
+
+    ENUM:
+
+    ```
+      MemberFields {
+        id: string;
+        nickname?: string;
+        role?: string;
+      }
+    ```
+
+    **_On:_**
+
+    ```
+    Return on event "message" type Message
+    ```
+
+**_On: "error"_**
+
+```
+{
+  mesage:"string"
+}
+```

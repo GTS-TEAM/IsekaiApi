@@ -35,10 +35,10 @@ export class PostController {
   @ApiOkResponse({ description: 'Return list of posts', type: PostResponseDto, isArray: true })
   @Get('/timeline')
   async getTimeline(@Request() req, @Query('page') page: number) {
-    const posts = await this.postService.getUserTimeline(req.user, page);
-    return posts;
+    return await this.postService.getUserTimeline(req.user, page);
   }
 
+  @ApiOkResponse({ description: 'Return a post', type: PostResponseDto })
   @Get('/:postId')
   async getPost(@Request() req, @Param('postId') postId: string) {
     return await this.postService.getPost(req.user, postId);
@@ -92,9 +92,8 @@ export class PostController {
    */
   @ApiOkResponse({ description: "Return user's post", type: PostResponseDto, isArray: true })
   @Get('/user/:userId')
-  async getUserPosts(@Param('userId') userId: string, @Query('page') page: number): Promise<PostEntity[]> {
-    const posts = await this.postService.getUserPosts(userId, page);
-    return posts;
+  async getUserPosts(@Param('userId') userId: string, @Query('page') page: number) {
+    return await this.postService.getUserPosts(userId, page);
   }
 
   // Get user photos

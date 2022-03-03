@@ -9,6 +9,7 @@ import constants from '../common/constants/constants';
 import { TokenType } from '../common/constants/enum';
 import { UserEntity } from '../user/user';
 import { Tokens } from './token.entity';
+import { OAuth2Client } from 'google-auth-library';
 @Injectable()
 export class TokenService {
   private logger = new Logger(TokenService.name);
@@ -18,6 +19,30 @@ export class TokenService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
+
+  //   const {OAuth2Client} = require('google-auth-library');
+  // const client = new OAuth2Client(CLIENT_ID);
+  // async function verify() {
+  //   const ticket = await client.verifyIdToken({
+  //       idToken: token,
+  //       audience: CLIENT_ID,  // Specify the CLIENT_ID of the app that accesses the backend
+  //       // Or, if multiple clients access the backend:
+  //       //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
+  //   });
+  //   const payload = ticket.getPayload();
+  //   const userid = payload['sub'];
+  //   // If request specified a G Suite domain:
+  //   // const domain = payload['hd'];
+  // }
+  // verify().catch(console.error);
+  async verifyGoogleToken(token: string) {
+    const client = new OAuth2Client(this.configService.get(constants.GOOGLE_CLIENT_ID));
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: this.configService.get(constants.GOOGLE_CLIENT_ID),
+    });
+    return ticket.getPayload();
+  }
 
   async generateAuthToken(user: UserEntity): Promise<TokenPayloadDto> {
     const access_token = this.generateToken(user, constants.JWT_ACCESS_EXPIRATION);

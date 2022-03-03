@@ -11,6 +11,8 @@ import {
   JoinTable,
   OneToOne,
   ManyToOne,
+  AfterLoad,
+  BeforeUpdate,
 } from 'typeorm';
 import { customAlphabet } from 'nanoid';
 import * as bcrypt from 'bcryptjs';
@@ -28,12 +30,11 @@ import { FriendRequestEntity } from './entities/friend-request';
 import { MusicEntity } from '../music/music';
 import { hashPassword as hash } from '../common/utils/hash-password';
 import { UserDto } from './dtos/user.dto';
+import { AbstractEntity } from '../common/abstract.entity';
+import { MemberEntity } from 'src/conversation/entities/member';
 
 @Entity('users')
-export class UserEntity extends UserDto {
-  @PrimaryColumn({ type: 'varchar', length: 255 })
-  id: string;
-
+export class UserEntity extends AbstractEntity {
   @Column()
   username: string;
 
@@ -53,9 +54,6 @@ export class UserEntity extends UserDto {
   @Column({ nullable: true })
   background?: string;
 
-  @Column({ default: false })
-  online?: boolean;
-
   @Column({ nullable: true })
   bio?: string;
 
@@ -67,6 +65,9 @@ export class UserEntity extends UserDto {
 
   @Column({ nullable: true })
   address?: string;
+
+  @Column({ default: new Date() })
+  last_activity: Date;
 
   // @OneToMany(() => UserFollowerEntity, (uf) => uf.following)
   // followers: UserFollowerEntity[];
@@ -97,23 +98,20 @@ export class UserEntity extends UserDto {
   // @Column({ default: false })
   // emailVerified: boolean;
 
-  @ManyToMany(() => ConversationEntity, (conversation) => conversation.members)
-  conversations: ConversationEntity[];
-
-  @OneToMany(() => MessageEntity, (message) => message.sender)
-  messages: MessageEntity[];
+  @OneToMany(() => MemberEntity, (member) => member.user)
+  members: MemberEntity[];
 
   @OneToMany(() => FriendRequestEntity, (friendRequest) => friendRequest.creator)
-  receivedFriendRequests: FriendRequestEntity[];
+  received_friend_requests: FriendRequestEntity[];
 
   @OneToMany(() => FriendRequestEntity, (friendRequest) => friendRequest.receiver)
-  sentFriendRequests: FriendRequestEntity[];
+  sent_friend_requests: FriendRequestEntity[];
 
   @OneToMany(() => MusicEntity, (musicEntity) => musicEntity.uploader)
   musics: MusicEntity[];
 
   @ManyToOne(() => MusicEntity, (music) => music.favoriteUsers)
-  favoriteMusics: MusicEntity;
+  favorite_musics: MusicEntity;
 
   @CreateDateColumn()
   created_at: Date;
@@ -128,12 +126,5 @@ export class UserEntity extends UserDto {
   @BeforeInsert()
   hashPassword() {
     this.password = hash(this.password);
-  }
-
-  @BeforeInsert()
-  generateId() {
-    const alphabet = '0123456789';
-    const id = customAlphabet(alphabet, 8);
-    this.id = (11000000000 + parseInt(id())).toString();
   }
 }

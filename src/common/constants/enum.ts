@@ -10,10 +10,9 @@ export enum RolesEnum {
   USER = 'user',
 }
 
-export enum PostFields {
-  description = 'description',
-  likes = 'likes',
-  comments = 'comments',
+export enum MemberRole {
+  MEMBER = 'member',
+  ADMIN = 'admin',
 }
 
 export enum FriendRequestStatus {
@@ -36,6 +35,10 @@ export enum MessageType {
   TEXT = 'text',
   IMAGE = 'image',
   VIDEO = 'video',
+  AUDIO = 'audio',
+  FILE = 'file',
+  SYSTEM = 'system',
+  GIF = 'gif',
 }
 
 export enum MessageStatus {
@@ -62,6 +65,7 @@ export enum NotiType {
 export enum ConversationType {
   PRIVATE = 'private',
   GROUP = 'group',
+  DELETED = 'deleted',
 }
 
 export enum PhotoRouterType {
@@ -73,4 +77,9 @@ export enum PostType {
   AVATAR = 'avatar',
   SHARE = 'share',
   POST = 'post',
+}
+
+export enum PostPrivacy {
+  PUBLIC = 'public',
+  PRIVATE = 'private',
 }

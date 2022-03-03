@@ -1,9 +1,10 @@
-import { BadRequestException, Body, Controller, Get, Logger, Param, Post, Request, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Controller, Delete, Get, Logger, Param, Query, Request, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOkResponse, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { UserService } from 'src/user/users.service';
+import { MessageType } from 'src/common/constants/enum';
 import { ConversationService } from './conversation.service';
-import { CreateConversationDto } from './dtos/create-conversation.dto';
+import { ConversationEntity } from './entities/conversation';
+import { MessageEntity } from './entities/message';
 
 @ApiTags('Conversation')
 @UseGuards(JwtAuthGuard)
@@ -11,26 +12,64 @@ import { CreateConversationDto } from './dtos/create-conversation.dto';
 @Controller('conversations')
 export class ConversationController {
   logger = new Logger(ConversationController.name);
-  constructor(private readonly conversationService: ConversationService, private readonly userService: UserService) {}
+  constructor(private readonly conversationService: ConversationService) {}
 
+  @ApiResponse({ status: 200, description: "Return user's conversations", type: ConversationEntity, isArray: true })
   @Get('/')
-  async getConversations(@Request() req) {
-    const conversations = await this.conversationService.getConversations(req.user);
-    return conversations;
+  async getUserConversations(@Request() req, @Query('limit') limit: number, @Query('offset') offset: number) {
+    return await this.conversationService.getUserConversations(req.user, { limit, offset });
   }
 
-  @Post('/create')
-  async createConversation(@Body() createConversationDto: CreateConversationDto, @Request() req) {
-    const friend = await this.userService.checkIfUserHasConversation(req.user, createConversationDto.userId);
-    if (!friend) {
-      throw new BadRequestException('Conversation already exist');
-    }
-    return this.conversationService.createConversation([friend, req.user]);
+  @ApiOkResponse({ status: 200, description: 'Return message in conversation', type: MessageEntity })
+  @Get('/message/:conversation_id')
+  async getMessages(
+    @Request() req,
+    @Param('conversation_id') conversation_id: string,
+    @Query('limit') limit: number,
+    @Query('offset') offset: number,
+  ) {
+    return await this.conversationService.getMessages(req.user, conversation_id, { limit, offset });
   }
 
-  @Get('/:conversationId')
-  async getMessages(@Param('conversationId') conversationId: string) {
-    const messages = await this.conversationService.getMessages(conversationId);
-    return messages;
+  @ApiOkResponse({ status: 200, description: 'Return conversation', type: ConversationEntity })
+  @Get('/r/:receiver_id')
+  async getPrivateConversation(@Request() req, @Param('receiver_id') conversation_id: string): Promise<ConversationEntity> {
+    return await this.conversationService.getPrivateConversation(req.user, conversation_id);
+  }
+
+  @ApiOkResponse({ status: 200, description: 'Return conversation', type: ConversationEntity })
+  @Get('/:conversation_id')
+  async getConversationById(@Param('conversation_id') conversation_id: string): Promise<ConversationEntity> {
+    return await this.conversationService.getConversationById(conversation_id);
+  }
+
+  @Get('/:receiver_id/messages')
+  async getMessagesByCombineId(
+    @Request() req,
+    @Param('receiver_id') receiver_id: string,
+    @Query('limit') limit: number,
+    @Query('offset') offset: number,
+  ) {
+    return await this.conversationService.getMessagesByCombineId(req.user, receiver_id, { limit, offset });
+  }
+
+  @ApiQuery({ name: 'type', enum: MessageType })
+  @Get('/:conversation_id/files')
+  async getFiles(
+    @Param('conversation_id') conversation_id: string,
+    @Query('limit') limit: number,
+    @Query('offset') offset: number,
+    @Query('type') type: MessageType,
+  ) {
+    return await this.conversationService.getFiles(conversation_id, { limit, offset }, type);
+  }
+  @Delete('/all-conversation-dev')
+  async deleteAllConversations() {
+    return await this.conversationService.deleteAllConversations();
+  }
+
+  @Delete('/:conversation_id')
+  async deleteConversation(@Request() req, @Param('conversation_id') conversation_id: string) {
+    return await this.conversationService.deleteConversation(req.user, conversation_id);
   }
 }

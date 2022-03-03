@@ -17,6 +17,13 @@ export class UsersController {
   private logger = new Logger(UsersController.name);
   constructor(private readonly userService: UserService) {}
 
+  // health check
+  @Get('health')
+  @ApiOkResponse({ description: 'OK' })
+  async healthCheck(@Request() req) {
+    this.userService.healthCheck(req.user);
+  }
+
   @ApiOkResponse({ description: 'Return user', type: UserDto })
   @Get()
   async getUser(@Query('userId') userId: string) {

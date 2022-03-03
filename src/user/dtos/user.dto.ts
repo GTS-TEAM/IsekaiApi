@@ -1,22 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { RolesEnum } from '../../common/constants/enum';
+import { IntersectionType } from '@nestjs/swagger';
+import { AbstractDto } from '../../common/abstract.dto';
 import { UserInfo } from './user-info';
 
-export class UserDto extends UserInfo {
-  @ApiProperty()
-  id: string;
-
-  @ApiProperty()
-  created_at: Date;
-  // @ApiProperty({ default: false })
-  // @Expose()
-  // emailVerified: boolean;
-
-  // @ApiProperty()
-  // @Expose()
-  // followers: Array<string>;
-
-  // @ApiProperty()
-  // @Expose()
-  // following: Array<string>;
-}
+export class UserDto extends IntersectionType(AbstractDto, UserInfo) {}

@@ -4,30 +4,50 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   JoinTable,
   ManyToMany,
   OneToMany,
+  OneToOne,
+  PrimaryColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { AbstractEntity } from '../../common/abstract.entity';
 import { ConversationType } from '../../common/constants/enum';
+import { MemberEntity } from './member';
 
 @Entity('conversations')
 export class ConversationEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn()
   id: string;
 
-  @ManyToMany((type) => UserEntity, (user) => user.conversations, {
-    cascade: true,
-  })
-  @JoinTable()
-  members: UserEntity[];
+  @Column({ nullable: true })
+  name?: string;
 
-  @OneToMany((type) => MessageEntity, (message) => message.conversation)
-  messages: MessageEntity[];
+  @Column({ nullable: true })
+  avatar?: string;
 
   @Column({ enum: ConversationType, default: ConversationType.PRIVATE })
   type: ConversationType;
+
+  @OneToMany((type) => MemberEntity, (member) => member.conversations, {
+    onDelete: 'CASCADE',
+  })
+  members: MemberEntity[];
+
+  @OneToMany((type) => MessageEntity, (message) => message.conversation, {
+    cascade: true,
+  })
+  messages: MessageEntity[];
+
+  @OneToOne(() => MessageEntity)
+  @JoinColumn()
+  last_message: MessageEntity;
+
+  @ManyToMany((type) => UserEntity)
+  @JoinTable({ name: 'users_deleted' })
+  users_deleted: UserEntity[];
 
   @Column({ nullable: true })
   theme: string;

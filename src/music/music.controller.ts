@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Request, UploadedFile, UseGuards, UseInter
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { UploadService } from '../upload/upload.service';
+import { MusicEntity } from './music';
 import { MusicService } from './music.service';
 export class YoutubeUrlToMp3Dto {
   @ApiProperty()
@@ -41,12 +41,12 @@ export class MusicController {
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file'))
   @Post('/file')
-  async uploadMp3(@Request() req, @UploadedFile() file: Express.Multer.File) {
+  async uploadMp3(@Request() req, @UploadedFile() file: Express.Multer.File): Promise<MusicEntity> {
     return await this.musicService.uploadMusic(req.user, file);
   }
 
   @Post('/youtube')
-  async youtubeUrlToMp3(@Request() req, @Body() dto: YoutubeUrlToMp3Dto) {
+  async youtubeUrlToMp3(@Request() req, @Body() dto: YoutubeUrlToMp3Dto): Promise<any> {
     const music = await this.musicService.uploadByYoutube(req.user, dto.url);
     return { message: 'Đã tải lên thành công', music };
   }

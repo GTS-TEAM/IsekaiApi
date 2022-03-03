@@ -1,23 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  OneToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
+import { AbstractEntity } from '../common/abstract.entity';
 import { NotiStatus, NotiType } from '../common/constants/enum';
 import { UserEntity } from '../user/user';
 
 @Entity('notifications')
-export class NotificationEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class NotificationEntity extends AbstractEntity {
   @ManyToMany(() => UserEntity, (user) => user.notifications)
   @JoinTable()
   senders: UserEntity[];
@@ -36,10 +24,4 @@ export class NotificationEntity {
   @ApiProperty()
   @Column({ nullable: true })
   refId: string;
-
-  @CreateDateColumn()
-  created_at: Date;
-
-  @UpdateDateColumn()
-  updated_at: Date;
 }
