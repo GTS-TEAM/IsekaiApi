@@ -371,6 +371,7 @@ export class ConversationService {
       conversation,
     });
     this.saveLastMessage(message, conversation);
+    return message;
   }
   // throw new AnErrorOccuredException(error.message);
 }
