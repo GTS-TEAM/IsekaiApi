@@ -223,7 +223,8 @@ export class ConversationService {
         conversation.theme = fields.theme;
         content = `${user.username} đã đổi chủ đề cuộc trò chuyện thành ${fields.theme}`;
       } else if (fields.member) {
-        const member = conversation.members.find((m) => m.user.id === fields.member.id);
+        const member = conversation.members.find((m) => m.id === fields.member.id);
+
         content = `${user.username} đã đặt tên biệt danh của ${member.user.username} thành ${fields.member.nickname}`;
         member.nickname = fields.member.nickname;
         await this.memberService.save(member);
