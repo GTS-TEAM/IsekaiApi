@@ -19,6 +19,18 @@
     }
     ```
 
+    ```
+    export enum MessageType {
+      TEXT = 'text',
+      IMAGE = 'image',
+      VIDEO = 'video',
+      AUDIO = 'audio',
+      FILE = 'file',
+      SYSTEM = 'system',
+      GIF = 'gif',
+    }
+    ```
+
     **_Emit:_**
 
     ```
@@ -26,6 +38,13 @@
       message: string,
       receiverId?:string // private
       conversationId?: string // group
+      type?: MessageType
+      files?: [
+        {
+          link:string,
+          name:string
+        }
+      ]
     }
     ```
 
