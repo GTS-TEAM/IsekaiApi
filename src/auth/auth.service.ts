@@ -24,10 +24,12 @@ export class AuthService {
   }
 
   async googleLogin(tokenPayload: TokenPayload): Promise<UserEntity> {
-    let user = await this.userService.findByEmail(tokenPayload.email);
+    let user = await this.userService.findOne({ where: { email: tokenPayload.email } });
+
     if (!user) {
-      user = await this.userService.createUser(tokenPayload.picture, tokenPayload.email);
+      user = await this.userService.createUser(tokenPayload.email, tokenPayload.name, tokenPayload.picture);
     }
+
     return user;
   }
 

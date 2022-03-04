@@ -41,9 +41,9 @@ export class UserEntity extends AbstractEntity {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   @Exclude({ toPlainOnly: true })
-  password: string;
+  password?: string;
 
   @Column({ enum: RolesEnum, type: 'enum', default: RolesEnum.USER })
   roles: RolesEnum;
@@ -125,6 +125,8 @@ export class UserEntity extends AbstractEntity {
 
   @BeforeInsert()
   hashPassword() {
-    this.password = hash(this.password);
+    if (this.password) {
+      this.password = hash(this.password);
+    }
   }
 }

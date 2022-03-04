@@ -85,7 +85,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
         // create new conversation
         if (!conversation) {
           conversation = await this.conversationService.createPrivateConversation(user, target);
-          this.logger.debug(user.username + ' created a new conversation with ' + target.username);
           const receiverClient = this.connectedUsers.find((s) => s.userId === data.receiverId);
 
           client.join(conversation.id);
@@ -148,7 +147,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       const messages = await this.conversationService.addMembersToGroupConversation(user, data.conversationId, members);
       const membersClient = this.connectedUsers.filter((s) => data.membersId.includes(s.userId));
-      this.logger.debug(user.username + ' added ' + members.length + ' members to group conversation');
       for (let i = 0; i < membersClient.length; i++) {
         membersClient[i].client.join(messages[0].conversation.id);
       }
