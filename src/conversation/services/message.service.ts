@@ -7,6 +7,7 @@ import { IPage } from 'src/interfaces/page.interface';
 import { UserEntity } from 'src/user/user';
 import { DeepPartial, Repository } from 'typeorm';
 import { ConversationEntity } from '../entities/conversation';
+import { FileEntity } from '../entities/file';
 import { MessageEntity } from '../entities/message';
 import { MemberService } from './member.service';
 
@@ -30,7 +31,8 @@ export class MessageService {
       .orderBy('messages.created_at', 'DESC')
       .leftJoin('messages.conversation', 'conversation')
       .where('conversation.id = :conversationId', { conversationId })
-      .leftJoinAndSelect('messages.sender', 'member');
+      .leftJoinAndSelect('messages.sender', 'member')
+      .leftJoinAndSelect('messages.files', 'files');
 
     if (member.deleted_conversation_at) {
       query.andWhere('messages.created_at >= :created', { created: member.deleted_conversation_at });
@@ -108,10 +110,11 @@ export class MessageService {
         'messages.created_at',
         'messages.type',
       ])
+      .leftJoinAndSelect('messages.files', 'files')
       .getMany();
   }
 
-  async getFilesInMessage(conversationId: string, page: IPage, type: MessageType): Promise<string[]> {
+  async getFilesInMessage(conversationId: string, page: IPage, type: MessageType): Promise<FileEntity[]> {
     const messages = await this.messageRepo
       .createQueryBuilder('messages')
       .limit(page.limit)
@@ -120,7 +123,8 @@ export class MessageService {
       .leftJoin('messages.conversation', 'conversation')
       .where('conversation.id = :conversationId', { conversationId })
       .andWhere('messages.type = :type', { type })
+      .leftJoinAndSelect('messages.files', 'files')
       .getMany();
-    return messages.map((m) => m.content);
+    return messages.map((m) => m.files).flat();
   }
 }

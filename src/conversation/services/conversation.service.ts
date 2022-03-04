@@ -13,6 +13,8 @@ import { IPage } from '../../interfaces/page.interface';
 import { MemberEntity } from '../entities/member';
 import { MessageService } from './message.service';
 import { MemberService } from './member.service';
+import { FileDto } from 'src/event/files.dto';
+import { FileEntity } from '../entities/file';
 
 @Injectable()
 export class ConversationService {
@@ -22,6 +24,8 @@ export class ConversationService {
     private readonly conversationRepo: Repository<ConversationEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
+    @InjectRepository(FileEntity)
+    private readonly fileRepo: Repository<FileEntity>,
     private readonly messageService: MessageService,
     private readonly memberService: MemberService,
   ) {}
@@ -360,18 +364,37 @@ export class ConversationService {
     }
   }
 
-  async createMessage(conversation: ConversationEntity, content: string, senderId: string, type?: MessageType) {
-    const sender = await this.memberService.findMember(senderId, conversation.id);
+  async createMessage(
+    conversation: ConversationEntity,
+    content: string,
+    senderId: string,
+    type?: MessageType,
+    files?: FileDto[],
+  ) {
+    try {
+      const sender = await this.memberService.findMember(senderId, conversation.id);
 
-    conversation.users_deleted = [];
-    const message = await this.messageService.create({
-      content,
-      sender,
-      type,
-      conversation,
-    });
-    this.saveLastMessage(message, conversation);
-    return message;
+      conversation.users_deleted = [];
+      let fileEntities: FileEntity[] = [];
+      if (files) {
+        fileEntities = this.fileRepo.create(files);
+        fileEntities = await this.fileRepo.save(files);
+      }
+
+      const message = await this.messageService.create({
+        content,
+        sender,
+        type,
+        conversation,
+        files: fileEntities,
+      });
+
+      this.saveLastMessage(message, conversation);
+      return message;
+    } catch (error) {
+      this.logger.error(error);
+      throw new AnErrorOccuredException(error.message);
+    }
   }
   // throw new AnErrorOccuredException(error.message);
 }

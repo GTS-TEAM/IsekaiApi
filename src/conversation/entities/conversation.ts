@@ -15,6 +15,7 @@ import {
 } from 'typeorm';
 import { AbstractEntity } from '../../common/abstract.entity';
 import { ConversationType } from '../../common/constants/enum';
+import { FileEntity } from './file';
 import { MemberEntity } from './member';
 
 @Entity('conversations')
@@ -48,6 +49,10 @@ export class ConversationEntity {
   @ManyToMany((type) => UserEntity)
   @JoinTable({ name: 'users_deleted' })
   users_deleted: UserEntity[];
+
+  // TODO: Check performance
+  // @OneToMany((type) => FileEntity, (file) => file.conversation)
+  // files: FileEntity[];
 
   @Column({ nullable: true })
   theme: string;
