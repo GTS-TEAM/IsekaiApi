@@ -17,13 +17,13 @@ export class MemberService {
   }
 
   async createMember(user: UserEntity): Promise<MemberEntity> {
-    this.memberRepo.create(user);
-    return await this.memberRepo.save(user);
+    const member = this.memberRepo.create({ user });
+    return await this.memberRepo.save(member);
   }
 
   async createMembers(users: UserEntity[]): Promise<MemberEntity[]> {
-    this.memberRepo.create(users);
-    return await this.memberRepo.save(users);
+    const members = users.map((user) => this.memberRepo.create({ user }));
+    return await this.memberRepo.save(members);
   }
   //   async create(entityLikeArray: DeepPartial<MemberEntity>[]): Promise<MemberEntity[]> {
   //     this.memberRepo.create(entityLike);

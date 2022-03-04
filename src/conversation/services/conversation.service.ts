@@ -144,6 +144,7 @@ export class ConversationService {
   async createGroupConversation(creator: UserEntity, users: UserEntity[]): Promise<MessageEntity[]> {
     try {
       const members = await this.memberService.createMembers([creator, ...users]);
+      console.log(members);
 
       const groupName = members.map((m) => m.user.username).join(', ');
       const conversation = this.conversationRepo.create({
@@ -154,7 +155,11 @@ export class ConversationService {
       });
 
       const converSnapshot = await this.conversationRepo.save(conversation);
-      const membersName = members.map((m) => m.user.username);
+      const membersName = members.map((m) => {
+        if (m.user.username != creator.username) {
+          return m.user.username;
+        }
+      });
       const messages = await this.messageService.generateCreateGroup(creator, membersName, converSnapshot);
 
       // add last message to conversation
