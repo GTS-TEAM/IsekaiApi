@@ -382,8 +382,10 @@ export class ConversationService {
       conversation.users_deleted = [];
       let fileEntities: FileEntity[] = [];
       if (files) {
-        fileEntities = this.fileRepo.create(files);
-        fileEntities = await this.fileRepo.save(files);
+        files.forEach((file) => {
+          fileEntities.push(this.fileRepo.create(file));
+        });
+        fileEntities = await this.fileRepo.save(fileEntities);
       }
 
       const message = await this.messageService.create({

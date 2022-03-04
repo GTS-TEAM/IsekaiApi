@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MessageType } from 'src/common/constants/enum';
+import { FileType, MessageType } from 'src/common/constants/enum';
 import { reverseConversationId } from 'src/common/utils/reverse-conversation-id';
 import { AnErrorOccuredException } from 'src/error/error.dto';
 import { IPage } from 'src/interfaces/page.interface';
@@ -114,17 +114,19 @@ export class MessageService {
       .getMany();
   }
 
-  async getFilesInMessage(conversationId: string, page: IPage, type: MessageType): Promise<FileEntity[]> {
-    const messages = await this.messageRepo
+  async getFilesInMessage(conversationId: string, page: IPage, type: FileType): Promise<FileEntity[]> {
+    const qb = this.messageRepo
       .createQueryBuilder('messages')
       .limit(page.limit)
       .offset(page.offset)
       .orderBy('messages.created_at', 'DESC')
       .leftJoin('messages.conversation', 'conversation')
       .where('conversation.id = :conversationId', { conversationId })
-      .andWhere('messages.type = :type', { type })
-      .leftJoinAndSelect('messages.files', 'files')
-      .getMany();
+      .leftJoinAndSelect('messages.files', 'files');
+    if (type === FileType.IMAGE) {
+      qb.andWhere('files.type = :type', { type }).orWhere('files.type = :type', { type: FileType.VIDEO });
+    }
+    const messages = await qb.andWhere('messages.type = :type', { type }).getMany();
     return messages.map((m) => m.files).flat();
   }
 }

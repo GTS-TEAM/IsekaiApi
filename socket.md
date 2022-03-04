@@ -11,23 +11,15 @@
     ```
     export enum MessageType {
       TEXT = 'text',
-      IMAGE = 'image',
-      VIDEO = 'video',
-      AUDIO = 'audio',
-      FILE = 'file',
-      SYSTEM = 'system',
-    }
-    ```
-
-    ```
-    export enum MessageType {
-      TEXT = 'text',
-      IMAGE = 'image',
-      VIDEO = 'video',
-      AUDIO = 'audio',
-      FILE = 'file',
       SYSTEM = 'system',
       GIF = 'gif',
+    }
+
+    export enum FileType {
+      IMAGE = 'image',
+      VIDEO = 'video',
+      AUDIO = 'audio',
+      FILE = 'file',
     }
     ```
 
@@ -42,7 +34,8 @@
       files?: [
         {
           link:string,
-          name:string
+          name:string,
+          type:FileType
         }
       ]
     }
