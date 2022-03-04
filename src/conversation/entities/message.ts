@@ -1,8 +1,9 @@
 import { ConversationEntity } from 'src/conversation/entities/conversation';
 import { UserEntity } from 'src/user/user';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { AbstractEntity } from '../../common/abstract.entity';
 import { MessageType } from '../../common/constants/enum';
+import { FileEntity } from './file';
 import { MemberEntity } from './member';
 
 @Entity('messages')
@@ -23,4 +24,7 @@ export class MessageEntity extends AbstractEntity {
 
   @Column()
   content: string;
+
+  @OneToMany((type) => FileEntity, (file) => file.message, { eager: true })
+  files: FileEntity[];
 }

@@ -18,6 +18,7 @@ export class MemberEntity extends AbstractEntity {
 
   @ManyToOne(() => UserEntity, (user) => user.members, {
     onDelete: 'CASCADE',
+    eager: true,
   })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;

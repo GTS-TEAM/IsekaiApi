@@ -8,9 +8,10 @@ import { MemberEntity } from './entities/member';
 import { MessageEntity } from './entities/message';
 import { MemberService } from './services/member.service';
 import { MessageService } from './services/message.service';
+import { FileEntity } from './entities/file';
 
 @Module({
-  imports: [UserModule, TypeOrmModule.forFeature([ConversationEntity, MessageEntity, MemberEntity])],
+  imports: [UserModule, TypeOrmModule.forFeature([ConversationEntity, MessageEntity, MemberEntity, FileEntity])],
   providers: [ConversationService, MemberService, MessageService],
   controllers: [ConversationController],
   exports: [ConversationService],

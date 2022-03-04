@@ -15,6 +15,7 @@ import { ConversationEntity } from '../conversation/entities/conversation';
 import { MemberFields } from '../interfaces/conversation-field.interface';
 import { TokenService } from '../token/token.service';
 import { UserService } from '../user/users.service';
+import { FileDto } from './files.dto';
 
 @WebSocketGateway({ path: '/api/socket.io' })
 export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -67,7 +68,10 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseFilters(new BaseWsExceptionFilter())
   @SubscribeMessage('message')
-  async onMessage(client, data: { message: string; receiverId?: string; conversationId?: string; type?: MessageType }) {
+  async onMessage(
+    client,
+    data: { message: string; receiverId?: string; conversationId?: string; type?: MessageType; files?: FileDto[] },
+  ) {
     try {
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
 
@@ -97,7 +101,13 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
         throw new Error('Nhóm này đã bị xóa');
       }
       //TODO: Optimize
-      const message = await this.conversationService.createMessage(conversation, data.message, user.id, data.type);
+      const message = await this.conversationService.createMessage(
+        conversation,
+        data.message,
+        user.id,
+        data.type,
+        data.files,
+      );
 
       this.server.to(conversation.id).emit('message', message);
     } catch (error) {
