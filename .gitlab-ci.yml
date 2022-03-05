@@ -23,7 +23,7 @@ deploy-production:
   environment:
     name: production
   script:
-    - ssh root@$SSH_HOST_IP "cd ise-api;git checkout main; git reset --hard origin/main; docker-compose down; docker-compose up --build -d"
+    - ssh root@$SSH_HOST_IP "cd ise-api;git checkout main; git pull; git reset --hard origin/main; git pull; docker-compose down; docker-compose up --build -d"
   only:
     - main
   when: manual
