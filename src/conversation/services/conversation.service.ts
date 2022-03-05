@@ -268,13 +268,14 @@ export class ConversationService {
     if (!conversation) {
       throw new ConversationNotFoundException();
     }
+
     try {
       const members = await this.memberService.createMembers(users);
       const membersAdded = conversation.members.concat(members);
 
       conversation.members = membersAdded;
       conversation.name = membersAdded.map((m) => m.user.username).join(', ');
-      const membersName = membersAdded.map((m) => m.user.username);
+      const membersName = members.map((m) => m.user.username);
       const messages = await this.messageService.generateAddMembers(user, membersName, conversation);
 
       conversation.last_message = messages[messages.length - 1];
