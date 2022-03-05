@@ -114,19 +114,20 @@ export class MessageService {
       .getMany();
   }
 
-  async getFilesInMessage(conversationId: string, page: IPage, type: FileType): Promise<FileEntity[]> {
-    const qb = this.messageRepo
+  async getFilesInMessage(conversationId: string, page: IPage, types: FileType[]): Promise<FileEntity[]> {
+    const messages = await this.messageRepo
       .createQueryBuilder('messages')
       .limit(page.limit)
       .offset(page.offset)
       .orderBy('messages.created_at', 'DESC')
       .leftJoin('messages.conversation', 'conversation')
       .where('conversation.id = :conversationId', { conversationId })
-      .leftJoinAndSelect('messages.files', 'files');
-    if (type === FileType.IMAGE) {
-      qb.andWhere('files.type = :type', { type }).orWhere('files.type = :type', { type: FileType.VIDEO });
-    }
-    const messages = await qb.andWhere('messages.type = :type', { type }).getMany();
+      .leftJoinAndSelect('messages.files', 'files')
+      .andWhere('files.type = :type', { type: types[0] })
+      .orWhere('files.type = :type2', { type2: types[1] })
+      .getMany();
+
+    // const messages = await qb.getMany();
     return messages.map((m) => m.files).flat();
   }
 }

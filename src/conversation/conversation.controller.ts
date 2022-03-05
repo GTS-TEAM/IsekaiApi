@@ -54,15 +54,17 @@ export class ConversationController {
     return await this.messageService.getMessagesByCombineId(req.user, receiver_id, { limit, offset });
   }
 
-  @ApiQuery({ name: 'type', enum: FileType })
+  @ApiQuery({ name: 'type1', enum: FileType })
+  @ApiQuery({ name: 'type2', enum: FileType })
   @Get('/:conversation_id/files')
   async getFiles(
     @Param('conversation_id') conversation_id: string,
     @Query('limit') limit: number,
     @Query('offset') offset: number,
-    @Query('type') type: FileType,
+    @Query('type1') type1: FileType,
+    @Query('type2') type2: FileType,
   ) {
-    return await this.messageService.getFilesInMessage(conversation_id, { limit, offset }, type);
+    return await this.messageService.getFilesInMessage(conversation_id, { limit, offset }, [type1, type2]);
   }
   @Delete('/all-conversation-dev')
   async deleteAllConversations() {
