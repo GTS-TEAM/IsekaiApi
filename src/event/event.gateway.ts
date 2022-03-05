@@ -166,8 +166,8 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       const message = await this.conversationService.leaveGroupConversation(user, data.conversationId);
 
-      this.server.to(data.conversationId).emit('message', message);
       client.leave(data.conversationId);
+      this.server.to(data.conversationId).emit('message', message);
     } catch (error) {
       this.logger.error(error);
       this.server.to(client.id).emit('error', { message: error.message });
