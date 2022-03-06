@@ -17,9 +17,8 @@ export class AuthService {
     if (!isMatchPassword) {
       throw new UnauthorizedException('Password is incorrect');
     }
-
     user.avatar = resizeAvatar(40, 40, user.avatar);
-    await this.userService.healthCheck(user.id);
+    this.userService.healthCheck(user.id);
     return user;
   }
 

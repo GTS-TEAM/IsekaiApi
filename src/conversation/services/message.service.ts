@@ -123,8 +123,7 @@ export class MessageService {
       .leftJoin('messages.conversation', 'conversation')
       .where('conversation.id = :conversationId', { conversationId })
       .leftJoinAndSelect('messages.files', 'files')
-      .andWhere('files.type = :type', { type: types[0] })
-      .orWhere('files.type = :type2', { type2: types[1] })
+      .andWhere('files.type IN (:...types)', { types })
       .getMany();
 
     // const messages = await qb.getMany();
