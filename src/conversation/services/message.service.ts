@@ -89,8 +89,9 @@ export class MessageService {
 
   async getMessagesByCombineId(userId: string, receiver_id: string, page: IPage): Promise<MessageEntity[]> {
     const conversationId = userId + '-' + receiver_id;
-
+    this.logger.log(conversationId);
     const converIdReverse = reverseConversationId(conversationId);
+    this.logger.log(converIdReverse);
 
     return await this.messageRepo
       .createQueryBuilder('messages')
@@ -100,16 +101,8 @@ export class MessageService {
       .leftJoinAndSelect('messages.conversation', 'conversation')
       .where('conversation.id = :conversationId', { conversationId })
       .orWhere('conversation.id = :id', { id: converIdReverse })
-      .leftJoinAndSelect('messages.sender', 'users')
-      .select([
-        'users.id',
-        'users.username',
-        'users.avatar',
-        'messages.id',
-        'messages.content',
-        'messages.created_at',
-        'messages.type',
-      ])
+      .leftJoinAndSelect('messages.sender', 'member')
+      .leftJoinAndSelect('member.user', 'user')
       .leftJoinAndSelect('messages.files', 'files')
       .getMany();
   }
