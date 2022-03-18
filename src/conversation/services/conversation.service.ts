@@ -15,6 +15,7 @@ import { MessageService } from './message.service';
 import { MemberService } from './member.service';
 import { FileDto } from 'src/event/files.dto';
 import { FileEntity } from '../entities/file';
+import { SeenEntity } from '../entities/seen';
 
 @Injectable()
 export class ConversationService {
@@ -26,6 +27,8 @@ export class ConversationService {
     private readonly userRepo: Repository<UserEntity>,
     @InjectRepository(FileEntity)
     private readonly fileRepo: Repository<FileEntity>,
+    @InjectRepository(SeenEntity)
+    private readonly seenRepo: Repository<SeenEntity>,
     private readonly messageService: MessageService,
     private readonly memberService: MemberService,
   ) {}
@@ -40,6 +43,8 @@ export class ConversationService {
       .where('conversations.id = :id', { id: conversationId })
       .leftJoinAndSelect('conversations.members', 'members')
       .leftJoinAndSelect('members.user', 'users')
+      .leftJoinAndSelect('conversations.seen', 'seen')
+
       .getOne();
   }
 
@@ -57,6 +62,7 @@ export class ConversationService {
         .leftJoinAndSelect('conversations.last_message', 'last_message')
         .leftJoinAndSelect('last_message.sender', 'senders')
         .leftJoinAndSelect('senders.user', 'senders_users')
+        .leftJoinAndSelect('conversations.seen', 'seen')
         .getOne();
       return conversation;
     } catch (error) {
@@ -80,6 +86,8 @@ export class ConversationService {
         .leftJoinAndSelect('last_message.sender', 'last_message_sender')
         .leftJoinAndSelect('last_message_sender.user', 'last_message_sender_user')
         .leftJoinAndSelect('members.user', 'users')
+        .leftJoinAndSelect('conversations.seen', 'seen')
+
         .getOne();
       return conversation;
     } catch (error) {
@@ -108,7 +116,9 @@ export class ConversationService {
         .leftJoinAndSelect('conversations.last_message', 'last_message')
         .leftJoinAndSelect('last_message.sender', 'last_message_sender')
         .leftJoinAndSelect('last_message_sender.user', 'last_message_sender_user')
-        .leftJoinAndSelect('conversations.users_deleted', 'users_deleted');
+        .leftJoinAndSelect('conversations.users_deleted', 'users_deleted')
+        .leftJoinAndSelect('conversations.seen', 'seen');
+
       if (page) {
         queryB.orderBy('conversations.updated_at', 'DESC').skip(page.offset).take(page.limit);
       }
@@ -402,6 +412,45 @@ export class ConversationService {
       return message;
     } catch (error) {
       this.logger.error(error);
+      throw new AnErrorOccuredException(error.message);
+    }
+  }
+
+  async seen(conversationId: string, messageId: string, user: UserEntity): Promise<any> {
+    try {
+      const conversation = await this.getConversationById(conversationId);
+
+      let seen = await this.seenRepo
+        .createQueryBuilder('seen')
+        .leftJoin('seen.user', 'user')
+        .leftJoin('seen.conversation', 'conversation')
+        .where('user.id = :userId', { userId: user.id })
+        .where('conversation.id = :conversationId', { conversationId })
+        .getOne();
+
+      if (!seen) {
+        seen = this.seenRepo.create({ conversation, messageId, user });
+
+        this.seenRepo.save(seen);
+      } else {
+        seen.messageId = messageId;
+        this.seenRepo.save(seen);
+      }
+      return {
+        message: {
+          id: messageId,
+        },
+        user: {
+          id: user.id,
+          username: user.username,
+          avatar: user.avatar,
+        },
+        conversation: {
+          id: conversation.id,
+        },
+      };
+    } catch (error) {
+      this.logger.error(error, error.stack);
       throw new AnErrorOccuredException(error.message);
     }
   }

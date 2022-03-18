@@ -10,12 +10,13 @@ import {
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import { ConversationService } from 'src/conversation/services/conversation.service';
-import { ConversationType, MessageType, TokenType } from '../common/constants/enum';
+import { ConversationType, MessageStatus, MessageType, TokenType } from '../common/constants/enum';
 import { ConversationEntity } from '../conversation/entities/conversation';
 import { MemberFields } from '../interfaces/conversation-field.interface';
 import { TokenService } from '../token/token.service';
 import { UserService } from '../user/users.service';
 import { FileDto } from './files.dto';
+import { MessageService } from 'src/conversation/services/message.service';
 
 @WebSocketGateway({ path: '/api/socket.io' })
 export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -24,6 +25,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private tokenSerivce: TokenService,
     private readonly conversationService: ConversationService,
+    private readonly messageService: MessageService,
     private readonly userService: UserService,
   ) {}
 
@@ -66,7 +68,19 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  @UseFilters(new BaseWsExceptionFilter())
+  @SubscribeMessage('seen-message')
+  async onMessageStatus(client: any, data: { conversationId: string; messageId: string }) {
+    try {
+      const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
+      const seen = await this.conversationService.seen(data.conversationId, data.messageId, user);
+
+      this.server.to(data.conversationId).emit('seen-message', seen);
+    } catch (error) {
+      this.logger.error(error);
+      this.server.to(client.id).emit('error', { message: error.message });
+    }
+  }
+
   @SubscribeMessage('message')
   async onMessage(
     client,
@@ -109,6 +123,8 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       );
 
       this.server.to(conversation.id).emit('message', message);
+      //TODO: Consider this case
+      this.server.to(conversation.id).emit('message-status', message);
     } catch (error) {
       this.server.to(client.id).emit('message', { message: error.message });
     }
