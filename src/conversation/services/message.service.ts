@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FileType, MessageType } from 'src/common/constants/enum';
+import { FileType, MessageStatus, MessageType } from 'src/common/constants/enum';
 import { reverseConversationId } from 'src/common/utils/reverse-conversation-id';
 import { AnErrorOccuredException } from 'src/error/error.dto';
 import { IPage } from 'src/interfaces/page.interface';
@@ -121,5 +121,12 @@ export class MessageService {
 
     // const messages = await qb.getMany();
     return messages.map((m) => m.files).flat();
+  }
+
+  async updateMessageStatus(messageId: string, status: MessageStatus, user: UserEntity): Promise<MessageEntity> {
+    const message = await this.messageRepo.findOne(messageId);
+    message.status = status;
+    this.messageRepo.save(message);
+    return message;
   }
 }

@@ -9,11 +9,12 @@ import { MessageEntity } from './entities/message';
 import { MemberService } from './services/member.service';
 import { MessageService } from './services/message.service';
 import { FileEntity } from './entities/file';
+import { SeenEntity } from './entities/seen';
 
 @Module({
-  imports: [UserModule, TypeOrmModule.forFeature([ConversationEntity, MessageEntity, MemberEntity, FileEntity])],
+  imports: [UserModule, TypeOrmModule.forFeature([ConversationEntity, MessageEntity, MemberEntity, FileEntity, SeenEntity])],
   providers: [ConversationService, MemberService, MessageService],
   controllers: [ConversationController],
-  exports: [ConversationService],
+  exports: [ConversationService, MessageService],
 })
 export class ConversationModule {}

@@ -17,6 +17,7 @@ import { AbstractEntity } from '../../common/abstract.entity';
 import { ConversationType } from '../../common/constants/enum';
 import { FileEntity } from './file';
 import { MemberEntity } from './member';
+import { SeenEntity } from './seen';
 
 @Entity('conversations')
 export class ConversationEntity {
@@ -50,10 +51,12 @@ export class ConversationEntity {
   @JoinTable({ name: 'users_deleted' })
   users_deleted: UserEntity[];
 
+  @OneToMany((type) => SeenEntity, (seen) => seen.conversation, { eager: true, cascade: true })
+  seen: SeenEntity;
+
   // TODO: Check performance
   // @OneToMany((type) => FileEntity, (file) => file.conversation)
   // files: FileEntity[];
-
   @Column({ nullable: true })
   theme: string;
 

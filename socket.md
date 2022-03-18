@@ -154,6 +154,38 @@
     Return on event "message" type Message
     ```
 
+  - **seen-message:**
+
+    **_Emit:_**
+
+    ```
+      {
+        "conversationId":"11006463098-11005720541",
+        "messageId":"11071429495"
+      }
+
+    ```
+
+    **_On:_**
+
+    ```
+
+    {
+      "message": {
+        "id": "11071429495"
+      },
+      "user": {
+        "id": "11005720541",
+        "username": "4",
+        "avatar": "https://res.cloudinary.com/titus-nguyen/image/upload/c_fill,w_40,h_40/undefined"
+      },
+        "conversation": {
+        "id": "11006463098-11005720541"
+      }
+    }
+
+    ```
+
 **_On: "error"_**
 
 ```
