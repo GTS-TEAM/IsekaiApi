@@ -44,6 +44,7 @@ export class ConversationService {
       .leftJoinAndSelect('conversations.members', 'members')
       .leftJoinAndSelect('members.user', 'users')
       .leftJoinAndSelect('conversations.seen', 'seen')
+      .leftJoinAndSelect('seen.user', 'user')
 
       .getOne();
   }
@@ -63,6 +64,8 @@ export class ConversationService {
         .leftJoinAndSelect('last_message.sender', 'senders')
         .leftJoinAndSelect('senders.user', 'senders_users')
         .leftJoinAndSelect('conversations.seen', 'seen')
+        .leftJoinAndSelect('seen.user', 'user')
+
         .getOne();
       return conversation;
     } catch (error) {
@@ -87,6 +90,7 @@ export class ConversationService {
         .leftJoinAndSelect('last_message_sender.user', 'last_message_sender_user')
         .leftJoinAndSelect('members.user', 'users')
         .leftJoinAndSelect('conversations.seen', 'seen')
+        .leftJoinAndSelect('seen.user', 'user')
 
         .getOne();
       return conversation;
@@ -117,7 +121,8 @@ export class ConversationService {
         .leftJoinAndSelect('last_message.sender', 'last_message_sender')
         .leftJoinAndSelect('last_message_sender.user', 'last_message_sender_user')
         .leftJoinAndSelect('conversations.users_deleted', 'users_deleted')
-        .leftJoinAndSelect('conversations.seen', 'seen');
+        .leftJoinAndSelect('conversations.seen', 'seen')
+        .leftJoinAndSelect('seen.user', 'user');
 
       if (page) {
         queryB.orderBy('conversations.updated_at', 'DESC').skip(page.offset).take(page.limit);
