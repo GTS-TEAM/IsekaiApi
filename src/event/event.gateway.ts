@@ -72,6 +72,11 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async onMessageStatus(client: any, data: { conversationId: string; messageId: string }) {
     try {
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
+
+      if (!data.conversationId || !data.messageId) {
+        throw new Error('Không tìm thấy thông tin: ' + data.conversationId + ' ' + data.messageId);
+      }
+
       const seen = await this.conversationService.seen(data.conversationId, data.messageId, user);
 
       this.server.to(data.conversationId).emit('seen-message', seen);
