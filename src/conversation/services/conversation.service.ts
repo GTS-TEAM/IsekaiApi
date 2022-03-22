@@ -436,10 +436,10 @@ export class ConversationService {
       if (!seen) {
         seen = this.seenRepo.create({ conversation, messageId, user });
 
-        this.seenRepo.save(seen);
+        await this.seenRepo.save(seen);
       } else {
         seen.messageId = messageId;
-        this.seenRepo.save(seen);
+        await this.seenRepo.save(seen);
       }
       return {
         message: {
