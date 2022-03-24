@@ -10,8 +10,7 @@ export class SeenEntity extends AbstractEntity {
   })
   conversation: ConversationEntity;
 
-  @OneToOne((type) => UserEntity)
-  @JoinColumn()
+  @ManyToOne((type) => UserEntity)
   user: UserEntity;
 
   @Column()

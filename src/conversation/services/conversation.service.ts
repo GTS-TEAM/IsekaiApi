@@ -430,12 +430,11 @@ export class ConversationService {
         .leftJoin('seen.user', 'user')
         .leftJoin('seen.conversation', 'conversation')
         .where('user.id = :userId', { userId: user.id })
-        .where('conversation.id = :conversationId', { conversationId })
+        .andWhere('conversation.id = :conversationId', { conversationId })
         .getOne();
 
       if (!seen) {
         seen = this.seenRepo.create({ conversation, messageId, user });
-
         await this.seenRepo.save(seen);
       } else {
         seen.messageId = messageId;
@@ -455,7 +454,7 @@ export class ConversationService {
         },
       };
     } catch (error) {
-      this.logger.error(error, error.stack);
+      this.logger.error('Seen =>' + error, error.stack);
       throw new AnErrorOccuredException(error.message);
     }
   }
