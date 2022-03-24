@@ -101,10 +101,22 @@ export class ConversationService {
   }
 
   async getConversationById(id: string) {
-    return await this.conversationRepo.findOne({
-      where: { id },
-      relations: ['members', 'last_message'],
-    });
+    // return await this.conversationRepo.findOne({
+    //   where: { id },
+    //   relations: ['members', 'last_message'],
+    // });
+
+    return await this.conversationRepo
+      .createQueryBuilder('conversations')
+      .where('conversations.id = :id', { id })
+      .leftJoinAndSelect('conversations.members', 'members')
+      .leftJoinAndSelect('members.user', 'users')
+      .leftJoinAndSelect('conversations.last_message', 'last_message')
+      .leftJoinAndSelect('last_message.sender', 'last_message_sender')
+      .leftJoinAndSelect('last_message_sender.user', 'last_message_sender_user')
+      .leftJoinAndSelect('conversations.seen', 'seen')
+      .leftJoinAndSelect('seen.user', 'user')
+      .getOne();
   }
 
   async getUserConversations(userId: string, page?: IPage): Promise<ConversationEntity[]> {
