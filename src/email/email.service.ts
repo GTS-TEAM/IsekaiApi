@@ -253,17 +253,18 @@ export class EmailService {
       const subject = 'Reset password';
       const resetPasswordUrl = this.resetPasswordUrl + sendMailVerifyDto.token;
       const html = `Dear ${sendMailVerifyDto.to}<br>,
-To reset your password, click on this link: <a>${resetPasswordUrl}</a><br>
+To reset your password, click on this link: <a href=${resetPasswordUrl}>Click here</a><br>
 If you did not request any password resets, then ignore this email.`;
 
       const msg = {
         to: sendMailVerifyDto.to,
-        from: this.configService.get('email.emailFrom'),
+        from: 'langn128@gmail.com',
         subject,
         html,
       };
-      await this.mailService.send(msg);
+      this.mailService.send(msg);
     } catch (error) {
+      console.log(error.response.body);
       throw new BadRequestException('Send mail reset password failed');
     }
   };

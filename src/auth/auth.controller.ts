@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Post, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, NotFoundException, Post, Query, Res, UseGuards } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -26,6 +26,7 @@ import { RegisterResponseDto } from './dtos/register-respose.dto';
 import { TokenPayloadDto } from './dtos/token-payload.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleLoginDto } from './dtos/google-login.dto';
+import { ResetPasswordDto } from './dtos/login.dto';
 class DeactivateRefreshTokenDto {
   @ApiProperty()
   @Expose()
@@ -98,6 +99,19 @@ export class AuthController {
     const user = await this.tokenService.verifyToken(token, TokenType.VerifyEmailToken);
     // await this.authService.verifyEmail(user);
     res.redirect('http://localhost:3000');
+  }
+
+  @Post('/reset-password')
+  async sendResetPassword(@Body() dto: ResetPasswordDto) {
+    const user = await this.userService.findOne({ where: { email: dto.email } });
+    if (!user) {
+      throw new NotFoundException('Không tìm thấy email');
+    }
+    console.log(dto.email);
+
+    const token = await this.tokenService.generateResetPasswordToken(dto.email);
+
+    this.emailService.sendResetPasswordEmail({ to: dto.email, token: token.token });
   }
 
   // @ApiOkResponse({ description: 'Success' })

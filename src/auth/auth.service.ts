@@ -1,10 +1,10 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { TokenPayload } from 'google-auth-library';
 import { resizeAvatar } from 'src/common/utils/resize-image';
 import { UserEntity } from 'src/user/user';
+import { EmailService } from '../email/email.service';
 import { UserLoginDto } from '../user/dtos/user-login.dto';
 import { UserService } from '../user/users.service';
-import { GoogleLoginDto } from './dtos/google-login.dto';
 @Injectable()
 export class AuthService {
   private logger = new Logger(AuthService.name);
