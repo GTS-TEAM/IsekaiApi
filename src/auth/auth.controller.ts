@@ -27,6 +27,7 @@ import { TokenPayloadDto } from './dtos/token-payload.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleLoginDto } from './dtos/google-login.dto';
 import { ResetPasswordDto, SendResetPasswordDto } from './dtos/login.dto';
+import { hashPassword } from '../common/utils/hash-password';
 class DeactivateRefreshTokenDto {
   @ApiProperty()
   @Expose()
@@ -118,12 +119,9 @@ export class AuthController {
   @Patch('/reset-password')
   async refreshPassword(@Body() dto: ResetPasswordDto) {
     const user = await this.tokenService.verifyToken(dto.token, TokenType.RefreshPasswordToken);
-    user.password = dto.password;
+    user.password = hashPassword(dto.password);
 
     await this.userService.save(user);
-    const u = await this.userService.findOne({ where: { email: user.email } });
-    console.log(u.password);
-    console.log('da thay doi mat khau:', dto.password);
 
     return {
       message: 'Reset password successfully',
