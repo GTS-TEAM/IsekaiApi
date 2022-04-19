@@ -125,7 +125,7 @@ export class TokenService {
     if (!user) {
       throw new NotFoundException('Email does not exist');
     }
-    const refreshPasswordToken = this.generateToken(user, this.configService.get(constants.JWT_RESET_PASSWORD_EXPIRATION));
+    const refreshPasswordToken = this.generateToken(user, '60 minutes');
     return await this.saveToken(refreshPasswordToken, user, TokenType.RefreshPasswordToken);
   }
   // deactivate refresh token
