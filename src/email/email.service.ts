@@ -13,11 +13,13 @@ export class EmailService {
   verificationEmailUrl: string;
   resetPasswordUrl: string;
   hostUrl: string;
+  resetPasswordClientUrl: string;
   constructor(private readonly configService: ConfigService, private readonly mailService: MailService) {
     mailService.setApiKey(this.configService.get(constants.SENDGRID_API_KEY));
     this.hostUrl = this.configService.get('host.url');
     this.verificationEmailUrl = `${this.hostUrl}/auth/verify-email?token=`;
     this.resetPasswordUrl = `${this.hostUrl}/auth/reset-password?token=`;
+    this.resetPasswordClientUrl = `https://isekai.social/reset-password?token=`;
   }
   /**
    * Send email to verify
@@ -253,7 +255,7 @@ export class EmailService {
       const subject = 'Reset password';
       const resetPasswordUrl = this.resetPasswordUrl + sendMailVerifyDto.token;
       const html = `Dear ${sendMailVerifyDto.to}<br>,
-To reset your password, click on this link: <a href=${resetPasswordUrl}>Click here</a><br>
+To reset your password, click on this link: <a href=${this.resetPasswordClientUrl}>Click here</a><br>
 If you did not request any password resets, then ignore this email.`;
 
       const msg = {

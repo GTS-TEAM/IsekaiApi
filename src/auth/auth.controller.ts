@@ -98,7 +98,7 @@ export class AuthController {
   async verifyEmail(@Query('token') token: string, @Res() res: Response) {
     const user = await this.tokenService.verifyToken(token, TokenType.VerifyEmailToken);
     // await this.authService.verifyEmail(user);
-    res.redirect('http://localhost:3000');
+    res.redirect('https://isekai.social/login');
   }
 
   @Post('/reset-password')
