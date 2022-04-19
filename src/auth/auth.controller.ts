@@ -119,7 +119,12 @@ export class AuthController {
   async refreshPassword(@Body() dto: ResetPasswordDto) {
     const user = await this.tokenService.verifyToken(dto.token, TokenType.RefreshPasswordToken);
     user.password = dto.password;
+
     await this.userService.save(user);
+    const u = await this.userService.findOne({ where: { email: user.email } });
+    console.log(u.password);
+    console.log('da thay doi mat khau:', dto.password);
+
     return {
       message: 'Reset password successfully',
     };
