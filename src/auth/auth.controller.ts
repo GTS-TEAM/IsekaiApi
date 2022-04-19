@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, NotFoundException, Post, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, NotFoundException, Patch, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -26,7 +26,7 @@ import { RegisterResponseDto } from './dtos/register-respose.dto';
 import { TokenPayloadDto } from './dtos/token-payload.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleLoginDto } from './dtos/google-login.dto';
-import { ResetPasswordDto } from './dtos/login.dto';
+import { ResetPasswordDto, SendResetPasswordDto } from './dtos/login.dto';
 class DeactivateRefreshTokenDto {
   @ApiProperty()
   @Expose()
@@ -102,7 +102,7 @@ export class AuthController {
   }
 
   @Post('/reset-password')
-  async sendResetPassword(@Body() dto: ResetPasswordDto) {
+  async sendResetPassword(@Body() dto: SendResetPasswordDto) {
     const user = await this.userService.findOne({ where: { email: dto.email } });
     if (!user) {
       throw new NotFoundException('Không tìm thấy email');
@@ -114,20 +114,16 @@ export class AuthController {
     this.emailService.sendResetPasswordEmail({ to: dto.email, token: token.token });
   }
 
-  // @ApiOkResponse({ description: 'Success' })
-  // @Get('/refresh-password')
-  // async refreshPassword(@Query('token') token: string, @Res() res: Response) {
-  //   const user = await this.tokenService.verifyToken(
-  //     token,
-  //     TokenType.RefreshPasswordToken,
-  //   );
-  //   const tokens = await this.tokenService.generateAuthToken(user);
-  //   return {
-  //     user,
-  //     access_token: tokens.accessToken,
-  //     refresh_token: tokens.refreshToken,
-  //   };
-  // }
+  @ApiOkResponse({ description: 'Success' })
+  @Patch('/reset-password')
+  async refreshPassword(@Body() dto: ResetPasswordDto) {
+    const user = await this.tokenService.verifyToken(dto.token, TokenType.RefreshPasswordToken);
+    user.password = dto.password;
+    await this.userService.save(user);
+    return {
+      message: 'Reset password successfully',
+    };
+  }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolesEnum.ADMIN)
