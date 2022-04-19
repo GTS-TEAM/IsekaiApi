@@ -255,7 +255,7 @@ export class EmailService {
       const subject = 'Reset password';
       const resetPasswordUrl = this.resetPasswordClientUrl + sendMailVerifyDto.token;
       const html = `Dear ${sendMailVerifyDto.to}<br>,
-To reset your password, click on this link: <a href=${this.resetPasswordUrl}>Click here</a><br>
+To reset your password, click on this link: <a href=${resetPasswordUrl}>Click here</a><br>
 If you did not request any password resets, then ignore this email.`;
 
       const msg = {
