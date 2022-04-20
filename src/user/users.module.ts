@@ -1,6 +1,5 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PostModule } from '../post/post.module';
 import { FriendRequestEntity } from './entities/friend-request';
 // import { UserFollowerEntity } from 'src/user/user-follow';
 import { UserEntity } from './user';

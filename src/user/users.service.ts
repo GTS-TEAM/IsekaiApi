@@ -1,4 +1,12 @@
-import { BadRequestException, Inject, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 
 import { image } from 'faker';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,7 +27,8 @@ export class UserService {
   private logger = new Logger(UserService.name);
   constructor(
     @InjectRepository(UserEntity) private userRepo: Repository<UserEntity>,
-    @InjectRepository(FriendRequestEntity) private friendRequestRepo: Repository<FriendRequestEntity>, // @InjectRepository(UserFollowerEntity) // private userFollowerRepo: Repository<UserFollowerEntity>,
+    @InjectRepository(FriendRequestEntity)
+    private friendRequestRepo: Repository<FriendRequestEntity>, // @InjectRepository(UserFollowerEntity) // private userFollowerRepo: Repository<UserFollowerEntity>,
   ) {}
 
   async healthCheck(userId: string) {

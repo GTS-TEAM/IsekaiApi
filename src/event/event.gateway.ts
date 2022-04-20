@@ -1,4 +1,4 @@
-import { Logger, UseFilters } from '@nestjs/common';
+import { forwardRef, Inject, Logger, UseFilters } from '@nestjs/common';
 import { In } from 'typeorm';
 import {
   BaseWsExceptionFilter,
@@ -236,7 +236,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('notification')
-  async onLike(client, data: { refId: string; type: NotiType }) {
+  async onNotification(client, data: { refId: string; type: NotiType }) {
     try {
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
 

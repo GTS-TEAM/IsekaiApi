@@ -24,7 +24,6 @@ import { MusicModule } from './music/music.module';
     AuthModule,
     PostModule,
     UploadModule,
-    NotificationModule,
     // RedisCacheModule,
     NotificationModule,
     EventModule,
