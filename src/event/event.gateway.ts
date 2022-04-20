@@ -10,13 +10,20 @@ import {
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import { ConversationService } from 'src/conversation/services/conversation.service';
-import { ConversationType, MessageStatus, MessageType, TokenType } from '../common/constants/enum';
+import { ConversationType, MessageStatus, MessageType, NotiType, TokenType } from '../common/constants/enum';
 import { ConversationEntity } from '../conversation/entities/conversation';
 import { MemberFields } from '../interfaces/conversation-field.interface';
 import { TokenService } from '../token/token.service';
 import { UserService } from '../user/users.service';
 import { FileDto } from './files.dto';
 import { MessageService } from 'src/conversation/services/message.service';
+import { NotificationService } from '../notification/notification.service';
+
+enum NotificationServiceType {
+  SendMessage = 'sendMessage',
+  LikePost = 'likePost',
+  CommentPost = 'commentPost',
+}
 
 @WebSocketGateway({ path: '/api/socket.io' })
 export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -27,6 +34,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly conversationService: ConversationService,
     private readonly messageService: MessageService,
     private readonly userService: UserService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   @WebSocketServer()
@@ -221,6 +229,22 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const message = await this.conversationService.updateGroupConversation(user, data.conversationId, data.fields);
 
       this.server.to(data.conversationId).emit('message', message);
+    } catch (error) {
+      this.logger.error(error);
+      this.server.to(client.id).emit('error', { message: error.message });
+    }
+  }
+
+  @SubscribeMessage('notification')
+  async onLike(client, data: { refId: string; type: NotiType }) {
+    try {
+      const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
+
+      const notiData = await this.notificationService.sendNotification(user, { refId: data.refId, type: data.type });
+      // notify to friends
+
+      const receiver = this.connectedUsers.find((s) => s.userId === notiData.receiver.id);
+      if (receiver) this.server.to(receiver.client.id).emit('notification', notiData);
     } catch (error) {
       this.logger.error(error);
       this.server.to(client.id).emit('error', { message: error.message });
