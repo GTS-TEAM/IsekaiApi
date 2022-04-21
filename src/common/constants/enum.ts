@@ -65,6 +65,12 @@ export enum NotiType {
   POST_COMMENT_REPLY_LIKE = 'postCommentReplyLike',
 }
 
+export enum RefType {
+  POST = 'post',
+  COMMENT = 'comment',
+  USER = 'profile',
+}
+
 export enum ConversationType {
   PRIVATE = 'private',
   GROUP = 'group',

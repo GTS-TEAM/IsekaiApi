@@ -10,7 +10,7 @@ import {
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import { ConversationService } from 'src/conversation/services/conversation.service';
-import { ConversationType, MessageStatus, MessageType, NotiType, TokenType } from '../common/constants/enum';
+import { ConversationType, MessageStatus, MessageType, NotiType, RefType, TokenType } from '../common/constants/enum';
 import { ConversationEntity } from '../conversation/entities/conversation';
 import { MemberFields } from '../interfaces/conversation-field.interface';
 import { TokenService } from '../token/token.service';
