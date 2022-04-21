@@ -18,10 +18,22 @@ export class NotificationService {
   ) {}
 
   async getUserNotifications(userId: string) {
-    return await this.notifRepo.find({
+    const noti = await this.notifRepo.find({
       where: { receiver: userId },
-      select: ['id', 'status', 'type', 'updated_at'],
+      select: ['id', 'status', 'type', 'updated_at', 'refId'],
+      relations: ['senders'],
     });
+
+    const listNotiPromise = noti.map(async (item) => {
+      const { content, sub_url } = await this.generateNotification(item.type, item.refId, item.senders);
+      delete item.senders;
+      return {
+        ...item,
+        content,
+        ref_url: sub_url,
+      };
+    });
+    return await Promise.all(listNotiPromise);
   }
 
   /**
@@ -89,46 +101,73 @@ export class NotificationService {
     }
   }
 
+  async generateNotification(
+    notifType: NotiType,
+    refId: string,
+    senders: UserEntity[] | string,
+  ): Promise<{ content: string; model: any; sub_url: string }> {
+    let content = '';
+    let sender_content = '';
+    let sub_url = '';
+    let model: any;
+
+    if (senders instanceof Array) {
+      const names = senders.map((item) => {
+        const name = item.username.split(' ');
+        return name[name.length - 1];
+      });
+      sender_content = names.join(', ');
+    } else {
+      sender_content = senders;
+    }
+
+    switch (notifType) {
+      case NotiType.POST_LIKE:
+        model = await this.postRepo.findOneOrFail({ where: { id: refId }, relations: ['user'] });
+        console.log(model);
+
+        content = `${sender_content} đã thích bài viết của bạn`;
+        sub_url = `/post/${refId}`;
+        break;
+      case NotiType.FRIEND_REQUEST:
+        model.user = await this.userRepo.findOneOrFail(refId);
+        content = `${sender_content} đã gửi yêu cầu kết bạn`;
+        sub_url = `/profile/${refId}`;
+
+        break;
+      case NotiType.FRIEND_ACCEPTED:
+        model = await this.userRepo.findOneOrFail(refId);
+        content = `${sender_content} đã chấp nhận lời mời kết bạn`;
+        sub_url = `/profile/${refId}`;
+        break;
+    }
+    return { content, model, sub_url };
+  }
+
   async sendNotification(user: UserEntity, notif: NotificationRequestDto) {
     try {
       //TODO: Optimize this
 
       const notifEntity = this.notifRepo.create(notif);
-      let model;
-      let content = '';
 
-      switch (notif.type) {
-        case NotiType.POST_LIKE:
-          model = await this.postRepo.findOneOrFail({ where: { id: notif.refId }, relations: ['user'] });
-          notifEntity.receiver = model.user;
-          content = `${user.username} đã thích bài viết của bạn`;
-          break;
-        case NotiType.FRIEND_REQUEST:
-          model = await this.userRepo.findOneOrFail(notif.refId);
-          notifEntity.receiver = model;
-          content = `${user.username} đã gửi yêu cầu kết bạn`;
-          break;
-        case NotiType.FRIEND_ACCEPTED:
-          model = await this.userRepo.findOneOrFail(notif.refId);
-          notifEntity.receiver = model;
-          content = `${user.username} đã chấp nhận lời mời kết bạn`;
-          break;
-      }
+      const { content, model, sub_url } = await this.generateNotification(notif.type, notif.refId, user.username);
 
-      if (notifEntity.senders) {
-        notifEntity.senders.push(user);
-      }
+      notifEntity.receiver = model.user;
+
+      notifEntity.senders = notifEntity.senders ? notifEntity.senders : [];
+
+      notifEntity.senders.push(user);
+
       notifEntity.status = NotiStatus.PENDING;
 
       const noti = await this.notifRepo.save(notifEntity);
-
       return {
         type: noti.type,
         id: noti.id,
-        creator: user,
         receiver: noti.receiver,
         status: noti.status,
         content,
+        ref_url: sub_url,
       };
     } catch (error) {
       this.logger.error(error);

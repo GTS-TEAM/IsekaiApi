@@ -149,11 +149,6 @@ export class PostService {
   }
 
   async getPost(userId: string, id: string) {
-    const test = await this.postRepo
-      .createQueryBuilder('posts')
-      .select('posts.id')
-      .where('posts.id = :id', { id: id })
-      .getOne();
     try {
       const postSnapshot = await this.postRepo
         .createQueryBuilder('posts')
@@ -165,6 +160,7 @@ export class PostService {
         .getOneOrFail();
       return await this.likeService.checkLikedAndReturnPost(postSnapshot, userId);
     } catch (error) {
+      this.logger.error(error.stack);
       throw new NotFoundException('Có lỗi xảy ra vui lòng thử lại', error.message);
     }
   }
