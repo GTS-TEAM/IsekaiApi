@@ -23,7 +23,7 @@ services:
   proxy:
     image: nginx:alpine
     container_name: isekai-proxy
-    restart: unless-stopped
+    restart: always
     volumes:
       - ./certbot/www:/var/www/certbot/:ro
       - ./certbot/conf/:/etc/nginx/ssl/:ro

@@ -10,7 +10,7 @@ import {
 
 import { image } from 'faker';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOneOptions, Repository } from 'typeorm';
+import { FindOneOptions, Not, Repository } from 'typeorm';
 import { UserRegisterDto } from './dtos/user-register.dto';
 import { UserEntity } from './user';
 import { FriendRequestEntity } from './entities/friend-request';
@@ -164,6 +164,16 @@ export class UserService {
         { creator: creatorId, receiver: receiverId },
         { creator: receiverId, receiver: creatorId },
       ],
+    });
+  }
+
+  getSuggestFriends(userId: string, limit: number, offset: number) {
+    return this.userRepo.find({
+      where: { id: Not(userId) },
+
+      relations: ['friends'],
+      skip: (offset - 1) * limit,
+      take: limit,
     });
   }
 

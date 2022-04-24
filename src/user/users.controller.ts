@@ -97,6 +97,11 @@ export class UsersController {
     return await this.userService.getFriendRequests(req.user);
   }
 
+  @Get('/suggest')
+  async getSuggestFriends(@Request() req, @Query('limit') limit: number, @Query('offset') offset: number) {
+    return await this.userService.getSuggestFriends(req.user, limit, offset);
+  }
+
   @Get('/friends/:id')
   async getFriends(@Param('id') id: string) {
     return await this.userService.getFriends(id);
