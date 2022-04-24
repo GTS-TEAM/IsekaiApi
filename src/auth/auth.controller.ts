@@ -108,8 +108,6 @@ export class AuthController {
     if (!user) {
       throw new NotFoundException('Không tìm thấy email');
     }
-    console.log(dto.email);
-
     const token = await this.tokenService.generateResetPasswordToken(dto.email);
 
     this.emailService.sendResetPasswordEmail({ to: dto.email, token: token.token });

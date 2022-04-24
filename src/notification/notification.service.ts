@@ -124,7 +124,6 @@ export class NotificationService {
     switch (notifType) {
       case NotiType.POST_LIKE:
         model = await this.postRepo.findOneOrFail({ where: { id: refId }, relations: ['user'] });
-        console.log(model);
 
         content = `${sender_content} đã thích bài viết của bạn`;
         sub_url = `/post/${refId}`;
@@ -170,8 +169,7 @@ export class NotificationService {
         ref_url: sub_url,
       };
     } catch (error) {
-      this.logger.error(error);
-      throw new InternalServerErrorException('Có lỗi xảy ra vui lòng thử lại sau', error.message);
+      throw new InternalServerErrorException(error);
     }
   }
 

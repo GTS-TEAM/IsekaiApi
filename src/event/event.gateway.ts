@@ -247,7 +247,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (receiver) this.server.to(receiver.client.id).emit('notification', notiData);
     } catch (error) {
       this.logger.error(error);
-      this.server.to(client.id).emit('error', { message: error.message });
+      this.server.to(client.id).emit('error', { message: 'Có lỗi xảy ra' });
     }
   }
 }
