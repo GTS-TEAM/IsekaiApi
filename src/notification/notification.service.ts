@@ -25,7 +25,7 @@ export class NotificationService {
     });
 
     const listNotiPromise = noti.map(async (item) => {
-      const { content, sub_url } = await this.generateNotification(item.type, item.refId, item.senders);
+      const { content, sub_url } = await this.generateNotification(item.type, item.refId, item.senders, item.id);
       delete item.senders;
       return {
         ...item,
@@ -105,6 +105,7 @@ export class NotificationService {
     notifType: NotiType,
     refId: string,
     senders: UserEntity[] | string,
+    notiId?: string,
   ): Promise<{ content: string; model: any; sub_url: string }> {
     let content = '';
     let sender_content = '';
@@ -123,7 +124,11 @@ export class NotificationService {
 
     switch (notifType) {
       case NotiType.POST_LIKE:
-        model = await this.postRepo.findOneOrFail({ where: { id: refId }, relations: ['user'] });
+        model = await this.postRepo.findOne({ where: { id: refId }, relations: ['user'] });
+
+        if (!model) {
+          await this.notifRepo.delete({ id: notiId });
+        }
 
         content = `${sender_content} đã thích bài viết của bạn`;
         sub_url = `/post/${refId}`;
