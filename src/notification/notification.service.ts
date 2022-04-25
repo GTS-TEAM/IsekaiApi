@@ -20,7 +20,7 @@ export class NotificationService {
   async getUserNotifications(userId: string) {
     const noti = await this.notifRepo.find({
       where: { receiver: userId },
-      select: ['id', 'status', 'type', 'updated_at', 'refId'],
+      select: ['id', 'is_read', 'type', 'updated_at', 'refId'],
       relations: ['senders'],
     });
 
@@ -40,16 +40,6 @@ export class NotificationService {
   /**
    * Friend request
    */
-  async getUserFriendRequests(userId: string) {
-    return await this.notifRepo.find({
-      where: {
-        receiver: userId,
-        type: NotiType.FRIEND_REQUEST,
-        status: NotiStatus.PENDING,
-      },
-    });
-  }
-
   async sendFriendRequest(userId: string, notif: NotificationRequestDto) {
     try {
       const user = await this.userRepo.findOne(userId);
@@ -58,7 +48,7 @@ export class NotificationService {
       notifEntity.receiver = receiver;
       notifEntity.type = notif.type;
       notifEntity.senders = [user];
-      notifEntity.status = NotiStatus.PENDING;
+      // notifEntity.status = NotiStatus.PENDING;
       return this.notifRepo.save(notifEntity);
     } catch (error) {
       this.logger.error(error);
@@ -157,7 +147,7 @@ export class NotificationService {
 
       const notifEntity = this.notifRepo.create(notif);
 
-      const { content, model, sub_url } = await this.generateNotification(notif.type, notif.refId, user);
+      const { content, model, sub_url, avatar } = await this.generateNotification(notif.type, notif.refId, user);
 
       notifEntity.receiver = model.user;
 
@@ -165,16 +155,15 @@ export class NotificationService {
 
       notifEntity.senders.push(user);
 
-      notifEntity.status = NotiStatus.PENDING;
-
       const noti = await this.notifRepo.save(notifEntity);
       return {
         type: noti.type,
         id: noti.id,
         receiver: noti.receiver,
-        status: noti.status,
+        status: noti.is_read,
         content,
         ref_url: sub_url,
+        avatar,
       };
     } catch (error) {
       throw new InternalServerErrorException(error);
@@ -188,7 +177,7 @@ export class NotificationService {
         relations: ['receiver'],
       });
       if (notif.receiver.id === userId) {
-        notif.status = NotiStatus.READ;
+        notif.is_read = true;
         return await this.notifRepo.save(notif);
       }
     } catch (error) {

@@ -14,8 +14,8 @@ export class NotificationEntity extends AbstractEntity {
   receiver: UserEntity;
 
   @ApiProperty()
-  @Column({ type: 'enum', enum: NotiStatus, default: NotiStatus.PENDING })
-  status: NotiStatus;
+  @Column({ default: false })
+  is_read: boolean;
 
   @ApiProperty({ type: 'enum', enum: NotiType })
   @Column()
