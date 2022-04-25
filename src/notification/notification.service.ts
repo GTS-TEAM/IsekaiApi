@@ -25,12 +25,13 @@ export class NotificationService {
     });
 
     const listNotiPromise = noti.map(async (item) => {
-      const { content, sub_url } = await this.generateNotification(item.type, item.refId, item.senders, item.id);
+      const { content, sub_url, avatar } = await this.generateNotification(item.type, item.refId, item.senders, item.id);
       delete item.senders;
       return {
         ...item,
         content,
         ref_url: sub_url,
+        avatar,
       };
     });
     return await Promise.all(listNotiPromise);
@@ -104,22 +105,24 @@ export class NotificationService {
   async generateNotification(
     notifType: NotiType,
     refId: string,
-    senders: UserEntity[] | string,
+    senders: UserEntity[] | UserEntity,
     notiId?: string,
-  ): Promise<{ content: string; model: any; sub_url: string }> {
+  ): Promise<{ content: string; model: any; sub_url: string; avatar: string }> {
     let content = '';
     let sender_content = '';
     let sub_url = '';
     let model: any;
-
+    let avatar = '';
     if (senders instanceof Array) {
       const names = senders.map((item) => {
         const name = item.username.split(' ');
         return name[name.length - 1];
       });
       sender_content = names.join(', ');
+      avatar = senders[senders.length - 1].avatar;
     } else {
-      sender_content = senders;
+      sender_content = senders.username;
+      avatar = senders.avatar;
     }
 
     switch (notifType) {
@@ -145,7 +148,7 @@ export class NotificationService {
         sub_url = `/profile/${refId}`;
         break;
     }
-    return { content, model, sub_url };
+    return { content, model, sub_url, avatar };
   }
 
   async sendNotification(user: UserEntity, notif: NotificationRequestDto) {
@@ -154,7 +157,7 @@ export class NotificationService {
 
       const notifEntity = this.notifRepo.create(notif);
 
-      const { content, model, sub_url } = await this.generateNotification(notif.type, notif.refId, user.username);
+      const { content, model, sub_url } = await this.generateNotification(notif.type, notif.refId, user);
 
       notifEntity.receiver = model.user;
 
