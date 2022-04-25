@@ -18,6 +18,7 @@ import { UserService } from '../user/users.service';
 import { FileDto } from './files.dto';
 import { MessageService } from 'src/conversation/services/message.service';
 import { NotificationService } from '../notification/notification.service';
+import { UserEntity } from '../user/user';
 
 enum NotificationServiceType {
   SendMessage = 'sendMessage',
@@ -34,7 +35,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly conversationService: ConversationService,
     private readonly messageService: MessageService,
     private readonly userService: UserService,
-    private readonly notificationService: NotificationService,
   ) {}
 
   @WebSocketServer()
@@ -235,19 +235,26 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  @SubscribeMessage('notification')
-  async onNotification(client, data: { refId: string; type: NotiType }) {
+  async onNotification(
+    sender: UserEntity,
+    notiData: {
+      type: NotiType;
+      id: string;
+      receiver: UserEntity;
+      status: boolean;
+      content: string;
+      ref_url: string;
+      avatar: string;
+    },
+  ) {
+    const client = this.connectedUsers.find((s) => s.userId === sender.id);
+
     try {
-      const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
-
-      const notiData = await this.notificationService.sendNotification(user, { refId: data.refId, type: data.type });
-      // notify to friends
-
       const receiver = this.connectedUsers.find((s) => s.userId === notiData.receiver.id);
       if (receiver) this.server.to(receiver.client.id).emit('notification', notiData);
     } catch (error) {
       this.logger.error(error);
-      this.server.to(client.id).emit('error', { message: 'Có lỗi xảy ra' });
+      this.server.to(client.client.id).emit('error', { message: 'Có lỗi xảy ra' });
     }
   }
 }

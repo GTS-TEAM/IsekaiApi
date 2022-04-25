@@ -6,7 +6,8 @@ import { UserModule } from '../user/users.module';
 import { EventGateway } from './event.gateway';
 
 @Module({
-  imports: [AuthModule, forwardRef(() => UserModule), ConversationModule, NotificationModule],
+  imports: [AuthModule, UserModule, ConversationModule],
   providers: [EventGateway],
+  exports: [EventGateway],
 })
 export class EventModule {}

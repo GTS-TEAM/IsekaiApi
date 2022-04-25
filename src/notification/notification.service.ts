@@ -141,19 +141,19 @@ export class NotificationService {
     return { content, model, sub_url, avatar };
   }
 
-  async sendNotification(user: UserEntity, notif: NotificationRequestDto) {
+  async sendNotification(sender: UserEntity, notif: NotificationRequestDto) {
     try {
       //TODO: Optimize this
 
-      const notifEntity = this.notifRepo.create(notif);
+      const { content, model, sub_url, avatar } = await this.generateNotification(notif.type, notif.refId, sender);
 
-      const { content, model, sub_url, avatar } = await this.generateNotification(notif.type, notif.refId, user);
+      const notifEntity = this.notifRepo.create(notif);
 
       notifEntity.receiver = model.user;
 
       notifEntity.senders = notifEntity.senders ? notifEntity.senders : [];
 
-      notifEntity.senders.push(user);
+      notifEntity.senders.push(sender);
 
       const noti = await this.notifRepo.save(notifEntity);
       return {
@@ -179,6 +179,27 @@ export class NotificationService {
       if (notif.receiver.id === userId) {
         notif.is_read = true;
         return await this.notifRepo.save(notif);
+      }
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException('Có lỗi xảy ra vui lòng thử lại sau', error.message);
+    }
+  }
+
+  async deleteNotification(userId: string, refId: string, type: NotiType) {
+    try {
+      const notif = await this.notifRepo.findOne({
+        where: { refId, type, senders: userId },
+        relations: ['senders'],
+      });
+
+      if (notif) {
+        if (notif.senders.length === 1) {
+          await this.notifRepo.delete({ id: notif.id });
+        } else {
+          notif.senders = notif.senders.filter((item) => item.id !== userId);
+          await this.notifRepo.save(notif);
+        }
       }
     } catch (error) {
       this.logger.error(error);

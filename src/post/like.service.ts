@@ -1,7 +1,10 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { NotiType } from '../common/constants/enum';
 import { resizeAvatar } from '../common/utils/resize-image';
+import { EventGateway } from '../event/event.gateway';
+import { NotificationService } from '../notification/notification.service';
 import { UserEntity } from '../user/user';
 import { PostEntity } from './entities/post';
 
@@ -13,6 +16,8 @@ export class LikeService {
     private readonly postRepo: Repository<PostEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
+    private readonly eventGateway: EventGateway,
+    private readonly notificationService: NotificationService,
   ) {}
 
   // get post likes
@@ -43,13 +48,27 @@ export class LikeService {
 
     try {
       const user = await this.userRepo.findOne({ where: { id: userId } });
+
       let like = post.likes.find((user) => user.id === userId);
+
       if (like) {
         const index = post.likes.indexOf(like);
         post.likes.splice(index, 1);
         await this.postRepo.save(post);
+        if (post.user.id !== userId) {
+          this.notificationService.deleteNotification(user.id, post.id, NotiType.POST_LIKE);
+        }
       } else {
         post.likes.push(user);
+        if (post.user.id !== userId) {
+          const notiData = await this.notificationService.sendNotification(user, {
+            refId: post.id,
+            type: NotiType.POST_LIKE,
+          });
+
+          this.eventGateway.onNotification(user, notiData);
+        }
+
         await this.postRepo.save(post);
       }
     } catch (error) {
