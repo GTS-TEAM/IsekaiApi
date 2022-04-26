@@ -52,7 +52,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       this.logger.debug(user.username + ' disconnected');
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error('Disconnect error: ' + error);
       this.server.emit('error', error.message);
     }
   }
@@ -71,8 +71,8 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.debug(user.email + ' connected');
       this.server.to(client.id).emit('connect-response', user.username);
     } catch (error) {
+      this.logger.error('handleConnection error: ' + error);
       this.server.to(client.id).emit('error', error.message);
-      this.logger.error(error);
     }
   }
 

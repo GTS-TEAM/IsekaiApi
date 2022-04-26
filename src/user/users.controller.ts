@@ -24,13 +24,6 @@ export class UsersController {
     this.userService.healthCheck(req.user);
   }
 
-  @ApiOkResponse({ description: 'Return user', type: UserDto })
-  @Get()
-  async getUser(@Query('userId') userId: string) {
-    const user = await this.userService.getUserRelaFriendsById(userId);
-    return user;
-  }
-
   @ApiOkResponse({ description: 'Return all users', type: [UserDto] })
   @Get('/list-friends')
   async getUsers() {
@@ -97,6 +90,10 @@ export class UsersController {
     return await this.userService.getFriendRequests(req.user);
   }
 
+  @Get('/friend/status/:id')
+  async getFriendStatus(@Request() req, @Param('id') id: string) {
+    return await this.userService.getFriendStatus(req.user, id);
+  }
   @Get('/suggest')
   async getSuggestFriends(@Request() req, @Query('limit') limit: number, @Query('offset') offset: number) {
     return await this.userService.getSuggestFriends(req.user, limit, offset);

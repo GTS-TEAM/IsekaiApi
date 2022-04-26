@@ -60,14 +60,6 @@ export class UserService {
     return this.userRepo.save(user);
   }
 
-  async getUserRelaFriendsById(userId: string) {
-    const user = await this.userRepo.findOne({ where: { id: userId }, relations: ['friends'] });
-    if (!user) {
-      throw new UnauthorizedException('Không tìm thấy người dùng');
-    }
-    return user;
-  }
-
   async deleteAllUsers(): Promise<void> {
     await this.userRepo.delete({});
   }
@@ -175,12 +167,14 @@ export class UserService {
     });
 
     const res = Promise.all(
-      friends.map(async (friend) => {
-        const status = await this.getRelaStatus(userId, friend.id);
-        return {
-          ...friend,
-          status,
-        };
+      friends.filter(async (friend) => {
+        const status = await this.getFriendStatus(userId, friend.id);
+        if (status === FriendRequestStatus.ACCEPTED) {
+          return {
+            ...friend,
+            status,
+          };
+        }
       }),
     );
 
@@ -205,7 +199,7 @@ export class UserService {
     return friends;
   }
 
-  async getRelaStatus(userId: string, friendId: string) {
+  async getFriendStatus(userId: string, friendId: string) {
     const friendRq = await this.friendRequestRepo.findOne({
       where: [
         { creator: userId, receiver: friendId },
@@ -347,7 +341,7 @@ export class UserService {
 
   // Check user is friend or not
   async checkFriend(userId: string, friendId: string) {
-    return await this.getRelaStatus(userId, friendId);
+    return await this.getFriendStatus(userId, friendId);
   }
   // Check user is following or not
   // async checkFollowing(userId: string, friendId: string): Promise<boolean> {
