@@ -198,7 +198,8 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.leave(data.conversationId);
       this.server.to(data.conversationId).emit('message', message);
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error('onLeaveGroup :' + error);
+
       this.server.to(client.id).emit('error', { message: error.message });
     }
   }
@@ -213,7 +214,8 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.to(data.conversationId).emit('message', message);
       client.leave(data.conversationId);
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error('onDeleteGroup :' + error);
+
       this.server.to(client.id).emit('error', { message: error.message });
     }
   }
@@ -230,7 +232,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       this.server.to(data.conversationId).emit('message', message);
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error('onUpdateConversation :' + error);
       this.server.to(client.id).emit('error', { message: error.message });
     }
   }
@@ -247,13 +249,14 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       avatar: string;
     },
   ) {
-    const client = this.connectedUsers.find((s) => s.userId === sender.id);
+    let client;
 
     try {
+      client = this.connectedUsers.find((s) => s.userId === sender.id);
       const receiver = this.connectedUsers.find((s) => s.userId === notiData.receiver.id);
       if (receiver) this.server.to(receiver.client.id).emit('notification', notiData);
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error('onNotification:' + error);
       this.server.to(client.client.id).emit('error', { message: 'Có lỗi xảy ra' });
     }
   }

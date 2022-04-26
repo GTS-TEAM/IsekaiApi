@@ -18,23 +18,27 @@ export class NotificationService {
   ) {}
 
   async getUserNotifications(userId: string) {
-    const noti = await this.notifRepo.find({
-      where: { receiver: userId },
-      select: ['id', 'is_read', 'type', 'updated_at', 'refId'],
-      relations: ['senders'],
-    });
+    try {
+      const noti = await this.notifRepo.find({
+        where: { receiver: userId },
+        select: ['id', 'is_read', 'type', 'updated_at', 'refId'],
+        relations: ['senders'],
+      });
 
-    const listNotiPromise = noti.map(async (item) => {
-      const { content, sub_url, avatar } = await this.generateNotification(item.type, item.refId, item.senders, item.id);
-      delete item.senders;
-      return {
-        ...item,
-        content,
-        ref_url: sub_url,
-        avatar,
-      };
-    });
-    return await Promise.all(listNotiPromise);
+      const listNotiPromise = noti.map(async (item) => {
+        const { content, sub_url, avatar } = await this.generateNotification(item.type, item.refId, item.senders, item.id);
+        delete item.senders;
+        return {
+          ...item,
+          content,
+          ref_url: sub_url,
+          avatar,
+        };
+      });
+      return await Promise.all(listNotiPromise);
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
@@ -98,47 +102,51 @@ export class NotificationService {
     senders: UserEntity[] | UserEntity,
     notiId?: string,
   ): Promise<{ content: string; model: any; sub_url: string; avatar: string }> {
-    let content = '';
-    let sender_content = '';
-    let sub_url = '';
-    let model: any;
-    let avatar = '';
-    if (senders instanceof Array) {
-      const names = senders.map((item) => {
-        const name = item.username.split(' ');
-        return name[name.length - 1];
-      });
-      sender_content = names.join(', ');
-      avatar = senders[senders.length - 1].avatar;
-    } else {
-      sender_content = senders.username;
-      avatar = senders.avatar;
+    try {
+      let content = '';
+      let sender_content = '';
+      let sub_url = '';
+      let model: any;
+      let avatar = '';
+      if (senders instanceof Array) {
+        const names = senders.map((item) => {
+          const name = item.username.split(' ');
+          return name[name.length - 1];
+        });
+        sender_content = names.join(', ');
+        avatar = senders[senders.length - 1].avatar;
+      } else {
+        sender_content = senders.username;
+        avatar = senders.avatar;
+      }
+
+      switch (notifType) {
+        case NotiType.POST_LIKE:
+          model = await this.postRepo.findOne({ where: { id: refId }, relations: ['user'] });
+
+          if (!model) {
+            await this.notifRepo.delete({ id: notiId });
+          }
+
+          content = `${sender_content} đã thích bài viết của bạn`;
+          sub_url = `/post/${refId}`;
+          break;
+        case NotiType.FRIEND_REQUEST:
+          model.user = await this.userRepo.findOneOrFail(refId);
+          content = `${sender_content} đã gửi yêu cầu kết bạn`;
+          sub_url = `/profile/${refId}`;
+
+          break;
+        case NotiType.FRIEND_ACCEPTED:
+          model = await this.userRepo.findOneOrFail(refId);
+          content = `${sender_content} đã chấp nhận lời mời kết bạn`;
+          sub_url = `/profile/${refId}`;
+          break;
+      }
+      return { content, model, sub_url, avatar };
+    } catch (error) {
+      this.logger.error('Errpr in generate notification', error);
     }
-
-    switch (notifType) {
-      case NotiType.POST_LIKE:
-        model = await this.postRepo.findOne({ where: { id: refId }, relations: ['user'] });
-
-        if (!model) {
-          await this.notifRepo.delete({ id: notiId });
-        }
-
-        content = `${sender_content} đã thích bài viết của bạn`;
-        sub_url = `/post/${refId}`;
-        break;
-      case NotiType.FRIEND_REQUEST:
-        model.user = await this.userRepo.findOneOrFail(refId);
-        content = `${sender_content} đã gửi yêu cầu kết bạn`;
-        sub_url = `/profile/${refId}`;
-
-        break;
-      case NotiType.FRIEND_ACCEPTED:
-        model = await this.userRepo.findOneOrFail(refId);
-        content = `${sender_content} đã chấp nhận lời mời kết bạn`;
-        sub_url = `/profile/${refId}`;
-        break;
-    }
-    return { content, model, sub_url, avatar };
   }
 
   async sendNotification(sender: UserEntity, notif: NotificationRequestDto) {
@@ -166,7 +174,8 @@ export class NotificationService {
         avatar,
       };
     } catch (error) {
-      throw new InternalServerErrorException(error);
+      this.logger.error('Error send notification', error);
+      throw new InternalServerErrorException('Có lỗi xảy ra vui lòng thử lại sau', error.message);
     }
   }
 

@@ -76,10 +76,6 @@ export class UserEntity extends AbstractEntity {
   // following: UserFollowerEntity[];
 
   // friend
-  @ManyToMany(() => UserEntity, (user) => user.friends)
-  @JoinTable()
-  friends: UserEntity[];
-
   @OneToMany(() => NotificationEntity, (user) => user.receiver)
   notifications: NotificationEntity[];
 

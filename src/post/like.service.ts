@@ -112,17 +112,11 @@ export class LikeService {
   //check if user liked post
   async checkUserLikedPost(postId: string, userId: string) {
     try {
-      // const like = await this.postRepo.findOne({
-      //   where: { id: postId, likes: { id: userId } },
-      //   relations: ['likes'],
-      // });
-
       const like = await this.postRepo
         .createQueryBuilder('posts')
         .where('posts.id = :postId', { postId: postId })
         .andWhere('likes.id = :userId', { userId: userId })
         .leftJoin('posts.likes', 'likes')
-        // .select(['posts.id', 'likes.id', 'likes.username', 'likes.avatar', 'likes.background'])
         .getOne();
       return like ? true : false;
     } catch (error) {

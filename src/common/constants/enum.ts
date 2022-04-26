@@ -18,7 +18,7 @@ export enum MemberRole {
 export enum FriendRequestStatus {
   PENDING = 'pending',
   ACCEPTED = 'accepted',
-  REJECTED = 'rejected',
+  NONE = 'none',
 }
 
 export enum NotiStatus {

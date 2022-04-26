@@ -111,9 +111,4 @@ export class UsersController {
   async deleteFriend(@Request() req, @Param('id') id: string) {
     return await this.userService.deleteFriend(req.user, id);
   }
-  // suggestFriends
-  // @Get('/suggestFriends')
-  // async suggestFriends(@Request() req) {
-  //   return await this.userService.suggestFriends(req.user);
-  // }
 }

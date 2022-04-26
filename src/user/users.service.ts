@@ -167,14 +167,24 @@ export class UserService {
     });
   }
 
-  getSuggestFriends(userId: string, limit: number, offset: number) {
-    return this.userRepo.find({
+  async getSuggestFriends(userId: string, limit: number, offset: number) {
+    const friends = await this.userRepo.find({
       where: { id: Not(userId) },
-
-      relations: ['friends'],
       skip: (offset - 1) * limit,
       take: limit,
     });
+
+    const res = Promise.all(
+      friends.map(async (friend) => {
+        const status = await this.getRelaStatus(userId, friend.id);
+        return {
+          ...friend,
+          status,
+        };
+      }),
+    );
+
+    return res;
   }
 
   async getFriends(userId: string) {
@@ -193,6 +203,19 @@ export class UserService {
       return friend.creator;
     });
     return friends;
+  }
+
+  async getRelaStatus(userId: string, friendId: string) {
+    const friendRq = await this.friendRequestRepo.findOne({
+      where: [
+        { creator: userId, receiver: friendId },
+        { creator: friendId, receiver: userId },
+      ],
+    });
+    if (friendRq) {
+      return friendRq.status;
+    }
+    return FriendRequestStatus.NONE;
   }
 
   getFriendRequests(userId: string): Promise<FriendRequestEntity[]> {
@@ -323,15 +346,9 @@ export class UserService {
   }
 
   // Check user is friend or not
-  async checkFriend(userId: string, friendId: string): Promise<boolean> {
-    const user = await this.getUserRelaFriendsById(userId);
-    const friend = await this.getUserById(friendId);
-    if (user.friends.includes(friend)) {
-      return true;
-    }
-    return false;
+  async checkFriend(userId: string, friendId: string) {
+    return await this.getRelaStatus(userId, friendId);
   }
-
   // Check user is following or not
   // async checkFollowing(userId: string, friendId: string): Promise<boolean> {
   //   const user = await this.getUserById(userId);
