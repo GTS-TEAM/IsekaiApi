@@ -92,7 +92,8 @@ export class UsersController {
 
   @Get('/friend/status/:id')
   async getFriendStatus(@Request() req, @Param('id') id: string) {
-    return await this.userService.getFriendStatus(req.user, id);
+    const status = await this.userService.getFriendStatus(req.user, id);
+    return { status };
   }
   @Get('/suggest')
   async getSuggestFriends(@Request() req, @Query('limit') limit: number, @Query('offset') offset: number) {
