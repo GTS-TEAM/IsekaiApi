@@ -50,6 +50,9 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
         1,
       );
 
+      user.last_activity = new Date();
+      await this.userService.save(user);
+
       this.logger.debug(user.username + ' disconnected');
     } catch (error) {
       this.logger.error('Disconnect error: ' + error);
@@ -60,6 +63,10 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(client) {
     try {
       const user = await this.tokenSerivce.verifyToken(client.handshake.query.token, TokenType.AccessToken);
+
+      user.last_activity = null;
+      await this.userService.save(user);
+
       const conversations = await this.conversationService.getUserConversations(user.id);
 
       const conId = conversations.map((c) => c.id);
