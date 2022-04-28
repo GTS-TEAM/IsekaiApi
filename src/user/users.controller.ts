@@ -5,6 +5,7 @@ import { FriendRequestStatus } from '../common/constants/enum';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import { UserInfo } from './dtos/user-info';
 import { UserDto } from './dtos/user.dto';
+import { FriendRequestEntity } from './entities/friend-request';
 
 import { UserService } from './users.service';
 
@@ -98,11 +99,21 @@ export class UsersController {
 
   @Get('/friend/status/:id')
   async getFriendStatus(@Request() req, @Param('id') id: string) {
-    const status = await this.userService.getFriendRequest(req.user, id);
-    if (!status) {
-      return { status: FriendRequestStatus.NONE };
+    let request = await this.userService.getFriendRequest(req.user, id);
+    if (!request) {
+      return {
+        request: {
+          status: FriendRequestStatus.NONE,
+          creator_id: null,
+        },
+      };
     }
-    return { status: status.status };
+    return {
+      request: {
+        status: request.status,
+        creator_id: request.creator.id,
+      },
+    };
   }
   @Get('/suggest')
   async getSuggestFriends(@Request() req, @Query('limit') limit: number, @Query('offset') offset: number) {

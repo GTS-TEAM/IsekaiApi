@@ -161,6 +161,7 @@ export class UserService {
         { creator: creatorId, receiver: receiverId },
         { creator: receiverId, receiver: creatorId },
       ],
+      relations: ['creator', 'receiver'],
     });
 
     return req;
