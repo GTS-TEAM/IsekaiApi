@@ -14,7 +14,7 @@ import { Any, FindOneOptions, Not, Repository } from 'typeorm';
 import { UserRegisterDto } from './dtos/user-register.dto';
 import { UserEntity } from './user';
 import { FriendRequestEntity } from './entities/friend-request';
-import { FriendRequestResponse, FriendRequestStatus } from '../common/constants/enum';
+import { FriendRequestStatus } from '../common/constants/enum';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import * as bcrypt from 'bcryptjs';
 import { hashPassword } from '../common/utils/hash-password';
@@ -231,7 +231,7 @@ export class UserService {
     return this.friendRequestRepo.save({ creator: user, receiver: friend, status: FriendRequestStatus.PENDING });
   }
 
-  async responseFriendRequest(userId: string, friendRequestId: string, status: FriendRequestResponse) {
+  async responseFriendRequest(userId: string, friendRequestId: string, status: FriendRequestStatus) {
     const frq = await this.friendRequestRepo.findOne({
       where: { id: friendRequestId, receiver: userId },
       relations: ['creator', 'receiver'],
@@ -243,7 +243,7 @@ export class UserService {
       throw new BadRequestException('Yêu cầu kết bạn đã được chấp nhận');
     }
 
-    if (status === FriendRequestResponse.REJECTED) {
+    if (status === FriendRequestStatus.NONE) {
       frq.status = FriendRequestStatus.ACCEPTED;
 
       await this.friendRequestRepo.delete(frq);

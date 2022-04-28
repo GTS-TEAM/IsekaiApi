@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Put, Query, 
 import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiProperty, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { FriendRequestResponse } from '../common/constants/enum';
+import { FriendRequestResponse, FriendRequestStatus } from '../common/constants/enum';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import { UserInfo } from './dtos/user-info';
 import { UserDto } from './dtos/user.dto';
@@ -79,7 +79,7 @@ export class UsersController {
   @Put('/friend-request/response/:requestId')
   async responseFriendRequest(
     @Request() req,
-    @Query('statusResponse') statusResponse: FriendRequestResponse,
+    @Query('statusResponse') statusResponse: FriendRequestStatus,
     @Param('requestId') requestId: string,
   ) {
     return await this.userService.responseFriendRequest(req.user, requestId, statusResponse);
