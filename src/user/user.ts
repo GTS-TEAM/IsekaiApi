@@ -66,7 +66,7 @@ export class UserEntity extends AbstractEntity {
   @Column({ nullable: true })
   address?: string;
 
-  @Column({ default: new Date() })
+  @Column({ default: new Date(), nullable: true })
   last_activity: Date;
 
   // @OneToMany(() => UserFollowerEntity, (uf) => uf.following)
