@@ -10,7 +10,7 @@ import {
 
 import { image } from 'faker';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOneOptions, Not, Repository } from 'typeorm';
+import { Any, FindOneOptions, Not, Repository } from 'typeorm';
 import { UserRegisterDto } from './dtos/user-register.dto';
 import { UserEntity } from './user';
 import { FriendRequestEntity } from './entities/friend-request';
@@ -166,19 +166,19 @@ export class UserService {
       take: limit,
     });
 
-    const res = Promise.all(
-      friends.filter(async (friend) => {
-        const status = await this.getFriendStatus(userId, friend.id);
-        if (status !== FriendRequestStatus.ACCEPTED) {
-          return {
-            ...friend,
-            status,
-          };
-        }
-      }),
-    );
+    const res: any[] = [];
 
-    return res;
+    for (const friend of friends) {
+      const status = await this.getFriendStatus(userId, friend.id);
+      if (status !== FriendRequestStatus.ACCEPTED) {
+        res.push({
+          ...friend,
+          status,
+        });
+      }
+    }
+
+    return await Promise.all(res);
   }
 
   async getFriends(userId: string) {
