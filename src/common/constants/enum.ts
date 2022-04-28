@@ -26,11 +26,6 @@ export enum NotiStatus {
   READ = 'read',
 }
 
-export enum FriendRequestResponse {
-  ACCEPTED = 'accepted',
-  REJECTED = 'rejected',
-}
-
 export enum MessageType {
   TEXT = 'text',
   SYSTEM = 'system',

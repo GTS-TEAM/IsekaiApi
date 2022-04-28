@@ -1,8 +1,7 @@
 import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiProperty, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { Exclude } from 'class-transformer';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { FriendRequestResponse, FriendRequestStatus } from '../common/constants/enum';
+import { FriendRequestStatus } from '../common/constants/enum';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import { UserInfo } from './dtos/user-info';
 import { UserDto } from './dtos/user.dto';
@@ -16,6 +15,13 @@ import { UserService } from './users.service';
 export class UsersController {
   private logger = new Logger(UsersController.name);
   constructor(private readonly userService: UserService) {}
+
+  @ApiOkResponse({ description: 'Return user', type: UserDto })
+  @Get()
+  async getUser(@Query('userId') userId: string) {
+    const user = await this.userService.getUserById(userId);
+    return user;
+  }
 
   // health check
   @Get('health')
@@ -75,25 +81,28 @@ export class UsersController {
     return await this.userService.sendFriendRequest(req.user, receiverId);
   }
 
-  @ApiQuery({ name: 'statusResponse', enum: FriendRequestResponse })
-  @Put('/friend-request/response/:requestId')
+  @ApiQuery({ name: 'statusResponse', enum: FriendRequestStatus })
+  @Put('/friend-request/response/:friend_id')
   async responseFriendRequest(
     @Request() req,
-    @Query('statusResponse') statusResponse: FriendRequestStatus,
-    @Param('requestId') requestId: string,
+    @Query('status') statusResponse: FriendRequestStatus,
+    @Param('friend_id') friend_id: string,
   ) {
-    return await this.userService.responseFriendRequest(req.user, requestId, statusResponse);
+    return await this.userService.responseFriendRequest(req.user, friend_id, statusResponse);
   }
 
   @Get('/friend-request')
   async getFriendRequests(@Request() req) {
-    return await this.userService.getFriendRequests(req.user);
+    return await this.userService.getUserFriendRequests(req.user);
   }
 
   @Get('/friend/status/:id')
   async getFriendStatus(@Request() req, @Param('id') id: string) {
-    const status = await this.userService.getFriendStatus(req.user, id);
-    return { status };
+    const status = await this.userService.getFriendRequest(req.user, id);
+    if (!status) {
+      return { status: FriendRequestStatus.NONE };
+    }
+    return { status: status.status };
   }
   @Get('/suggest')
   async getSuggestFriends(@Request() req, @Query('limit') limit: number, @Query('offset') offset: number) {

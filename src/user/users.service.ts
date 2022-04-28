@@ -37,6 +37,9 @@ export class UserService {
 
   /**
    * COMMON
+   *
+   *
+   *
    */
 
   async getUserById(userId: string) {
@@ -150,13 +153,17 @@ export class UserService {
    * Friend
    */
 
-  getFriendRequest(creatorId: string, receiverId: string) {
-    return this.friendRequestRepo.findOne({
+  async getFriendRequest(creatorId: string, receiverId: string) {
+    console.log('REQ');
+
+    const req = await this.friendRequestRepo.findOne({
       where: [
         { creator: creatorId, receiver: receiverId },
         { creator: receiverId, receiver: creatorId },
       ],
     });
+
+    return req;
   }
 
   async getSuggestFriends(userId: string, limit: number, offset: number) {
@@ -169,11 +176,16 @@ export class UserService {
     const res: any[] = [];
 
     for (const friend of friends) {
-      const status = await this.getFriendStatus(userId, friend.id);
-      if (status !== FriendRequestStatus.ACCEPTED) {
+      const req = await this.getFriendRequest(userId, friend.id);
+      delete friend.password;
+      if (!req) {
+        res.push({ ...friend, status: FriendRequestStatus.NONE });
+        break;
+      }
+      if (req.status !== FriendRequestStatus.ACCEPTED) {
         res.push({
           ...friend,
-          status,
+          status: req.status,
         });
       }
     }
@@ -199,20 +211,7 @@ export class UserService {
     return friends;
   }
 
-  async getFriendStatus(userId: string, friendId: string) {
-    const friendRq = await this.friendRequestRepo.findOne({
-      where: [
-        { creator: userId, receiver: friendId },
-        { creator: friendId, receiver: userId },
-      ],
-    });
-    if (friendRq) {
-      return friendRq.status;
-    }
-    return FriendRequestStatus.NONE;
-  }
-
-  getFriendRequests(userId: string): Promise<FriendRequestEntity[]> {
+  getUserFriendRequests(userId: string): Promise<FriendRequestEntity[]> {
     return this.friendRequestRepo.find({ where: [{ receiver: userId }] });
   }
 
@@ -220,22 +219,25 @@ export class UserService {
     if (userId == friendId) {
       throw new BadRequestException('Không thể kết bạn với bản thân !');
     }
+    this.logger.debug('Send friend request');
 
     const frq = await this.getFriendRequest(userId, friendId);
     if (frq) {
       throw new BadRequestException('Bạn đã gửi yêu cầu kết bạn');
     }
 
+    this.logger.debug('Send friend request2');
+
     const user = await this.getUserById(userId);
     const friend = await this.getUserById(friendId);
-    return this.friendRequestRepo.save({ creator: user, receiver: friend, status: FriendRequestStatus.PENDING });
+
+    const rq = this.friendRequestRepo.create({ creator: user, receiver: friend, status: FriendRequestStatus.PENDING });
+
+    return this.friendRequestRepo.save(rq);
   }
 
-  async responseFriendRequest(userId: string, friendRequestId: string, status: FriendRequestStatus) {
-    const frq = await this.friendRequestRepo.findOne({
-      where: { id: friendRequestId, receiver: userId },
-      relations: ['creator', 'receiver'],
-    });
+  async responseFriendRequest(userId: string, friendId: string, status: FriendRequestStatus) {
+    const frq = await this.getFriendRequest(userId, friendId);
     if (!frq) {
       throw new BadRequestException('Không tìm thấy yêu cầu kết bạn');
     }
@@ -244,9 +246,7 @@ export class UserService {
     }
 
     if (status === FriendRequestStatus.NONE) {
-      frq.status = FriendRequestStatus.ACCEPTED;
-
-      await this.friendRequestRepo.delete(frq);
+      await this.friendRequestRepo.delete({ id: frq.id });
       return;
     }
 
@@ -341,7 +341,7 @@ export class UserService {
 
   // Check user is friend or not
   async checkFriend(userId: string, friendId: string) {
-    return await this.getFriendStatus(userId, friendId);
+    return await this.getFriendRequest(userId, friendId);
   }
   // Check user is following or not
   // async checkFollowing(userId: string, friendId: string): Promise<boolean> {
