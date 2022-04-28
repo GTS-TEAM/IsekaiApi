@@ -169,7 +169,7 @@ export class UserService {
     const res = Promise.all(
       friends.filter(async (friend) => {
         const status = await this.getFriendStatus(userId, friend.id);
-        if (status === FriendRequestStatus.ACCEPTED) {
+        if (status !== FriendRequestStatus.ACCEPTED) {
           return {
             ...friend,
             status,
