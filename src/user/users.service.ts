@@ -213,7 +213,7 @@ export class UserService {
   }
 
   getUserFriendRequests(userId: string): Promise<FriendRequestEntity[]> {
-    return this.friendRequestRepo.find({ where: [{ receiver: userId }] });
+    return this.friendRequestRepo.find({ where: [{ receiver: userId }], relations: ['creator'] });
   }
 
   async sendFriendRequest(userId: string, friendId: string) {
