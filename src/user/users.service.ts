@@ -263,7 +263,7 @@ export class UserService {
     if (!friendRequest) {
       throw new BadRequestException('Không tìm thấy yêu cầu kết bạn');
     }
-    return this.friendRequestRepo.delete(friendRequest);
+    return await this.friendRequestRepo.delete(friendRequest);
   }
   // follow user
   // async followUser(user: any, friendId: string): Promise<UserEntity> {
