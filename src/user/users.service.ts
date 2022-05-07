@@ -154,8 +154,6 @@ export class UserService {
    */
 
   async getFriendRequest(creatorId: string, receiverId: string) {
-    console.log('REQ');
-
     const req = await this.friendRequestRepo.findOne({
       where: [
         { creator: creatorId, receiver: receiverId },
@@ -263,7 +261,7 @@ export class UserService {
     if (!friendRequest) {
       throw new BadRequestException('Không tìm thấy yêu cầu kết bạn');
     }
-    return await this.friendRequestRepo.delete(friendRequest);
+    return await this.friendRequestRepo.remove(friendRequest);
   }
   // follow user
   // async followUser(user: any, friendId: string): Promise<UserEntity> {
