@@ -179,14 +179,13 @@ export class UserService {
       delete friend.password;
       if (!req) {
         res.push({ ...friend, status: FriendRequestStatus.NONE });
-        break;
       }
-      if (req.status !== FriendRequestStatus.ACCEPTED) {
-        res.push({
-          ...friend,
-          status: req.status,
-        });
-      }
+      // if (req.status !== FriendRequestStatus.ACCEPTED) {
+      //   res.push({
+      //     ...friend,
+      //     status: req.status,
+      //   });
+      // }
     }
 
     return await Promise.all(res);
