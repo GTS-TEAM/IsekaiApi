@@ -17,12 +17,14 @@ export class NotificationService {
     @InjectRepository(PostEntity) private postRepo: Repository<PostEntity>,
   ) {}
 
-  async getUserNotifications(userId: string) {
+  async getUserNotifications(userId: string, page: number, limit: number) {
     try {
       const noti = await this.notifRepo.find({
         where: { receiver: userId },
         select: ['id', 'is_read', 'type', 'updated_at', 'refId'],
         relations: ['senders'],
+        skip: (page - 1) * limit,
+        take: limit,
       });
 
       const listNotiPromise = noti.map(async (item) => {

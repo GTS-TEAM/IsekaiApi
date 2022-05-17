@@ -23,8 +23,8 @@ export class NotificationController {
 
   // get user notifications
   @Get('/')
-  async getUserNotifications(@Request() req) {
-    return await this.notifService.getUserNotifications(req.user);
+  async getUserNotifications(@Request() req, @Param('page') page: number, @Param('limit') limit: number) {
+    return await this.notifService.getUserNotifications(req.user, page, limit);
   }
 
   // send notification to user
