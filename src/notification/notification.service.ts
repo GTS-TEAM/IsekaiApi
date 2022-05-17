@@ -197,21 +197,25 @@ export class NotificationService {
 
   async deleteNotification(userId: string, refId: string, type: NotiType) {
     try {
-      const notif = await this.notifRepo.findOne({
-        where: { refId, type, senders: userId },
-        relations: ['senders'],
-      });
+      // find notification where senders is userId and refId is refId
+      const notif = await this.notifRepo
+        .createQueryBuilder('noti')
+        .leftJoinAndSelect('noti.senders', 'senders')
+        .where('senders.id =:id', { id: userId })
+        .andWhere('noti.refId =:refId', { refId })
+        .andWhere('noti.type =:type', { type })
+        .getOne();
 
       if (notif) {
         if (notif.senders.length === 1) {
-          await this.notifRepo.delete({ id: notif.id });
+          await this.notifRepo.remove(notif);
         } else {
           notif.senders = notif.senders.filter((item) => item.id !== userId);
           await this.notifRepo.save(notif);
         }
       }
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error('Delete notification:', error);
       throw new InternalServerErrorException('Có lỗi xảy ra vui lòng thử lại sau', error.message);
     }
   }
