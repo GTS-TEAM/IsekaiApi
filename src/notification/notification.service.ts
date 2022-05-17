@@ -19,12 +19,17 @@ export class NotificationService {
 
   async getUserNotifications(userId: string, page: number, limit: number) {
     try {
+      // get user notifications and count unread
       const noti = await this.notifRepo.find({
         where: { receiver: userId },
         select: ['id', 'is_read', 'type', 'updated_at', 'refId'],
         relations: ['senders'],
         skip: (page - 1) * limit,
         take: limit,
+      });
+
+      const count = await this.notifRepo.count({
+        where: { receiver: userId, is_read: false },
       });
 
       const listNotiPromise = noti.map(async (item) => {
@@ -37,7 +42,10 @@ export class NotificationService {
           avatar,
         };
       });
-      return await Promise.all(listNotiPromise);
+      return {
+        notifications: await Promise.all(listNotiPromise),
+        count,
+      };
     } catch (error) {
       throw error;
     }
