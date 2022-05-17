@@ -26,6 +26,7 @@ export class NotificationService {
         relations: ['senders'],
         skip: (page - 1) * limit,
         take: limit,
+        order: { updated_at: 'DESC' },
       });
 
       const count = await this.notifRepo.count({

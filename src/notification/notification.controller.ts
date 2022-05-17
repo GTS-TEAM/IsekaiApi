@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { NotiStatus, NotiType } from '../common/constants/enum';
@@ -23,7 +23,7 @@ export class NotificationController {
 
   // get user notifications
   @Get('/')
-  async getUserNotifications(@Request() req, @Param('page') page: number, @Param('limit') limit: number) {
+  async getUserNotifications(@Request() req, @Query('page') page: number, @Query('limit') limit: number) {
     return await this.notifService.getUserNotifications(req.user, page, limit);
   }
 
