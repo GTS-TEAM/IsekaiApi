@@ -4,7 +4,7 @@ services:
   api:
     image: isekai-api
     container_name: isekai-api
-    restart: unless-stopped
+    restart: always
     build:
       context: .
       dockerfile: ./Dockerfile
