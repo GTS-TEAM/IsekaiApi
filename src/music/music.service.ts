@@ -6,6 +6,7 @@ import { MusicEntity } from './music';
 import { UserEntity } from '../user/user';
 import { UploadService } from '../upload/upload.service';
 import { UserService } from '../user/users.service';
+import { IPage } from '../interfaces/page.interface';
 
 @Injectable()
 export class MusicService {
@@ -15,9 +16,24 @@ export class MusicService {
     private readonly uploadService: UploadService,
   ) {}
 
-  async getAllMusic(userId: string): Promise<MusicEntity[]> {
-    const musics = await this.musicRepo.find({ order: { created_at: 'DESC' }, relations: ['uploader'] });
-    return musics;
+  async getAllMusic(userId: string, paging: IPage): Promise<MusicEntity[]> {
+    // const musics = await this.musicRepo.find({ order: { created_at: 'DESC' }, relations: ['uploader'] });
+    const qb = this.musicRepo
+      .createQueryBuilder('music')
+      .leftJoinAndSelect('music.uploader', 'user')
+      .orderBy('music.created_at', 'DESC');
+
+    if (paging.limit) {
+      qb.limit(paging.limit);
+    }
+    if (paging.offset) {
+      qb.offset((paging.offset - 1) * paging.limit);
+    }
+    if (paging.search) {
+      qb.where('music.name ILIKE :search', { search: `%${paging.search}%` });
+    }
+
+    return qb.getMany();
   }
 
   async uploadMusic(userId: string, file: Express.Multer.File): Promise<MusicEntity> {

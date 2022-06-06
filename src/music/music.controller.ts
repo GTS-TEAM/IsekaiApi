@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Request, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Request, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -21,8 +21,13 @@ export class MusicController {
   constructor(private readonly musicService: MusicService) {}
 
   @Get('/')
-  async getAllMusic(@Request() req) {
-    return await this.musicService.getAllMusic(req.user);
+  async getAllMusic(
+    @Request() req,
+    @Query('page') offset: number,
+    @Query('limit') limit: number,
+    @Query('name') search: string,
+  ): Promise<MusicEntity[]> {
+    return await this.musicService.getAllMusic(req.user, { limit, offset, search });
   }
 
   @ApiBody({
